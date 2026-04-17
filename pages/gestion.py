@@ -4,11 +4,13 @@ from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 from datetime import datetime
 import pytz
+import base64
 
-# Configuración de la zona horaria
+# --- CONFIGURACIÓN DE PÁGINA ---
+st.set_page_config(page_title="Gestión - Club Lakonn", layout="wide")
+
+# --- ZONA HORARIA SANTIAGO ---
 chile_tz = pytz.timezone('America/Santiago')
-
-# Obtener la hora actual en la zona de Santiago
 ahora_chile = datetime.now(chile_tz)
 
 # --- SEGURIDAD DE ACCESO ---
@@ -21,6 +23,61 @@ if "unidad_seleccionada" not in st.session_state or st.session_state["unidad_sel
 unidad_actual = st.session_state["unidad_seleccionada"]
 usuario_activo = st.session_state["user_info"]
 
+# --- FUNCIONES DE ESTILO (LOOK LOGIN.PY) ---
+def get_base64(bin_file):
+    with open(bin_file, 'rb') as f:
+        return base64.b64encode(f.read()).decode()
+
+def aplicar_look_login():
+    bin_pc = get_base64('images/fondopc.jpg')
+    bin_mob = get_base64('images/fondocelu.webp')
+    
+    st.markdown(
+        f"""
+        <style>
+        /* Esconder menús de Streamlit y Git */
+        #MainMenu, footer, header, .stAppDeployButton {{visibility: hidden;}}
+        button[title="Manage app"] {{display: none !important;}}
+        .stAppToolbar {{display: none !important;}}
+
+        /* Fondo Adaptativo */
+        .stApp {{
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+        }}
+        @media (min-width: 769px) {{ .stApp {{ background-image: url("data:image/jpg;base64,{bin_pc}"); }} }}
+        @media (max-width: 768px) {{ .stApp {{ background-image: url("data:image/webp;base64,{bin_mob}"); }} }}
+
+        /* Estilo Tarjeta Blanca (Look Login) */
+        .gestion-card {{
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            border: 1px solid #0070C0 !important;
+            padding: 25px !important;
+            border-radius: 20px !important;
+            box-shadow: 0px 8px 25px rgba(0,0,0,0.4);
+            margin-bottom: 20px;
+        }}
+
+        /* Texto Oscuro para lectura sobre blanco */
+        .stMarkdown p, label, h1, h2, h3, h4, .stSubheader {{
+            color: #1E1E1E !important;
+            font-weight: bold !important;
+        }}
+        
+        /* Ajuste de Tabla para que no rompa el fondo */
+        [data-testid="stDataFrame"] {{
+            background-color: white !important;
+            border-radius: 10px;
+            padding: 10px;
+        }}
+        </style>
+        """, 
+        unsafe_allow_html=True
+    )
+
+aplicar_look_login()
+
 # --- ESTILO TABLA ---
 def estilo_azul(val):
     if val and str(val).strip() != "":
@@ -28,6 +85,7 @@ def estilo_azul(val):
     return ''
 
 # --- CONEXIÓN ---
+@st.cache_resource
 def get_client():
     creds = st.secrets["gcp_service_account"]
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -36,7 +94,6 @@ def get_client():
 client = get_client()
 spreadsheet = client.open("RequisitosConquistadores")
 sheet = spreadsheet.worksheet("Amigo")
-# Acceso a la hoja oculta para auditoría
 log_sheet = spreadsheet.worksheet("Log_Cambios") 
 
 # --- DATOS ---
@@ -46,22 +103,27 @@ df_full = pd.DataFrame(raw_data[2:], columns=headers)
 df_unidad = df_full[df_full['Unidad'] == unidad_actual].copy()
 
 # --- INTERFAZ ---
-st.title(f"🛡️ Unidad: {unidad_actual.upper()}")
-if st.button("⬅️ Cambiar Unidad"):
+# Título con sombra blanca para resaltar sobre el fondo oscuro del club
+st.markdown(f"<h1 style='text-align: center; color: white; text-shadow: 2px 2px 4px #000;'>🛡️ UNIDAD: {unidad_actual.upper()}</h1>", unsafe_allow_html=True)
+
+if st.button("⬅️ CAMBIAR UNIDAD", use_container_width=True):
     st.switch_page("app.py")
 
-st.divider()
+# --- CONTENEDOR PRINCIPAL (LOOK LOGIN) ---
+with st.container():
+    st.markdown('<div class="gestion-card">', unsafe_allow_html=True)
+    
+    st.subheader("📊 Avance General")
+    st.dataframe(
+        df_unidad.style.map(estilo_azul, subset=df_unidad.columns[3:]),
+        use_container_width=True,
+        hide_index=True
+    )
+    
+    st.divider()
 
-# --- TABLA DE AVANCE (Mantiene la fecha visible y requisitos en azul) ---
-st.subheader("📊 Avance General")
-st.dataframe(
-    df_unidad.style.map(estilo_azul, subset=df_unidad.columns[3:]),
-    use_container_width=True,
-    hide_index=True
-)
-
-# REGISTRO Y CORRECCIÓN 
-with st.expander(f"📝 Registrar o Corregir Avances", expanded=True):
+    # REGISTRO Y CORRECCIÓN 
+    st.subheader("📝 Registrar o Corregir Avances")
     nombres = df_unidad['Integrantes'].tolist()
     if nombres:
         conquistador = st.selectbox("Seleccione al Conquistador:", nombres)
@@ -78,7 +140,6 @@ with st.expander(f"📝 Registrar o Corregir Avances", expanded=True):
             valor_db = fila_persona.get(r)
             esta_cumplido = bool(valor_db and str(valor_db).strip() != "")
             
-            # Key dinámico para limpiar al cambiar de integrante
             val = col.checkbox(r, value=esta_cumplido, key=f"ch_{r}_{conquistador.replace(' ', '_')}")
             nuevo_estado[r] = val
             
@@ -97,7 +158,6 @@ with st.expander(f"📝 Registrar o Corregir Avances", expanded=True):
                 st.error("Debes confirmar la eliminación antes de sincronizar.")
             else:
                 idx_excel = df_full[df_full['Integrantes'] == conquistador].index[0] + 3
-                # Tus variables ahora con la hora correcta
                 ahora = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
                 hoy = ahora_chile.strftime("%d/%m/%Y")
                 
@@ -111,7 +171,6 @@ with st.expander(f"📝 Registrar o Corregir Avances", expanded=True):
                         cambio_detectado = False
                         accion = ""
                         
-                        # Lógica de cambio y preparación de log
                         if check and not bool(val_actual):
                             sheet.update_cell(idx_excel, c_idx, hoy)
                             cambio_detectado = True
@@ -131,12 +190,12 @@ with st.expander(f"📝 Registrar o Corregir Avances", expanded=True):
                                 accion
                             ])
                             
-                    # Actualizar fecha de control
                     sheet.update_cell(idx_excel, headers.index("Ult. Actualizacion") + 1, hoy)
                     
-                    # Escritura masiva en la hoja oculta
                     if logs_a_insertar:
                         log_sheet.append_rows(logs_a_insertar)
                         
                     s.update(label="¡Cambios y Log guardados!", state="complete")
                 st.rerun()
+
+    st.markdown('</div>', unsafe_allow_html=True)

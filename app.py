@@ -22,7 +22,7 @@ if client:
 # --- 2. CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Gestión Clase Amigo", layout="wide")
 
-# --- 3. LÓGICA DE ESTILO (HEATMAP) ---
+# --- 3. LÓGICA DE ESTILO ---
 def estilo_heatmap(val):
     if val and str(val).strip() != "":
         return 'background-color: #0070C0; color: #0070C0;'
@@ -30,11 +30,12 @@ def estilo_heatmap(val):
 
 # --- 4. PROCESAMIENTO DE DATOS ---
 if client:
+    # Cacheamos la data para que la interfaz no sea lenta al interactuar
     data = sheet.get_all_values()
-    headers = data[1]  # Fila 2
+    headers = data[1]
     df_base = pd.DataFrame(data[2:], columns=headers)
 
-    # MAPEO PARA DASHBOARD
+    # MAPEO DASHBOARD
     mapeo_items = {
         "Item1": ["Voto", "Ley", "Blanco", "Lema", "El Camino a Cristo", "Génesis"],
         "Item2": ["Éxodo", "Levítico", "Gemas Bíblicas"],
@@ -53,82 +54,65 @@ if client:
             id_visual = f"{item}_P{i+1}"
             df_dash[id_visual] = df_base[p_real] if p_real in df_base.columns else ""
 
-    # --- 5. INTERFAZ DE USUARIO ---
+    # --- 5. INTERFAZ ---
     st.title("🛡️ Sistema de Gestión: Clase de Amigo")
-    st.markdown("### 📊 Cuadro de Cumplimiento")
     st.dataframe(
         df_dash.style.map(estilo_heatmap, subset=df_dash.columns[2:]),
-        use_container_width=True, 
-        hide_index=True
+        use_container_width=True, hide_index=True
     )
 
     st.divider()
 
-    # --- 6. SISTEMA DE ACTUALIZACIÓN CON ALERTA INMEDIATA ---
-    with st.expander("📝 Registrar o Corregir Avances"):
+    # --- 6. SISTEMA DE ACTUALIZACIÓN CON POP-UP DE SEGURIDAD ---
+    with st.expander("📝 Registrar o Corregir Avances", expanded=True):
         conquistador = st.selectbox("Seleccione al Conquistador:", df_base['Integrantes'].tolist())
-        
-        # Obtener datos actuales de la DB
         fila_datos = df_base[df_base['Integrantes'] == conquistador].iloc[0]
         
-        # Contenedor para el Pop-up de advertencia
-        aviso_placeholder = st.empty()
-        
+        # Columnas de Checkboxes
         col1, col2, col3 = st.columns(3)
-        
-        # Diccionario para capturar el nuevo estado
         estado_nuevo = {}
+        
+        todos_los_requisitos = [
+            "Voto", "Ley", "Blanco", "Lema", "El Camino a Cristo", "Génesis",
+            "Nudos Básicos", "Pernoctar Campamento", "Armar Carpa", "Señales de Pista",
+            "Temperancia de Daniel", "Menú Vegetariano", "Especialidad Naturaleza", "2 Horas Ayuda Comunitaria"
+        ]
 
-        with col1:
-            st.markdown("**📜 Generales e Investigación**")
-            # Lista de requisitos para esta columna
-            reqs1 = ["Voto", "Ley", "Blanco", "Lema", "El Camino a Cristo", "Génesis"]
-            for r in reqs1:
-                estado_nuevo[r] = st.checkbox(r, value=bool(fila_datos.get(r)), key=f"cb_{r}")
-            
-        with col2:
-            st.markdown("**🏕️ Arte de Acampar**")
-            reqs2 = ["Nudos Básicos", "Pernoctar Campamento", "Armar Carpa", "Señales de Pista"]
-            for r in reqs2:
-                estado_nuevo[r] = st.checkbox(r, value=bool(fila_datos.get(r)), key=f"cb_{r}")
-            
-        with col3:
-            st.markdown("**🍎 Salud y Naturaleza**")
-            reqs3 = ["Temperancia de Daniel", "Menú Vegetariano", "Especialidad Naturaleza", "2 Horas Ayuda Comunitaria"]
-            for r in reqs3:
-                estado_nuevo[r] = st.checkbox(r, value=bool(fila_datos.get(r)), key=f"cb_{r}")
+        # Renderizar Checks
+        for i, r in enumerate(todos_los_requisitos):
+            target_col = col1 if i < 6 else (col2 if i < 10 else col3)
+            estado_nuevo[r] = target_col.checkbox(r, value=bool(fila_datos.get(r)), key=f"ch_{r}")
 
-        # --- LÓGICA DE ALERTA INSTANTÁNEA ---
+        # --- LÓGICA DE POP-UP (Inmediata) ---
         desmarcados = [r for r, val in estado_nuevo.items() if bool(fila_datos.get(r)) and not val]
         
-        confirmacion_final = True # Por defecto es True si no hay desmarcados
-        
         if desmarcados:
-            with aviso_placeholder.container():
-                st.error(f"🚨 **CUIDADO:** Has desmarcado: {', '.join(desmarcados)}. Esto eliminará el registro de la base de datos.")
-                confirmacion_final = st.toggle("Confirmar eliminación de estos requisitos", value=False)
+            # st.popover crea un botón que al abrirse actúa como una ventana emergente
+            with st.popover("⚠️ ¡ATENCIÓN! REQUISITOS DESMARCADOS", use_container_width=True):
+                st.error(f"Has desmarcado: {', '.join(desmarcados)}")
+                st.write("Si guardas ahora, estos registros se borrarán permanentemente de Google Sheets.")
+                confirmar = st.toggle("Confirmar eliminación", key="confirm_delete")
+        else:
+            confirmar = True
 
-        # --- BOTÓN DE GUARDADO ---
-        if st.button("💾 SINCRONIZAR CAMBIOS"):
-            if not confirmacion_final:
-                st.warning("Debes activar el interruptor de confirmación para poder borrar registros.")
+        # --- BOTÓN DE GUARDAR ---
+        if st.button("💾 SINCRONIZAR CAMBIOS", type="primary", use_container_width=True):
+            if desmarcados and not st.session_state.get("confirm_delete", False):
+                st.warning("⚠️ Acción bloqueada: Debes abrir el Pop-up rojo y confirmar la eliminación.")
             else:
                 fila_idx = df_base[df_base['Integrantes'] == conquistador].index[0] + 3
                 hoy = datetime.now().strftime("%d/%m/%Y")
                 
-                with st.status("Sincronizando con Google Sheets...", expanded=True) as status:
-                    for req, esta_marcado in estado_nuevo.items():
+                with st.status("Actualizando Base de Datos...") as s:
+                    for req, valor in estado_nuevo.items():
                         if req in headers:
                             col_idx = headers.index(req) + 1
-                            valor_celda = hoy if esta_marcado else ""
-                            # Solo actualizamos si el valor cambió para ahorrar cuota de API
-                            if str(fila_datos.get(req)) != valor_celda:
-                                sheet.update_cell(fila_idx, col_idx, valor_celda)
+                            nuevo_val = hoy if valor else ""
+                            if str(fila_datos.get(req)) != nuevo_val:
+                                sheet.update_cell(fila_idx, col_idx, nuevo_val)
                     
                     sheet.update_cell(fila_idx, 2, hoy)
-                    status.update(label="✅ Sincronización completada", state="complete", expanded=False)
-                
-                st.success(f"¡Base de datos actualizada para {conquistador}!")
+                    s.update(label="Sincronización Exitosa", state="complete")
                 st.rerun()
 else:
     st.warning("Configurando conexión...")

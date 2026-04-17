@@ -3,6 +3,13 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 from datetime import datetime
+import pytz
+
+# Configuración de la zona horaria
+chile_tz = pytz.timezone('America/Santiago')
+
+# Obtener la hora actual en la zona de Santiago
+ahora_chile = datetime.now(chile_tz)
 
 # --- SEGURIDAD DE ACCESO ---
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
@@ -90,8 +97,9 @@ with st.expander(f"📝 Registrar o Corregir Avances", expanded=True):
                 st.error("Debes confirmar la eliminación antes de sincronizar.")
             else:
                 idx_excel = df_full[df_full['Integrantes'] == conquistador].index[0] + 3
-                ahora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                hoy = datetime.now().strftime("%d/%m/%Y")
+                # Tus variables ahora con la hora correcta
+                ahora = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
+                hoy = ahora_chile.strftime("%d/%m/%Y")
                 
                 logs_a_insertar = []
                 

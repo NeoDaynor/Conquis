@@ -2,62 +2,70 @@ import streamlit as st
 import json
 import os
 from PIL import Image
+import base64
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Club Lakonn - Acceso", layout="wide")
 
-# --- CSS PARA FONDOS ADAPTATIVOS Y OCULTAR MENÚS ---
-st.markdown(
-    """
-    <style>
-    /* Ocultar menús de Streamlit */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    .stAppDeployButton {display:none;}
-    button[title="Manage app"] {display: none;}
+# --- FUNCIÓN PARA CARGAR IMAGEN LOCAL COMO FONDO ---
+def get_base64_of_bin_file(bin_file):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
 
-    /* Configuración de Fondo base */
-    .stApp {
-        background-attachment: fixed;
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center;
-    }
+def set_bg_local(main_bg, mobile_bg):
+    try:
+        bin_str_pc = get_base64_of_bin_file(main_bg)
+        bin_str_mob = get_base64_of_bin_file(mobile_bg)
+        
+        st.markdown(
+            f"""
+            <style>
+            #MainMenu {{visibility: hidden;}}
+            footer {{visibility: hidden;}}
+            header {{visibility: hidden;}}
+            .stAppDeployButton {{display:none;}}
+            button[title="Manage app"] {{display: none;}}
 
-    /* FONDO PARA PC (Pantallas mayores a 768px) */
-    @media (min-width: 769px) {
-        .stApp {
-            background-image: url("https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/images/fondopc.jpg");
-        }
-    }
+            .stApp {{
+                background-attachment: fixed;
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-position: center;
+            }}
 
-    /* FONDO PARA CELULAR (Pantallas menores o iguales a 768px) */
-    @media (max-width: 768px) {
-        .stApp {
-            background-image: url("https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/images/fondocelu.webp");
-        }
-    }
+            /* Dispositivos Grandes (PC) */
+            @media (min-width: 769px) {{
+                .stApp {{
+                    background-image: url("data:image/fondopc.jpg;base64,{bin_str_pc}");
+                }}
+            }}
 
-    /* Estilo para la tarjeta de login para que resalte sobre el fondo */
-    .login-card {
-        text-align: center; 
-        background-color: rgba(240, 242, 246, 0.9); 
-        padding: 30px; 
-        border-radius: 15px; 
-        border: 1px solid #0070C0;
-        box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+            /* Dispositivos Pequeños (Celular) */
+            @media (max-width: 768px) {{
+                .stApp {{
+                    background-image: url("data:image/fondocelu.webp;base64,{bin_str_mob}");
+                }}
+            }}
 
-# --- NOTA IMPORTANTE ---
-# Para que las imágenes carguen correctamente en Streamlit Cloud desde CSS, 
-# se recomienda usar la URL directa de GitHub (raw) o servirlas localmente.
-# Si prefieres local, asegúrate de que las rutas 'images/fondopc.jpg' 
-# y 'images/fondocelu.webp' existan en tu repo.
+            .login-card {{
+                text-align: center; 
+                background-color: rgba(255, 255, 255, 0.9); 
+                padding: 30px; 
+                border-radius: 15px; 
+                border: 1px solid #0070C0;
+                box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+    except Exception:
+        # Si las imágenes no existen aún, mantiene el fondo oscuro por defecto
+        st.markdown("<style>.stApp {background-color: #0e1117;}</style>", unsafe_allow_html=True)
+
+# Aplicar fondos usando las rutas locales de tu carpeta images
+set_bg_local('images/fondopc.jpg', 'images/fondocelu.webp')
 
 # --- FUNCIONES DE AUTENTICACIÓN ---
 def load_users():
@@ -107,9 +115,8 @@ if not st.session_state["authenticated"]:
         
         with st.form("login_form"):
             st.markdown("### Iniciar Sesión")
-            user_input = st.text_input("Usuario", placeholder="Ingrese su usuario")
-            pass_input = st.text_input("Contraseña", type="password", placeholder="Ingrese su contraseña")
-            st.markdown("<br>", unsafe_allow_html=True)
+            user_input = st.text_input("Usuario", placeholder="Usuario")
+            pass_input = st.text_input("Contraseña", type="password", placeholder="Contraseña")
             submit = st.form_submit_button("INGRESAR AL SISTEMA", use_container_width=True)
             
             if submit:

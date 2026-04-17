@@ -30,7 +30,6 @@ def estilo_heatmap(val):
 
 # --- 4. PROCESAMIENTO DE DATOS ---
 if client:
-    # Cacheamos la data para que la interfaz no sea lenta al interactuar
     data = sheet.get_all_values()
     headers = data[1]
     df_base = pd.DataFrame(data[2:], columns=headers)
@@ -63,12 +62,11 @@ if client:
 
     st.divider()
 
-    # --- 6. SISTEMA DE ACTUALIZACIÓN CON POP-UP DE SEGURIDAD ---
+    # --- 6. SISTEMA DE ACTUALIZACIÓN ---
     with st.expander("📝 Registrar o Corregir Avances", expanded=True):
         conquistador = st.selectbox("Seleccione al Conquistador:", df_base['Integrantes'].tolist())
         fila_datos = df_base[df_base['Integrantes'] == conquistador].iloc[0]
         
-        # Columnas de Checkboxes
         col1, col2, col3 = st.columns(3)
         estado_nuevo = {}
         
@@ -78,32 +76,32 @@ if client:
             "Temperancia de Daniel", "Menú Vegetariano", "Especialidad Naturaleza", "2 Horas Ayuda Comunitaria"
         ]
 
-        # Renderizar Checks
         for i, r in enumerate(todos_los_requisitos):
             target_col = col1 if i < 6 else (col2 if i < 10 else col3)
             estado_nuevo[r] = target_col.checkbox(r, value=bool(fila_datos.get(r)), key=f"ch_{r}")
 
-        # --- LÓGICA DE POP-UP (Inmediata) ---
+        # --- LÓGICA DE POP-UP (Azul) ---
         desmarcados = [r for r, val in estado_nuevo.items() if bool(fila_datos.get(r)) and not val]
         
         if desmarcados:
-            # st.popover crea un botón que al abrirse actúa como una ventana emergente
-            with st.popover("⚠️ ¡ATENCIÓN! REQUISITOS DESMARCADOS", use_container_width=True):
-                st.error(f"Has desmarcado: {', '.join(desmarcados)}")
-                st.write("Si guardas ahora, estos registros se borrarán permanentemente de Google Sheets.")
+            # Usamos un popover azul para mayor armonía visual
+            with st.popover("ℹ️ REQUISITOS POR ELIMINAR", use_container_width=False):
+                st.info(f"Vas a eliminar: {', '.join(desmarcados)}")
                 confirmar = st.toggle("Confirmar eliminación", key="confirm_delete")
         else:
             confirmar = True
 
-        # --- BOTÓN DE GUARDAR ---
-        if st.button("💾 SINCRONIZAR CAMBIOS", type="primary", use_container_width=True):
+        st.write("") # Espaciador
+        
+        # Botón con tamaño estándar y color primario (azul por defecto en Streamlit)
+        if st.button("💾 SINCRONIZAR CAMBIOS", type="primary", use_container_width=False):
             if desmarcados and not st.session_state.get("confirm_delete", False):
-                st.warning("⚠️ Acción bloqueada: Debes abrir el Pop-up rojo y confirmar la eliminación.")
+                st.warning("⚠️ Abre el aviso azul de arriba para confirmar la eliminación.")
             else:
                 fila_idx = df_base[df_base['Integrantes'] == conquistador].index[0] + 3
                 hoy = datetime.now().strftime("%d/%m/%Y")
                 
-                with st.status("Actualizando Base de Datos...") as s:
+                with st.status("Sincronizando...", expanded=False) as s:
                     for req, valor in estado_nuevo.items():
                         if req in headers:
                             col_idx = headers.index(req) + 1
@@ -112,7 +110,7 @@ if client:
                                 sheet.update_cell(fila_idx, col_idx, nuevo_val)
                     
                     sheet.update_cell(fila_idx, 2, hoy)
-                    s.update(label="Sincronización Exitosa", state="complete")
+                    s.update(label="✅ Sincronizado", state="complete")
                 st.rerun()
 else:
     st.warning("Configurando conexión...")

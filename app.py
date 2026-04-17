@@ -97,12 +97,12 @@ else:
         with col1:
             if st.button("🪐\n\nORION", key="btn_orion", use_container_width=True):
                 st.session_state["unidad_seleccionada"] = "Orion"
-                st.switch_page("pages/gestion.py")
+                st.switch_page("pages/amigo.py")
         
         with col2:
             if st.button("🐆\n\nPUMAS", key="btn_pumas", use_container_width=True):
                 st.session_state["unidad_seleccionada"] = "Pumas"
-                st.switch_page("pages/gestion.py")
+                st.switch_page("pages/amigo.py")
                 
         with col3:
             if st.button("🎖️\n\nLIDERES", key="btn_lideres", use_container_width=True):

@@ -37,7 +37,7 @@ if st.session_state["vista"] == "inicio":
             position: fixed; top: 40%; left: 41%; width: 20%; height: 29%;
             background: transparent !important; color: transparent !important;
             border: none !important; z-index: 10; cursor: pointer;
-            clip-path: polygon(50% 80%, 0 0, 80% 0);
+            clip-path: polygon(52% 80%, 0 0, 80% 0);
         }}
         .stButton>button:hover {{ background: rgba(255,255,255,0.1) !important; }}
         </style>

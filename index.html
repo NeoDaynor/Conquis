@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: #f0f0f0; /* Color de fondo */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .contenedor {
+            position: relative;
+            display: inline-block;
+        }
+
+        .imagen-fondo {
+            display: block;
+            max-width: 100vw;
+            max-height: 100vh;
+        }
+
+        /* El área sensible al clic */
+        .boton-triangulo {
+            position: absolute;
+            /* Estos valores se ajustan según la posición del triángulo en tu foto */
+            top: 30%; 
+            left: 30%;
+            width: 40%;
+            height: 40%;
+            
+            /* Hacemos un recorte en forma de triángulo para que el clic sea preciso */
+            clip-path: polygon(50% 100%, 0 0, 100% 0); 
+            cursor: pointer;
+            background: transparent; /* Invisible pero presente */
+        }
+
+        .boton-triangulo:hover {
+            background: rgba(255, 255, 255, 0.1); /* Efecto visual al pasar el mouse */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor">
+        <img src="{{ url_for('static', filename='images/LogoCuerda.jpg') }}" class="imagen-fondo">
+        <a href="/login" class="boton-triangulo"></a>
+    </div>
+
+</body>
+</html>

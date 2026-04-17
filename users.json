@@ -6,6 +6,13 @@
             "rol": "admin",
             "usuario": "neo",
             "password": "Danny7826"
+        },
+        {
+            "nombre": "Jose Inostroza",
+            "cargo": "Guia Mayor",
+            "rol": "admin",
+            "usuario": "Joel",
+            "password": "Pepe123"
         }
     ]
 }

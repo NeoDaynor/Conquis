@@ -34,7 +34,7 @@ if st.session_state["vista"] == "inicio":
         
         /* Estilo del botón de entrada (Triángulo) */
         .stButton>button {{
-            position: fixed; top: 35%; left: 35%; width: 30%; height: 30%;
+            position: fixed; top: 40%; left: 35%; width: 30%; height: 30%;
             background: transparent !important; color: transparent !important;
             border: none !important; z-index: 10; cursor: pointer;
             clip-path: polygon(50% 90%, 0 0, 90% 0);

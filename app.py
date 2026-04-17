@@ -31,7 +31,7 @@ def estilo_heatmap(val):
 # --- 4. PROCESAMIENTO DE DATOS ---
 if client:
     data = sheet.get_all_values()
-    headers = data[1]  # Fila 2: Nombres de columnas reales
+    headers = data[1]  # Fila 2
     df_base = pd.DataFrame(data[2:], columns=headers)
 
     # MAPEO PARA DASHBOARD
@@ -64,91 +64,71 @@ if client:
 
     st.divider()
 
-    # --- 6. SISTEMA DE ACTUALIZACIÓN CON DOBLE CONFIRMACIÓN ---
+    # --- 6. SISTEMA DE ACTUALIZACIÓN CON ALERTA INMEDIATA ---
     with st.expander("📝 Registrar o Corregir Avances"):
         conquistador = st.selectbox("Seleccione al Conquistador:", df_base['Integrantes'].tolist())
         
-        # Obtener datos actuales
+        # Obtener datos actuales de la DB
         fila_datos = df_base[df_base['Integrantes'] == conquistador].iloc[0]
+        
+        # Contenedor para el Pop-up de advertencia
+        aviso_placeholder = st.empty()
         
         col1, col2, col3 = st.columns(3)
         
+        # Diccionario para capturar el nuevo estado
+        estado_nuevo = {}
+
         with col1:
             st.markdown("**📜 Generales e Investigación**")
-            v_voto = st.checkbox("Saber Voto", value=bool(fila_datos.get("Voto")))
-            v_ley = st.checkbox("Saber Ley", value=bool(fila_datos.get("Ley")))
-            v_blanco = st.checkbox("Saber Blanco", value=bool(fila_datos.get("Blanco")))
-            v_lema = st.checkbox("Saber Lema", value=bool(fila_datos.get("Lema")))
-            v_camino = st.checkbox("Leer 'El Camino a Cristo'", value=bool(fila_datos.get("El Camino a Cristo")))
-            v_genesis = st.checkbox("Lectura Génesis", value=bool(fila_datos.get("Génesis")))
+            # Lista de requisitos para esta columna
+            reqs1 = ["Voto", "Ley", "Blanco", "Lema", "El Camino a Cristo", "Génesis"]
+            for r in reqs1:
+                estado_nuevo[r] = st.checkbox(r, value=bool(fila_datos.get(r)), key=f"cb_{r}")
             
         with col2:
             st.markdown("**🏕️ Arte de Acampar**")
-            v_nudos = st.checkbox("Nudos Básicos", value=bool(fila_datos.get("Nudos Básicos")))
-            v_pernoctar = st.checkbox("Pernoctar en Campamento", value=bool(fila_datos.get("Pernoctar Campamento")))
-            v_carpa = st.checkbox("Saber armar Carpa", value=bool(fila_datos.get("Armar Carpa")))
-            v_senales = st.checkbox("Señales de Pista", value=bool(fila_datos.get("Señales de Pista")))
+            reqs2 = ["Nudos Básicos", "Pernoctar Campamento", "Armar Carpa", "Señales de Pista"]
+            for r in reqs2:
+                estado_nuevo[r] = st.checkbox(r, value=bool(fila_datos.get(r)), key=f"cb_{r}")
             
         with col3:
             st.markdown("**🍎 Salud y Naturaleza**")
-            v_temperancia = st.checkbox("Temperancia de Daniel", value=bool(fila_datos.get("Temperancia de Daniel")))
-            v_menu = st.checkbox("Menú Vegetariano", value=bool(fila_datos.get("Menú Vegetariano")))
-            v_natura = st.checkbox("Especialidad Naturaleza", value=bool(fila_datos.get("Especialidad Naturaleza")))
-            v_ayuda = st.checkbox("2 Horas Ayuda Comunitaria", value=bool(fila_datos.get("2 Horas Ayuda Comunitaria")))
+            reqs3 = ["Temperancia de Daniel", "Menú Vegetariano", "Especialidad Naturaleza", "2 Horas Ayuda Comunitaria"]
+            for r in reqs3:
+                estado_nuevo[r] = st.checkbox(r, value=bool(fila_datos.get(r)), key=f"cb_{r}")
 
-        # --- LÓGICA DE DETECCIÓN DE DESMARCADO ---
-        estado_nuevo = {
-            "Voto": v_voto, "Ley": v_ley, "Blanco": v_blanco, "Lema": v_lema,
-            "El Camino a Cristo": v_camino, "Génesis": v_genesis,
-            "Nudos Básicos": v_nudos, "Pernoctar Campamento": v_pernoctar,
-            "Armar Carpa": v_carpa, "Señales de Pista": v_senales,
-            "Temperancia de Daniel": v_temperancia, "Menú Vegetariano": v_menu,
-            "Especialidad Naturaleza": v_natura, "2 Horas Ayuda Comunitaria": v_ayuda
-        }
+        # --- LÓGICA DE ALERTA INSTANTÁNEA ---
+        desmarcados = [r for r, val in estado_nuevo.items() if bool(fila_datos.get(r)) and not val]
+        
+        confirmacion_final = True # Por defecto es True si no hay desmarcados
+        
+        if desmarcados:
+            with aviso_placeholder.container():
+                st.error(f"🚨 **CUIDADO:** Has desmarcado: {', '.join(desmarcados)}. Esto eliminará el registro de la base de datos.")
+                confirmacion_final = st.toggle("Confirmar eliminación de estos requisitos", value=False)
 
-        # Identificar si algo que estaba marcado ahora está desmarcado
-        items_desmarcados = []
-        for req, marcado_ahora in estado_nuevo.items():
-            estaba_marcado = bool(fila_datos.get(req))
-            if estaba_marcado and not marcado_ahora:
-                items_desmarcados.append(req)
-
-        # Botón de Guardar
+        # --- BOTÓN DE GUARDADO ---
         if st.button("💾 SINCRONIZAR CAMBIOS"):
-            # Si hay desmarcados, mostrar advertencia antes de procesar
-            if items_desmarcados:
-                st.warning(f"⚠️ ¡Atención! Estás a punto de borrar los siguientes requisitos: {', '.join(items_desmarcados)}")
-                confirmar_borrado = st.checkbox("He revisado y confirmo que deseo ELIMINAR estos avances.")
+            if not confirmacion_final:
+                st.warning("Debes activar el interruptor de confirmación para poder borrar registros.")
+            else:
+                fila_idx = df_base[df_base['Integrantes'] == conquistador].index[0] + 3
+                hoy = datetime.now().strftime("%d/%m/%Y")
                 
-                if confirmar_borrado:
-                    # Proceder con la actualización (incluyendo borrados)
-                    fila_idx = df_base[df_base['Integrantes'] == conquistador].index[0] + 3
-                    hoy = datetime.now().strftime("%d/%m/%Y")
-                    
+                with st.status("Sincronizando con Google Sheets...", expanded=True) as status:
                     for req, esta_marcado in estado_nuevo.items():
                         if req in headers:
                             col_idx = headers.index(req) + 1
                             valor_celda = hoy if esta_marcado else ""
-                            sheet.update_cell(fila_idx, col_idx, valor_celda)
+                            # Solo actualizamos si el valor cambió para ahorrar cuota de API
+                            if str(fila_datos.get(req)) != valor_celda:
+                                sheet.update_cell(fila_idx, col_idx, valor_celda)
                     
                     sheet.update_cell(fila_idx, 2, hoy)
-                    st.success("✅ Cambios y eliminaciones aplicadas con éxito.")
-                    st.rerun()
-                else:
-                    st.info("Por favor, marca la casilla de confirmación arriba para aplicar los cambios.")
-            else:
-                # Si no hay desmarcados, guardar normalmente
-                fila_idx = df_base[df_base['Integrantes'] == conquistador].index[0] + 3
-                hoy = datetime.now().strftime("%d/%m/%Y")
+                    status.update(label="✅ Sincronización completada", state="complete", expanded=False)
                 
-                for req, esta_marcado in estado_nuevo.items():
-                    if req in headers:
-                        col_idx = headers.index(req) + 1
-                        if esta_marcado: # Solo actualizamos si está marcado (no hay borrados en este flujo)
-                            sheet.update_cell(fila_idx, col_idx, hoy)
-                
-                sheet.update_cell(fila_idx, 2, hoy)
-                st.success("✅ ¡Nuevos avances registrados!")
+                st.success(f"¡Base de datos actualizada para {conquistador}!")
                 st.rerun()
 else:
     st.warning("Configurando conexión...")

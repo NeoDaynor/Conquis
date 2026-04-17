@@ -46,21 +46,27 @@ def set_bg_local(main_bg, mobile_bg):
                 }}
             }}
 
-            /* Tarjeta Unificada Elegante */
+            /* --- LA SOLUCIÓN AL FONDO DEL DIV --- */
+            /* Forzamos que los contenedores de Streamlit sean transparentes */
+            [data-testid="stForm"] {{
+                background-color: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+            }}
+
             .login-card {{
-                background-color: rgba(255, 255, 255, 0.9); 
+                background-color: rgba(255, 255, 255, 0.9) !important; 
                 padding: 40px; 
                 border-radius: 20px; 
-                border: 1px solid #0070C0;
-                box-shadow: 0px 10px 30px rgba(0,0,0,0.4);
+                border: 2px solid #0070C0;
+                box-shadow: 0px 10px 30px rgba(0,0,0,0.5);
                 margin-top: 30px;
-                color: #1E1E1E;
+                color: #1E1E1E !important;
             }}
             
-            /* Estilo para etiquetas del formulario dentro de la tarjeta */
-            .stMarkdown p, label {{
+            /* Aseguramos que los textos sean visibles sobre el blanco */
+            .login-card h1, .login-card p, .login-card h3, .login-card label {{
                 color: #1E1E1E !important;
-                font-weight: 500;
             }}
             </style>
             """,
@@ -105,21 +111,21 @@ if not st.session_state["authenticated"]:
     _, center_col, _ = st.columns([1, 1.8, 1])
     
     with center_col:
-        # Abrimos el contenedor blanco semitransparente
-        st.markdown('<div class="login-card">', unsafe_allow_html=True)
-        
+        # Aquí inyectamos el DIV que ahora sí debería verse
         st.markdown(
             """
-            <h1 style='color: #0070C0; text-align: center; margin-top: 0;'>BIENVENIDO</h1>
-            <p style='text-align: center; font-size: 1.1em;'>Gestión de Conquistadores - Club Lakonn</p>
-            <hr style='border: 0.5px solid #0070C0; margin-bottom: 30px;'>
+            <div class="login-card">
+                <h1 style='color: #0070C0; text-align: center; margin-top: 0;'>BIENVENIDO</h1>
+                <p style='text-align: center;'>Gestión de Conquistadores - Club Lakonn</p>
+                <hr style='border: 0.5px solid #0070C0; margin-bottom: 20px;'>
+            </div>
             """, 
             unsafe_allow_html=True
         )
         
-        # El formulario ahora vive dentro del div con clase login-card
+        # El formulario se superpone a la tarjeta pero es transparente
         with st.form("login_form", border=False):
-            st.write("### Iniciar Sesión")
+            st.markdown("<h3 style='color: #1E1E1E;'>Iniciar Sesión</h3>", unsafe_allow_html=True)
             user_input = st.text_input("Usuario", placeholder="Escriba su usuario")
             pass_input = st.text_input("Contraseña", type="password", placeholder="Escriba su contraseña")
             st.markdown("<br>", unsafe_allow_html=True)
@@ -133,10 +139,8 @@ if not st.session_state["authenticated"]:
                     st.rerun()
                 else:
                     st.error("Error: Usuario o contraseña incorrectos.")
-        
-        st.markdown('</div>', unsafe_allow_html=True)
 
-# --- MENÚ DE SELECCIÓN POST-LOGIN ---
+# --- MENÚ DE SELECCIÓN ---
 else:
     user = st.session_state["user_info"]
     st.sidebar.markdown(f"### 👤 {user['nombre']}")
@@ -147,10 +151,9 @@ else:
         st.session_state["user_info"] = None
         st.rerun()
 
-    st.markdown("<h1 style='text-align: center; color: #0070C0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);'>CLUB LAKONN</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #0070C0;'>CLUB LAKONN</h1>", unsafe_allow_html=True)
     st.write("---")
     
-    # Tarjeta de selección de unidad con estilo similar
     st.markdown('<div class="login-card" style="margin-top: 0; padding: 25px;">', unsafe_allow_html=True)
     st.markdown(f"<h4 style='text-align: center;'>Hola {user['nombre']}, selecciona una unidad:</h4>", unsafe_allow_html=True)
     
@@ -165,5 +168,3 @@ else:
         if u["col"].button(u["nombre"], key=u["id"], use_container_width=True):
             st.session_state["unidad_seleccionada"] = u["id"]
             st.switch_page("pages/gestion.py")
-    
-    st.markdown('</div>', unsafe_allow_html=True)

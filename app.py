@@ -1,16 +1,17 @@
 import streamlit as st
 
+# --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Club Lakonn - Inicio", layout="centered")
 
-# Estilo para centrar el título y botones
+# --- TÍTULO Y ESTILO ---
 st.markdown("<h1 style='text-align: center; color: #0070C0;'>CLUB LAKONN</h1>", unsafe_allow_html=True)
 st.write("---")
 st.markdown("<h3 style='text-align: center;'>Seleccione su Unidad</h3>", unsafe_allow_html=True)
 
+# --- SELECTOR DE UNIDAD ---
 col1, col2, col3 = st.columns([1, 2, 1])
 
 with col2:
-    # Definimos las unidades según tu imagen (image_f66589.png)
     unidades = [
         {"nombre": "ORION", "id": "Orion"},
         {"nombre": "PUMAS", "id": "Pumas"},
@@ -18,9 +19,11 @@ with col2:
     ]
     
     for u in unidades:
-        if st.button(u["nombre"], use_container_width=True, type="secondary"):
+        if st.button(u["nombre"], use_container_width=True):
             st.session_state["unidad_seleccionada"] = u["id"]
+            # Navegación forzada al nombre del archivo dentro de /pages
             st.switch_page("pages/gestion.py")
 
+# Inicialización de estado si no existe
 if "unidad_seleccionada" not in st.session_state:
     st.session_state["unidad_seleccionada"] = None

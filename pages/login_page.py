@@ -41,9 +41,5 @@ st.markdown(
 if st.session_state.get("authenticated", False):
     st.switch_page("pages/menu.py")
 
-# Botón para volver a la portada
-if st.button("⬅️ VOLVER AL INICIO"):
-    st.switch_page("app.py")
-
 # Llamada a la función de login
 mostrar_login()

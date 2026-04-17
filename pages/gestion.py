@@ -4,6 +4,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 from datetime import datetime
 import pytz
+import base64
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Gestión Club Lakonn", layout="wide", initial_sidebar_state="collapsed")
@@ -18,72 +19,89 @@ if "authenticated" not in st.session_state or not st.session_state["authenticate
 unidad_actual = st.session_state.get("unidad_seleccionada")
 usuario_activo = st.session_state.get("user_info")
 
+# --- FUNCIONES DE IMAGEN ---
+def get_base64_of_bin_file(bin_file):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
 # --- CSS INYECTADO DIRECTO A COMPONENTES NATIVOS ---
 def aplicar_estilos_nativos():
+    # Cargamos las imágenes para el fondo responsivo
+    bin_str_pc = get_base64_of_bin_file('images/fondopc.jpg')
+    bin_str_mob = get_base64_of_bin_file('images/fondocelu.webp')
+
     st.markdown(
-        """
+        f"""
         <style>
         /* Ocultar elementos de sistema */
-        #MainMenu, footer, header, .stAppDeployButton {visibility: hidden;}
+        #MainMenu, footer, header, .stAppDeployButton {{visibility: hidden;}}
         
-        /* Variables según el tema del navegador */
-        :root {
-            --bg-body: #F8FAFC;
-            --bg-card: #FFFFFF;
-            --border: #E2E8F0;
+        /* Fondo Responsivo idéntico al Login */
+        .stApp {{
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+        }}
+        @media (min-width: 769px) {{ .stApp {{ background-image: url("data:image/jpg;base64,{bin_str_pc}"); }} }}
+        @media (max-width: 768px) {{ .stApp {{ background-image: url("data:image/webp;base64,{bin_str_mob}"); }} }}
+
+        /* Variables según el tema del navegador con transparencia para el fondo */
+        :root {{
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --border: #0070C0;
             --text-color: #1E293B;
             --brand-color: #0070C0;
-        }
+        }}
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-body: #0E1117;
-                --bg-card: #1E293B;
+        @media (prefers-color-scheme: dark) {{
+            :root {{
+                --bg-card: rgba(30, 41, 59, 0.95);
                 --border: #334155;
                 --text-color: #F1F5F9;
                 --brand-color: #3B82F6;
-            }
-        }
+            }}
+        }}
 
-        .stApp { background-color: var(--bg-body); color: var(--text-color); }
+        .stApp {{ color: var(--text-color); }}
 
         /* SOLUCIÓN AL LOOP: Aplicar el estilo de tarjeta directamente al st.container nativo */
-        [data-testid="stVerticalBlock"] > div:has(div[data-testid="stVerticalBlock"]) {
+        [data-testid="stVerticalBlock"] > div:has(div[data-testid="stVerticalBlock"]) {{
             background-color: var(--bg-card) !important;
             padding: 20px !important;
             border-radius: 12px !important;
             border: 1px solid var(--border) !important;
             margin-bottom: 20px !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
-        }
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2) !important;
+        }}
 
-        .header-box {
+        .header-box {{
             background-color: var(--bg-card);
             padding: 15px;
             border-radius: 12px;
             text-align: center;
             border: 1px solid var(--border);
             margin-bottom: 20px;
-        }
+        }}
 
         /* Alerta Inline para móviles */
-        .inline-warning {
+        .inline-warning {{
             color: #F59E0B;
             font-size: 0.8rem;
             font-weight: bold;
             display: block;
             margin-top: -10px;
             margin-bottom: 5px;
-        }
+        }}
 
         /* Botón de Sincronización */
-        div.stButton > button[kind="primary"] {
+        div.stButton > button[kind="primary"] {{
             background-color: var(--brand-color) !important;
             color: white !important;
             height: 55px;
             font-weight: bold;
             border-radius: 10px;
-        }
+        }}
         </style>
         """, 
         unsafe_allow_html=True

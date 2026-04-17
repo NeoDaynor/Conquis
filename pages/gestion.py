@@ -21,21 +21,21 @@ if "unidad_seleccionada" not in st.session_state or st.session_state["unidad_sel
 unidad_actual = st.session_state["unidad_seleccionada"]
 usuario_activo = st.session_state["user_info"]
 
-# --- ESTILOS CSS INTELIGENTES (Modo Claro/Oscuro y Corrección de Divs) ---
-def aplicar_estilos_adaptativos():
+# --- ESTILOS CSS REFORZADOS ---
+def aplicar_estilos_finales():
     st.markdown(
         """
         <style>
-        /* Ocultar elementos innecesarios */
+        /* Ocultar basura visual de Streamlit */
         #MainMenu, footer, header, .stAppDeployButton {visibility: hidden;}
         
-        /* Variables de color según el tema del sistema */
+        /* Variables dinámicas por tema */
         :root {
             --bg-color: #F8FAFC;
-            --card-bg: white;
+            --card-bg: #FFFFFF;
             --text-main: #1E293B;
             --border-color: #E2E8F0;
-            --title-color: #0070C0;
+            --accent: #0070C0;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -44,47 +44,66 @@ def aplicar_estilos_adaptativos():
                 --card-bg: #1E293B;
                 --text-main: #F1F5F9;
                 --border-color: #334155;
-                --title-color: #3B82F6;
+                --accent: #3B82F6;
             }
         }
 
         .stApp { background-color: var(--bg-color); color: var(--text-main); }
 
-        /* Corrección de DIVS flotantes: Contenedores ajustados */
+        /* ELIMINACIÓN DE DIVS FLOTANTES: Forzamos el colapso de márgenes de Streamlit */
+        [data-testid="stVerticalBlock"] > div {
+            padding: 0px !important;
+            gap: 0px !important;
+        }
+
         .main-header {
-            background-color: var(--card-bg); padding: 20px; border-radius: 15px;
-            text-align: center; border: 1px solid var(--border-color);
-            margin-bottom: 15px;
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            margin-bottom: 1rem;
         }
         
         .content-card {
-            background-color: var(--card-bg); padding: 20px; border-radius: 15px;
-            border: 1px solid var(--border-color); 
-            margin-bottom: 15px; /* Elimina el espacio excesivo que causaba el efecto 'flotante' */
-            display: flow-root; /* Asegura que el contenedor envuelva todo su contenido */
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
 
-        /* Botones y Alertas */
-        div.stButton > button[kind="primary"] {
-            background-color: var(--title-color) !important; color: white !important;
-            height: 55px !important; font-weight: bold !important; border-radius: 12px !important;
-        }
-
-        .inline-warning {
-            color: #F59E0B; font-size: 0.85rem; font-weight: bold;
-            display: block; margin-top: -12px; margin-bottom: 8px;
+        /* Ajuste de Botones */
+        div.stButton > button {
+            width: 100% !important;
+            border-radius: 10px !important;
         }
         
-        /* Ajuste de visibilidad de texto en tablas para modo oscuro */
-        [data-testid="stDataFrame"] { border-radius: 10px; overflow: hidden; }
+        div.stButton > button[kind="primary"] {
+            background-color: var(--accent) !important;
+            color: white !important;
+            height: 50px;
+            font-weight: bold;
+        }
+
+        /* Alerta Inline */
+        .inline-warning {
+            color: #F59E0B;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: block;
+            margin-top: -10px;
+        }
         </style>
         """, 
         unsafe_allow_html=True
     )
 
-aplicar_estilos_adaptativos()
+aplicar_estilos_finales()
 
-# --- CONEXIÓN Y DATOS ---
+# --- CONEXIÓN ---
 @st.cache_resource
 def get_client():
     creds = st.secrets["gcp_service_account"]
@@ -101,82 +120,81 @@ headers = raw_data[1]
 df_full = pd.DataFrame(raw_data[2:], columns=headers)
 df_unidad = df_full[df_full['Unidad'] == unidad_actual].copy()
 
-# --- INTERFAZ ADAPTADA ---
-st.markdown(f'<div class="main-header"><h1 style="color:var(--title-color); margin:0;">UNIDAD: {unidad_actual.upper()}</h1></div>', unsafe_allow_html=True)
+# --- ESTRUCTURA DE PÁGINA SIN ESPACIOS MUERTOS ---
 
-if st.button("⬅️ VOLVER", type="secondary", use_container_width=True):
+st.markdown(f'<div class="main-header"><h2 style="color:var(--accent); margin:0;">UNIDAD: {unidad_actual.upper()}</h2></div>', unsafe_allow_html=True)
+
+if st.button("⬅️ VOLVER AL PANEL"):
     st.switch_page("app.py")
 
-# Contenedor 1: Tabla (Corregido)
-st.markdown('<div class="content-card">', unsafe_allow_html=True)
-st.subheader("📊 Avance General")
-st.dataframe(
-    df_unidad.style.map(lambda v: 'background-color: rgba(59, 130, 246, 0.2); color: var(--title-color); font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:]),
-    use_container_width=True, hide_index=True
-)
-st.markdown('</div>', unsafe_allow_html=True)
+# Bloque 1: Tabla de Avance
+with st.container():
+    st.markdown('<div class="content-card">', unsafe_allow_html=True)
+    st.markdown('<p style="font-weight:bold; margin-bottom:10px;">📊 Avance General de Unidad</p>', unsafe_allow_html=True)
+    st.dataframe(
+        df_unidad.style.map(lambda v: 'background-color: rgba(59, 130, 246, 0.15); color: var(--accent); font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:]),
+        use_container_width=True, hide_index=True
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# Contenedor 2: Registro (Corregido)
-st.markdown('<div class="content-card">', unsafe_allow_html=True)
-st.subheader("📝 Registro de Avances")
-
-nombres = df_unidad['Integrantes'].tolist()
-if nombres:
-    conquistador = st.selectbox("Seleccione Integrante:", nombres)
-    fila_persona = df_unidad[df_unidad['Integrantes'] == conquistador].iloc[0]
+# Bloque 2: Registro de Datos
+with st.container():
+    st.markdown('<div class="content-card">', unsafe_allow_html=True)
+    st.markdown('<p style="font-weight:bold; margin-bottom:10px;">📝 Registrar Avances</p>', unsafe_allow_html=True)
     
-    c1, c2, c3 = st.columns(3)
-    nuevo_estado = {}
-    requisitos = ["Voto", "Ley", "Blanco", "Lema", "El Camino a Cristo", "Génesis",
-                  "Nudos Básicos", "Pernoctar Campamento", "Armar Carpa", "Señales de Pista",
-                  "Temperancia de Daniel", "Menú Vegetariano", "Especialidad Naturaleza", "2 Horas Ayuda Comunitaria"]
-
-    desmarcados_detectados = []
-
-    for i, r in enumerate(requisitos):
-        col = c1 if i < 6 else (c2 if i < 10 else c3)
-        val_db = fila_persona.get(r)
-        ya_cumplido = bool(val_db and str(val_db).strip() != "")
+    nombres = df_unidad['Integrantes'].tolist()
+    if nombres:
+        conquistador = st.selectbox("Integrante:", nombres)
+        fila_persona = df_unidad[df_unidad['Integrantes'] == conquistador].iloc[0]
         
-        nuevo_val = col.checkbox(r, value=ya_cumplido, key=f"ch_{r}_{conquistador}")
-        nuevo_estado[r] = nuevo_val
+        st.markdown("<br>", unsafe_allow_html=True)
         
-        # Alerta Inline: Inmediata debajo del check
-        if ya_cumplido and not nuevo_val:
-            col.markdown(f'<span class="inline-warning">⚠️ Se eliminará fecha</span>', unsafe_allow_html=True)
-            desmarcados_detectados.append(r)
+        c1, c2, c3 = st.columns(3)
+        nuevo_estado = {}
+        requisitos = ["Voto", "Ley", "Blanco", "Lema", "El Camino a Cristo", "Génesis",
+                      "Nudos Básicos", "Pernoctar Campamento", "Armar Carpa", "Señales de Pista",
+                      "Temperancia de Daniel", "Menú Vegetariano", "Especialidad Naturaleza", "2 Horas Ayuda Comunitaria"]
 
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    confirmar_global = True
-    if desmarcados_detectados:
-        st.warning(f"Confirmación requerida para eliminar registros en: {', '.join(desmarcados_detectados)}")
-        confirmar_global = st.toggle("CONFIRMO LA ELIMINACIÓN", value=False)
-
-    if st.button("💾 SINCRONIZAR CAMBIOS", type="primary"):
-        if desmarcados_detectados and not confirmar_global:
-            st.error("Error: Debes marcar el interruptor de confirmación para eliminar registros previos.")
-        else:
-            idx_excel = df_full[df_full['Integrantes'] == conquistador].index[0] + 3
-            hoy = ahora_chile.strftime("%d/%m/%Y")
-            ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
-            logs = []
+        desmarcados = []
+        for i, r in enumerate(requisitos):
+            col = c1 if i < 6 else (c2 if i < 10 else c3)
+            cumplido_antes = bool(fila_persona.get(r) and str(fila_persona.get(r)).strip() != "")
             
-            with st.status("Actualizando Google Sheets...") as s:
-                for req, check in nuevo_estado.items():
-                    val_actual = fila_persona.get(req)
-                    estaba_marcado = bool(val_actual and str(val_actual).strip() != "")
-                    
-                    if check and not estaba_marcado:
-                        sheet.update_cell(idx_excel, headers.index(req) + 1, hoy)
-                        logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
-                    elif not check and estaba_marcado:
-                        sheet.update_cell(idx_excel, headers.index(req) + 1, "")
-                        logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
-                
-                sheet.update_cell(idx_excel, headers.index("Ult. Actualizacion") + 1, hoy)
-                if logs: log_sheet.append_rows(logs)
-                s.update(label="Sincronización Exitosa", state="complete")
-            st.rerun()
+            val = col.checkbox(r, value=cumplido_antes, key=f"check_{r}_{conquistador}")
+            nuevo_estado[r] = val
+            
+            if cumplido_antes and not val:
+                col.markdown('<span class="inline-warning">⚠️ Borrará fecha</span>', unsafe_allow_html=True)
+                desmarcados.append(r)
 
-st.markdown('</div>', unsafe_allow_html=True)
+        if desmarcados:
+            st.divider()
+            confirmar = st.toggle(f"Confirmar borrado de: {', '.join(desmarcados)}", value=False)
+        else:
+            confirmar = True
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        if st.button("💾 SINCRONIZAR CAMBIOS", type="primary"):
+            if not confirmar:
+                st.error("Debes confirmar el borrado para continuar.")
+            else:
+                idx_excel = df_full[df_full['Integrantes'] == conquistador].index[0] + 3
+                hoy = ahora_chile.strftime("%d/%m/%Y")
+                ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
+                logs = []
+                
+                with st.status("Sincronizando...") as s:
+                    for req, check in nuevo_estado.items():
+                        estaba = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
+                        if check and not estaba:
+                            sheet.update_cell(idx_excel, headers.index(req) + 1, hoy)
+                            logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
+                        elif not check and estaba:
+                            sheet.update_cell(idx_excel, headers.index(req) + 1, "")
+                            logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
+                    
+                    if logs: log_sheet.append_rows(logs)
+                    s.update(label="Sincronizado", state="complete")
+                st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)

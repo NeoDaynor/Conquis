@@ -27,6 +27,7 @@ def set_bg_local(main_bg, mobile_bg):
             .stAppDeployButton {{display:none;}}
             button[title="Manage app"] {{display: none;}}
 
+            /* Configuración del fondo adaptativo */
             .stApp {{
                 background-attachment: fixed;
                 background-size: cover;
@@ -35,28 +36,23 @@ def set_bg_local(main_bg, mobile_bg):
             }}
 
             @media (min-width: 769px) {{
-                .stApp {{
-                    background-image: url("data:image/jpg;base64,{bin_str_pc}");
-                }}
+                .stApp {{ background-image: url("data:image/jpg;base64,{bin_str_pc}"); }}
             }}
 
             @media (max-width: 768px) {{
-                .stApp {{
-                    background-image: url("data:image/webp;base64,{bin_str_mob}");
-                }}
+                .stApp {{ background-image: url("data:image/webp;base64,{bin_str_mob}"); }}
             }}
 
-            /* ESTILO UNIFICADO PARA BIENVENIDA Y FORMULARIO */
-            /* Aplicamos el fondo blanco al contenedor del formulario y al div superior */
+            /* --- ESTILO DE COLORES IDÉNTICO AL CELULAR --- */
+            
+            /* Contenedores con el mismo fondo blanco semitransparente */
             [data-testid="stForm"], .login-header {{
                 background-color: rgba(255, 255, 255, 0.9) !important;
                 border: 1px solid #0070C0 !important;
                 padding: 30px !important;
-                color: #1E1E1E !important;
-                box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+                box-shadow: 0px 8px 25px rgba(0,0,0,0.4);
             }}
 
-            /* Redondeamos solo la parte superior del encabezado */
             .login-header {{
                 border-radius: 20px 20px 0 0 !important;
                 border-bottom: none !important;
@@ -64,15 +60,29 @@ def set_bg_local(main_bg, mobile_bg):
                 margin-top: 30px;
             }}
 
-            /* Redondeamos solo la parte inferior del formulario */
             [data-testid="stForm"] {{
                 border-radius: 0 0 20px 20px !important;
-                margin-top: -1px; /* Para que no se vea doble borde entre piezas */
+                margin-top: -1px;
             }}
 
-            /* Asegurar visibilidad de textos */
-            .stMarkdown p, label, .stMarkdown h1, .stMarkdown h3 {{
+            /* Colores de texto forzados para legibilidad */
+            .stMarkdown p, label, h1, h2, h3 {{
                 color: #1E1E1E !important;
+            }}
+
+            /* Color del Botón (Idéntico al Celular) */
+            button[kind="primaryFormSubmit"] {{
+                background-color: #0e1117 !important;
+                color: white !important;
+                border: 1px solid #0070C0 !important;
+                font-weight: bold !important;
+            }}
+
+            /* Estilo de los campos de entrada */
+            .stTextInput input {{
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                border: 1px solid #cccccc !important;
             }}
             </style>
             """,
@@ -83,7 +93,7 @@ def set_bg_local(main_bg, mobile_bg):
 
 set_bg_local('images/fondopc.jpg', 'images/fondocelu.webp')
 
-# --- LÓGICA DE USUARIOS ---
+# --- LÓGICA DE AUTENTICACIÓN ---
 def load_users():
     if os.path.exists('users.json'):
         with open('users.json', 'r') as f:
@@ -102,7 +112,7 @@ if "authenticated" not in st.session_state:
 if "user_info" not in st.session_state:
     st.session_state["user_info"] = None
 
-# --- LOGO ---
+# --- LOGO SUPERIOR ---
 col_logo1, col_logo2 = st.columns([8, 1])
 with col_logo2:
     try:
@@ -110,12 +120,13 @@ with col_logo2:
     except Exception:
         pass
 
-# --- PANTALLA DE ACCESO ---
+# --- FORMULARIO DE ACCESO ---
 if not st.session_state["authenticated"]:
+    # En PC ocupará un ancho proporcional pero manteniendo la estética
     _, center_col, _ = st.columns([1, 1.8, 1])
     
     with center_col:
-        # PARTE 1: Encabezado de Bienvenido
+        # Cabecera
         st.markdown(
             """
             <div class="login-header">
@@ -126,7 +137,7 @@ if not st.session_state["authenticated"]:
             unsafe_allow_html=True
         )
         
-        # PARTE 2: Formulario con el mismo fondo (Configurado vía CSS)
+        # Formulario (Toma los colores definidos en el CSS arriba)
         with st.form("login_form"):
             st.markdown("### Iniciar Sesión")
             user_input = st.text_input("Usuario", placeholder="Escriba su usuario")
@@ -141,20 +152,20 @@ if not st.session_state["authenticated"]:
                     st.session_state["user_info"] = user_data
                     st.rerun()
                 else:
-                    st.error("Error: Usuario o contraseña incorrectos.")
+                    st.error("Error: Credenciales no válidas.")
 
 # --- MENÚ DE SELECCIÓN ---
 else:
     user = st.session_state["user_info"]
     st.sidebar.markdown(f"### 👤 {user['nombre']}")
-    if st.sidebar.button("Cerrar Sesión", use_container_width=True):
+    if st.sidebar.button("Cerrar Sesión"):
         st.session_state["authenticated"] = False
         st.rerun()
 
     st.markdown("<h1 style='text-align: center; color: #0070C0;'>CLUB LAKONN</h1>", unsafe_allow_html=True)
     st.write("---")
     
-    # Tarjeta de selección
+    # Selector de unidad con el mismo estilo de color
     st.markdown('<div class="login-header" style="border-radius: 20px !important; border-bottom: 1px solid #0070C0 !important;">', unsafe_allow_html=True)
     st.markdown(f"<h4>Hola {user['nombre']}, selecciona una unidad:</h4>", unsafe_allow_html=True)
     

@@ -4,7 +4,10 @@ from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 from datetime import datetime
 
-# --- SEGURIDAD ---
+# --- SEGURIDAD DE ACCESO (NUEVA MEJORA) ---
+if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
+    st.switch_page("app.py")
+
 if "unidad_seleccionada" not in st.session_state or st.session_state["unidad_seleccionada"] is None:
     st.switch_page("app.py")
 

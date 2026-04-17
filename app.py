@@ -14,21 +14,28 @@ else:
     user = st.session_state["user_info"]
     
     # --- CSS PARA LOOK ELEGANTE Y ADAPTATIVO ---
-    # Cargamos el fondo de PC por defecto para el menú
     def get_base64(bin_file):
         with open(bin_file, 'rb') as f:
             return base64.b64encode(f.read()).decode()
     
+    # Cargamos ambas imágenes
     bin_pc = get_base64('images/fondopc.jpg')
+    bin_mob = get_base64('images/fondocelu.webp')
 
     st.markdown(
         f"""
         <style>
+        #MainMenu, footer, header, .stAppDeployButton {{visibility: hidden;}}
+        
         .stApp {{
-            background-image: url("data:image/jpg;base64,{bin_pc}");
             background-attachment: fixed;
             background-size: cover;
+            background-position: center;
         }}
+        
+        /* Lógica Responsiva de Fondo */
+        @media (min-width: 769px) {{ .stApp {{ background-image: url("data:image/jpg;base64,{bin_pc}"); }} }}
+        @media (max-width: 768px) {{ .stApp {{ background-image: url("data:image/webp;base64,{bin_mob}"); }} }}
         
         /* Contenedor de Bienvenida */
         .welcome-card {{
@@ -41,13 +48,13 @@ else:
             margin-bottom: 30px;
         }}
 
-        /* BOTONES PREMIUM (Solución al TypeError) */
+        /* BOTONES PREMIUM */
         div.stButton > button {{
             background-color: white !important;
             color: #0070C0 !important;
             border: 2px solid #0070C0 !important;
             border-radius: 15px !important;
-            height: 150px !important; /* Altura forzada por CSS */
+            height: 150px !important;
             width: 100% !important;
             font-size: 1.2em !important;
             font-weight: bold !important;
@@ -85,7 +92,6 @@ else:
             unsafe_allow_html=True
         )
 
-        # Disposición de botones: 3 columnas en PC, se apilan en Celular
         col1, col2, col3 = st.columns(3)
         
         with col1:
@@ -103,7 +109,6 @@ else:
                 st.session_state["unidad_seleccionada"] = "Lideres"
                 st.switch_page("pages/gestion.py")
 
-    # Botón de salida discreto en el sidebar
     with st.sidebar:
         st.markdown(f"### 👤 {user['nombre']}")
         if st.button("🚪 Cerrar Sesión", use_container_width=True):

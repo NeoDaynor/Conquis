@@ -34,20 +34,19 @@ def set_bg_local(main_bg, mobile_bg):
                 background-position: center;
             }}
 
-            /* Dispositivos Grandes (PC) */
             @media (min-width: 769px) {{
                 .stApp {{
-                    background-image: url("data:image/fondopc.jpg;base64,{bin_str_pc}");
+                    background-image: url("data:image/jpg;base64,{bin_str_pc}");
                 }}
             }}
 
-            /* Dispositivos Pequeños (Celular) */
             @media (max-width: 768px) {{
                 .stApp {{
-                    background-image: url("data:image/fondocelu.webp;base64,{bin_str_mob}");
+                    background-image: url("data:image/webp;base64,{bin_str_mob}");
                 }}
             }}
 
+            /* Estilo Unificado para la Tarjeta de Login */
             .login-card {{
                 text-align: center; 
                 background-color: rgba(255, 255, 255, 0.9); 
@@ -55,16 +54,20 @@ def set_bg_local(main_bg, mobile_bg):
                 border-radius: 15px; 
                 border: 1px solid #0070C0;
                 box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+                margin-top: 50px;
+            }}
+            
+            /* Ajuste para que los textos dentro de la tarjeta se lean bien */
+            .login-card h1, .login-card p, .login-card h3 {{
+                color: #0e1117;
             }}
             </style>
             """,
             unsafe_allow_html=True
         )
     except Exception:
-        # Si las imágenes no existen aún, mantiene el fondo oscuro por defecto
         st.markdown("<style>.stApp {background-color: #0e1117;}</style>", unsafe_allow_html=True)
 
-# Aplicar fondos usando las rutas locales de tu carpeta images
 set_bg_local('images/fondopc.jpg', 'images/fondocelu.webp')
 
 # --- FUNCIONES DE AUTENTICACIÓN ---
@@ -97,26 +100,29 @@ with col_t2:
     except Exception:
         pass
 
-# --- PANTALLA DE LOGEO ---
+# --- PANTALLA DE LOGEO UNIFICADA ---
 if not st.session_state["authenticated"]:
     _, center_col, _ = st.columns([1, 1.5, 1])
     
     with center_col:
-        st.markdown("<br><br>", unsafe_allow_html=True)
+        # Iniciamos el contenedor de la tarjeta
+        st.markdown('<div class="login-card">', unsafe_allow_html=True)
+        
         st.markdown(
             """
-            <div class="login-card">
                 <h1 style='color: #0070C0; margin-bottom: 0;'>BIENVENIDO</h1>
                 <p style='color: #555;'>Gestión de Conquistadores - Club Lakonn</p>
-            </div>
+                <hr style='border: 0.5px solid #0070C0; margin: 20px 0;'>
+                <h3 style='text-align: left;'>Iniciar Sesión</h3>
             """, 
             unsafe_allow_html=True
         )
         
-        with st.form("login_form"):
-            st.markdown("### Iniciar Sesión")
+        # El formulario de Streamlit se coloca dentro de la tarjeta
+        with st.form("login_form", border=False):
             user_input = st.text_input("Usuario", placeholder="Usuario")
             pass_input = st.text_input("Contraseña", type="password", placeholder="Contraseña")
+            st.markdown("<br>", unsafe_allow_html=True)
             submit = st.form_submit_button("INGRESAR AL SISTEMA", use_container_width=True)
             
             if submit:
@@ -127,6 +133,9 @@ if not st.session_state["authenticated"]:
                     st.rerun()
                 else:
                     st.error("Credenciales incorrectas.")
+        
+        # Cerramos el contenedor de la tarjeta
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # --- PANTALLA DE SELECCIÓN ---
 else:

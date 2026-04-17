@@ -4,113 +4,126 @@ from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 from datetime import datetime
 
-# --- CONFIGURACIÓN DE INFRAESTRUCTURA (GCP) ---
+# --- 1. CONFIGURACIÓN DE INFRAESTRUCTURA (GCP) ---
 def get_gspread_client():
-    # Se extraen las credenciales desde el panel de Secrets de Streamlit
-    creds_dict = st.secrets["gcp_service_account"]
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-    return gspread.authorize(creds)
+    # Extrae credenciales desde el panel de Secrets de Streamlit Cloud
+    try:
+        creds_dict = st.secrets["gcp_service_account"]
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+        return gspread.authorize(creds)
+    except Exception as e:
+        st.error(f"Error de autenticación: {e}")
+        return None
 
-# Inicialización de cliente y hoja
 client = get_gspread_client()
-sheet = client.open("RequisitosConquistadores").worksheet("Amigo")
+if client:
+    sheet = client.open("RequisitosConquistadores").worksheet("Amigo")
 
-# --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Monitor Clase Amigo", layout="wide")
+# --- 2. CONFIGURACIÓN DE PÁGINA ---
+st.set_page_config(page_title="Gestión Clase Amigo", layout="wide")
 
-# --- LÓGICA DE ESTILO (HEATMAP) ---
+# --- 3. LÓGICA DE ESTILO (HEATMAP) ---
 def estilo_heatmap(val):
-    """Pinta la celda de azul si contiene una fecha, ocultando el texto."""
+    """Aplica azul sólido si la celda tiene una fecha, ocultando el texto."""
     if val and str(val).strip() != "":
-        # Azul sólido para celdas completadas
         return 'background-color: #0070C0; color: #0070C0;'
     return ''
 
-# --- PROCESAMIENTO DE DATOS ---
-data = sheet.get_all_values()
-headers = data[1]  # Fila 2: Nombres de columnas reales
-df_base = pd.DataFrame(data[2:], columns=headers)
+# --- 4. PROCESAMIENTO DE DATOS ---
+if client:
+    data = sheet.get_all_values()
+    headers = data[1]  # Fila 2: Nombres de columnas reales
+    df_base = pd.DataFrame(data[2:], columns=headers)
 
-# --- MAPEO DE DASHBOARD COMPACTO ---
-mapeo_items = {
-    "Item1": ["Voto", "Ley", "Blanco", "Lema", "El Camino a Cristo", "Génesis"],
-    "Item2": ["Éxodo", "Levítico", "Gemas Bíblicas"],
-    "Item3": ["Salmo 23 o 46", "Personaje AT"],
-    "Item4": ["2 Horas Ayuda Comunitaria", "Buen Ciudadano"],
-    "Item5": ["Cuestionario Historia", "Daniel 1:8", "Temperancia de Daniel"],
-    "Item6": ["Menú Vegetariano"],
-    "Item7": ["Especialidad Natación I", "Especialidad Naturaleza", "Flores e Insectos"],
-    "Item8": ["Nudos Básicos", "Nudos Avanzados", "Pernoctar Campamento", "Examen Seguridad"],
-    "Item9": ["Armar Carpa"]
-}
+    # MAPEO DE ITEMS PARA DASHBOARD COMPACTO
+    mapeo_items = {
+        "Item1": ["Voto", "Ley", "Blanco", "Lema", "El Camino a Cristo", "Génesis"],
+        "Item2": ["Éxodo", "Levítico", "Gemas Bíblicas"],
+        "Item3": ["Salmo 23 o 46", "Personaje AT"],
+        "Item4": ["2 Horas Ayuda Comunitaria", "Buen Ciudadano"],
+        "Item5": ["Cuestionario Historia", "Daniel 1:8", "Temperancia de Daniel"],
+        "Item6": ["Menú Vegetariano"],
+        "Item7": ["Especialidad Natación I", "Especialidad Naturaleza", "Flores e Insectos"],
+        "Item8": ["Nudos Básicos", "Nudos Avanzados", "Pernoctar Campamento", "Examen Seguridad"],
+        "Item9": ["Armar Carpa"]
+    }
 
-# Construcción de la vista acotada (Dashboard)
-df_dash = df_base[['Integrantes', 'Ult. Actualizacion']].copy()
+    # Construcción de la tabla de visualización (Dashboard)
+    df_dash = df_base[['Integrantes', 'Ult. Actualizacion']].copy()
 
-for item, preguntas in mapeo_items.items():
-    for i, p_real in enumerate(preguntas):
-        id_visual = f"{item}_P{i+1}"
-        df_dash[id_visual] = df_base[p_real] if p_real in df_base.columns else ""
+    for item, preguntas in mapeo_items.items():
+        for i, p_real in enumerate(preguntas):
+            id_visual = f"{item}_P{i+1}"
+            df_dash[id_visual] = df_base[p_real] if p_real in df_base.columns else ""
 
-# --- INTERFAZ DE USUARIO ---
-st.title("🛡️ Sistema de Gestión: Clase de Amigo")
-
-st.subheader("📊 Cuadro de Cumplimiento")
-# Se usa .map() en lugar de .applymap() para compatibilidad con Pandas 2.x
-st.dataframe(
-    df_dash.style.map(estilo_heatmap, subset=df_dash.columns[2:]),
-    use_container_width=True,
-    hide_index=True
-)
-
-st.divider()
-
-# --- SISTEMA DE ACTUALIZACIÓN ---
-with st.expander("📝 Registrar Nuevos Avances"):
-    conquistador = st.selectbox("Seleccione al Conquistador para actualizar:", df_base['Integrantes'].tolist())
+    # --- 5. INTERFAZ DE USUARIO ---
+    st.title("🛡️ Sistema de Gestión: Clase de Amigo")
     
-    st.write("Marque los requisitos completados hoy:")
-    
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown("**Generales**")
-        voto = st.checkbox("Saber de memoria el Voto")
-        ley = st.checkbox("Saber de memoria la Ley")
-        blanco = st.checkbox("Saber de memoria el Blanco")
-        
-    with col2:
-        st.markdown("**Arte de Acampar**")
-        nudos = st.checkbox("Nudos Básicos")
-        carpa = st.checkbox("Saber armar Carpa")
-        
-    with col3:
-        st.markdown("**Naturaleza**")
-        natura = st.checkbox("Especialidad Naturaleza")
+    st.markdown("### 📊 Cuadro de Cumplimiento")
+    st.dataframe(
+        df_dash.style.map(estilo_heatmap, subset=df_dash.columns[2:]),
+        use_container_width=True, 
+        hide_index=True
+    )
 
-    if st.button("💾 ACTUALIZAR EN GOOGLE SHEETS"):
-        # Localizar fila (Header en fila 2, datos inician en fila 3)
-        fila_idx = df_base[df_base['Integrantes'] == conquistador].index[0] + 3
-        hoy = datetime.now().strftime("%d/%m/%Y")
+    st.divider()
+
+    # --- 6. SISTEMA DE ACTUALIZACIÓN ---
+    with st.expander("📝 Registrar Nuevos Avances"):
+        conquistador = st.selectbox("Seleccione al Conquistador:", df_base['Integrantes'].tolist())
         
-        # Diccionario de mapeo Checkbox -> Columna Real
-        updates = {
-            "Voto": voto, 
-            "Ley": ley, 
-            "Blanco": blanco,
-            "Nudos Básicos": nudos,
-            "Armar Carpa": carpa,
-            "Especialidad Naturaleza": natura
-        }
+        col1, col2, col3 = st.columns(3)
         
-        # Actualización de celdas
-        for req, marcado in updates.items():
-            if marcado and req in headers:
-                col_idx = headers.index(req) + 1
-                sheet.update_cell(fila_idx, col_idx, hoy)
-        
-        # Actualizar columna de última fecha (Columna B)
-        sheet.update_cell(fila_idx, 2, hoy)
-        
-        st.success(f"¡Progreso de {conquistador} sincronizado correctamente!")
-        st.rerun()
+        with col1:
+            st.markdown("**📜 Generales e Investigación**")
+            v_voto = st.checkbox("Saber Voto")
+            v_ley = st.checkbox("Saber Ley")
+            v_blanco = st.checkbox("Saber Blanco")
+            v_lema = st.checkbox("Saber Lema")
+            v_camino = st.checkbox("Leer 'El Camino a Cristo'")
+            v_genesis = st.checkbox("Lectura Génesis")
+            
+        with col2:
+            st.markdown("**🏕️ Arte de Acampar**")
+            v_nudos = st.checkbox("Nudos Básicos")
+            v_pernoctar = st.checkbox("Pernoctar en Campamento")
+            v_carpa = st.checkbox("Saber armar Carpa")
+            v_senales = st.checkbox("Señales de Pista")
+            
+        with col3:
+            st.markdown("**🍎 Salud y Naturaleza**")
+            v_temperancia = st.checkbox("Temperancia de Daniel")
+            v_menu = st.checkbox("Menú Vegetariano")
+            v_natura = st.checkbox("Especialidad Naturaleza")
+            v_ayuda = st.checkbox("2 Horas Ayuda Comunitaria")
+
+        if st.button("💾 ACTUALIZAR EN GOOGLE SHEETS"):
+            # Localizar fila del integrante (Header fila 2 + index + 1 para compensar 0-based + 1 para datos)
+            fila_idx = df_base[df_base['Integrantes'] == conquistador].index[0] + 3
+            hoy = datetime.now().strftime("%d/%m/%Y")
+            
+            # Diccionario de mapeo: Nombre en Checkbox -> Nombre exacto en Columna de Excel
+            updates = {
+                "Voto": v_voto, "Ley": v_ley, "Blanco": v_blanco, "Lema": v_lema,
+                "El Camino a Cristo": v_camino, "Génesis": v_genesis,
+                "Nudos Básicos": v_nudos, "Pernoctar Campamento": v_pernoctar,
+                "Armar Carpa": v_carpa, "Señales de Pista": v_senales,
+                "Temperancia de Daniel": v_temperancia, "Menú Vegetariano": v_menu,
+                "Especialidad Naturaleza": v_natura, "2 Horas Ayuda Comunitaria": v_ayuda
+            }
+            
+            # Ejecutar actualizaciones en bloque
+            cells_to_update = []
+            for req, marcado in updates.items():
+                if marcado and req in headers:
+                    col_idx = headers.index(req) + 1
+                    sheet.update_cell(fila_idx, col_idx, hoy)
+            
+            # Actualizar fecha de control (Columna B)
+            sheet.update_cell(fila_idx, 2, hoy)
+            
+            st.success(f"¡Progreso de {conquistador} sincronizado!")
+            st.rerun()
+else:
+    st.warning("Esperando configuración de credenciales en Secrets...")

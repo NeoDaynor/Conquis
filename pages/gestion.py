@@ -41,7 +41,7 @@ st.divider()
 # TABLA DE AVANCE
 st.subheader("📊 Avance General")
 st.dataframe(
-    df_unidad.style.map(estilo_azul, subset=df_unidad.columns[2:]),
+    df_unidad.style.map(estilo_azul, subset=df_unidad.columns[3:]),
     use_container_width=True,
     hide_index=True
 )

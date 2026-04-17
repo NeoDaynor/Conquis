@@ -76,27 +76,38 @@ if client:
             "Temperancia de Daniel", "Menú Vegetariano", "Especialidad Naturaleza", "2 Horas Ayuda Comunitaria"
         ]
 
+        # Renderizado de Requisitos con Alerta Integrada
         for i, r in enumerate(todos_los_requisitos):
             target_col = col1 if i < 6 else (col2 if i < 10 else col3)
-            estado_nuevo[r] = target_col.checkbox(r, value=bool(fila_datos.get(r)), key=f"ch_{r}")
+            
+            # Detectar si el requisito ya estaba marcado en Google Sheets
+            estaba_marcado = bool(fila_datos.get(r))
+            
+            # Crear el Checkbox con valor inicial
+            label_text = r
+            val_checkbox = target_col.checkbox(label_text, value=estaba_marcado, key=f"ch_{r}")
+            estado_nuevo[r] = val_checkbox
+            
+            # Si el usuario lo DESMARCA, mostrar alerta justo debajo del checkbox
+            if estaba_marcado and not val_checkbox:
+                target_col.caption(f"⚠️ **Eliminará: {r}**")
 
-        # --- LÓGICA DE POP-UP (Azul) ---
+        # --- VALIDACIÓN DE ELIMINACIÓN ---
         desmarcados = [r for r, val in estado_nuevo.items() if bool(fila_datos.get(r)) and not val]
         
+        # El interruptor de confirmación ahora está justo encima del botón, muy visible
         if desmarcados:
-            # Usamos un popover azul para mayor armonía visual
-            with st.popover("ℹ️ REQUISITOS POR ELIMINAR", use_container_width=False):
-                st.info(f"Vas a eliminar: {', '.join(desmarcados)}")
-                confirmar = st.toggle("Confirmar eliminación", key="confirm_delete")
+            st.warning("Se detectaron requisitos desmarcados.")
+            confirmar = st.toggle("✅ Confirmar cambios de eliminación", key="confirm_delete")
         else:
             confirmar = True
 
-        st.write("") # Espaciador
+        st.write("") 
         
-        # Botón con tamaño estándar y color primario (azul por defecto en Streamlit)
-        if st.button("💾 SINCRONIZAR CAMBIOS", type="primary", use_container_width=False):
-            if desmarcados and not st.session_state.get("confirm_delete", False):
-                st.warning("⚠️ Abre el aviso azul de arriba para confirmar la eliminación.")
+        # Botón de Sincronización
+        if st.button("💾 SINCRONIZAR CAMBIOS", type="primary"):
+            if desmarcados and not confirmar:
+                st.error("Debes activar el interruptor de confirmación para borrar registros.")
             else:
                 fila_idx = df_base[df_base['Integrantes'] == conquistador].index[0] + 3
                 hoy = datetime.now().strftime("%d/%m/%Y")
@@ -106,6 +117,7 @@ if client:
                         if req in headers:
                             col_idx = headers.index(req) + 1
                             nuevo_val = hoy if valor else ""
+                            # Solo actualizar si hubo cambio real
                             if str(fila_datos.get(req)) != nuevo_val:
                                 sheet.update_cell(fila_idx, col_idx, nuevo_val)
                     

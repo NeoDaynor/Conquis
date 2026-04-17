@@ -18,78 +18,80 @@ if "authenticated" not in st.session_state or not st.session_state["authenticate
 unidad_actual = st.session_state.get("unidad_seleccionada")
 usuario_activo = st.session_state.get("user_info")
 
-# --- ESTILOS CSS REFORZADOS (CORRECCIÓN DE ENVOLTORIO) ---
-def aplicar_estilos_v4():
+# --- CSS INYECTADO DIRECTO A COMPONENTES NATIVOS ---
+def aplicar_estilos_nativos():
     st.markdown(
         """
         <style>
+        /* Ocultar elementos de sistema */
         #MainMenu, footer, header, .stAppDeployButton {visibility: hidden;}
         
+        /* Variables según el tema del navegador */
         :root {
-            --bg-page: #F8FAFC;
+            --bg-body: #F8FAFC;
             --bg-card: #FFFFFF;
             --border: #E2E8F0;
-            --text: #1E293B;
-            --accent: #0070C0;
+            --text-color: #1E293B;
+            --brand-color: #0070C0;
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-page: #0E1117;
+                --bg-body: #0E1117;
                 --bg-card: #1E293B;
                 --border: #334155;
-                --text: #F1F5F9;
-                --accent: #3B82F6;
+                --text-color: #F1F5F9;
+                --brand-color: #3B82F6;
             }
         }
 
-        .stApp { background-color: var(--bg-page); color: var(--text); }
+        .stApp { background-color: var(--bg-body); color: var(--text-color); }
 
-        /* TARJETA PERSONALIZADA: Ahora con forzado de envoltorio */
-        .custom-card {
-            background-color: var(--bg-card);
-            padding: 25px;
-            border-radius: 15px;
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            margin-bottom: 25px;
-            width: 100%;
-            display: block;
-            overflow: auto; /* CRÍTICO: Esto obliga al DIV a envolver todo el contenido interno */
+        /* SOLUCIÓN AL LOOP: Aplicar el estilo de tarjeta directamente al st.container nativo */
+        [data-testid="stVerticalBlock"] > div:has(div[data-testid="stVerticalBlock"]) {
+            background-color: var(--bg-card) !important;
+            padding: 20px !important;
+            border-radius: 12px !important;
+            border: 1px solid var(--border) !important;
+            margin-bottom: 20px !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
         }
 
-        .unidad-header {
-            text-align: center;
-            padding: 15px;
+        .header-box {
             background-color: var(--bg-card);
+            padding: 15px;
             border-radius: 12px;
+            text-align: center;
             border: 1px solid var(--border);
             margin-bottom: 20px;
         }
 
+        /* Alerta Inline para móviles */
         .inline-warning {
             color: #F59E0B;
             font-size: 0.8rem;
             font-weight: bold;
             display: block;
             margin-top: -10px;
+            margin-bottom: 5px;
         }
 
+        /* Botón de Sincronización */
         div.stButton > button[kind="primary"] {
-            background-color: var(--accent) !important;
+            background-color: var(--brand-color) !important;
             color: white !important;
             height: 55px;
             font-weight: bold;
-            width: 100%;
+            border-radius: 10px;
         }
         </style>
         """, 
         unsafe_allow_html=True
     )
 
-aplicar_estilos_v4()
+aplicar_estilos_nativos()
 
-# --- CONEXIÓN ---
+# --- CONEXIÓN A DATOS ---
 @st.cache_resource
 def get_client():
     creds = st.secrets["gcp_service_account"]
@@ -106,77 +108,75 @@ headers = raw_data[1]
 df_full = pd.DataFrame(raw_data[2:], columns=headers)
 df_unidad = df_full[df_full['Unidad'] == unidad_actual].copy()
 
-# --- INTERFAZ ---
+# --- ESTRUCTURA DE LA PÁGINA ---
 
-st.markdown(f'<div class="unidad-header"><h2 style="color:var(--accent); margin:0;">UNIDAD: {unidad_actual.upper()}</h2></div>', unsafe_allow_html=True)
+# Título de la Unidad
+st.markdown(f'<div class="header-box"><h2 style="color:var(--brand-color); margin:0;">UNIDAD: {unidad_actual.upper()}</h2></div>', unsafe_allow_html=True)
 
 if st.button("⬅️ VOLVER AL PANEL"):
     st.switch_page("app.py")
 
-# BLOQUE 1: AVANCE GENERAL
-st.markdown('<div class="custom-card">', unsafe_allow_html=True)
-st.markdown("### 📊 Avance General de Unidad")
-st.dataframe(
-    df_unidad.style.map(lambda v: 'background-color: rgba(59, 130, 246, 0.2); color: var(--accent); font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:]),
-    use_container_width=True, hide_index=True
-)
-st.markdown('</div>', unsafe_allow_html=True)
+# TARJETA 1: AVANCE GENERAL
+with st.container():
+    st.markdown("### 📊 Avance General")
+    st.dataframe(
+        df_unidad.style.map(lambda v: 'background-color: rgba(59, 130, 246, 0.2); color: var(--brand-color); font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:]),
+        use_container_width=True, hide_index=True
+    )
 
-# BLOQUE 2: REGISTRO DE AVANCES
-st.markdown('<div class="custom-card">', unsafe_allow_html=True)
-st.markdown("### 📝 Registro de Avances")
-
-nombres = df_unidad['Integrantes'].tolist()
-if nombres:
-    conquistador = st.selectbox("Integrante:", nombres)
-    fila_persona = df_unidad[df_unidad['Integrantes'] == conquistador].iloc[0]
+# TARJETA 2: REGISTRO DE AVANCES
+with st.container():
+    st.markdown("### 📝 Registro de Avances")
     
-    c1, c2, c3 = st.columns(3)
-    nuevo_estado = {}
-    requisitos = ["Voto", "Ley", "Blanco", "Lema", "El Camino a Cristo", "Génesis",
-                  "Nudos Básicos", "Pernoctar Campamento", "Armar Carpa", "Señales de Pista",
-                  "Temperancia de Daniel", "Menú Vegetariano", "Especialidad Naturaleza", "2 Horas Ayuda Comunitaria"]
-
-    desmarcados = []
-    for i, r in enumerate(requisitos):
-        col = c1 if i < 6 else (c2 if i < 10 else c3)
-        en_db = bool(fila_persona.get(r) and str(fila_persona.get(r)).strip() != "")
+    nombres = df_unidad['Integrantes'].tolist()
+    if nombres:
+        conquistador = st.selectbox("Seleccione Integrante:", nombres)
+        fila_persona = df_unidad[df_unidad['Integrantes'] == conquistador].iloc[0]
         
-        val = col.checkbox(r, value=en_db, key=f"v_{r}_{conquistador}")
-        nuevo_estado[r] = val
-        
-        if en_db and not val:
-            col.markdown('<span class="inline-warning">⚠️ Borrará fecha</span>', unsafe_allow_html=True)
-            desmarcados.append(r)
+        c1, c2, c3 = st.columns(3)
+        nuevo_estado = {}
+        requisitos = ["Voto", "Ley", "Blanco", "Lema", "El Camino a Cristo", "Génesis",
+                      "Nudos Básicos", "Pernoctar Campamento", "Armar Carpa", "Señales de Pista",
+                      "Temperancia de Daniel", "Menú Vegetariano", "Especialidad Naturaleza", "2 Horas Ayuda Comunitaria"]
 
-    confirmar = True
-    if desmarcados:
-        st.divider()
-        confirmar = st.toggle("Confirmar eliminación de datos históricos", value=False)
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    if st.button("💾 SINCRONIZAR CAMBIOS", type="primary"):
-        if not confirmar:
-            st.error("Debes confirmar la eliminación de registros previos.")
-        else:
-            idx_excel = df_full[df_full['Integrantes'] == conquistador].index[0] + 3
-            hoy = ahora_chile.strftime("%d/%m/%Y")
-            ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
-            logs = []
+        desmarcados = []
+        for i, r in enumerate(requisitos):
+            col = c1 if i < 6 else (c2 if i < 10 else c3)
+            listo_en_db = bool(fila_persona.get(r) and str(fila_persona.get(r)).strip() != "")
             
-            with st.status("Actualizando...") as s:
-                for req, check in nuevo_estado.items():
-                    estaba = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
-                    if check and not estaba:
-                        sheet.update_cell(idx_excel, headers.index(req) + 1, hoy)
-                        logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
-                    elif not check and estaba:
-                        sheet.update_cell(idx_excel, headers.index(req) + 1, "")
-                        logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
-                
-                if logs: log_sheet.append_rows(logs)
-                s.update(label="Sincronizado", state="complete")
-            st.rerun()
+            estado_check = col.checkbox(r, value=listo_en_db, key=f"f_{r}_{conquistador}")
+            nuevo_estado[r] = estado_check
+            
+            if listo_en_db and not estado_check:
+                col.markdown('<span class="inline-warning">⚠️ Borrará fecha</span>', unsafe_allow_html=True)
+                desmarcados.append(r)
 
-st.markdown('</div>', unsafe_allow_html=True)
+        confirmacion_final = True
+        if desmarcados:
+            st.divider()
+            confirmacion_final = st.toggle("Confirmar eliminación de registros históricos", value=False)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        if st.button("💾 SINCRONIZAR CAMBIOS", type="primary"):
+            if not confirmacion_final:
+                st.error("Error: Debes confirmar el borrado para proceder.")
+            else:
+                idx_excel = df_full[df_full['Integrantes'] == conquistador].index[0] + 3
+                hoy = ahora_chile.strftime("%d/%m/%Y")
+                ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
+                logs = []
+                
+                with st.status("Actualizando registros...") as s:
+                    for req, marcado in nuevo_estado.items():
+                        estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
+                        if marcado and not estaba_marcado:
+                            sheet.update_cell(idx_excel, headers.index(req) + 1, hoy)
+                            logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
+                        elif not marcado and estaba_marcado:
+                            sheet.update_cell(idx_excel, headers.index(req) + 1, "")
+                            logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
+                    
+                    if logs: log_sheet.append_rows(logs)
+                    s.update(label="Sincronizado correctamente", state="complete")
+                st.rerun()

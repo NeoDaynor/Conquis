@@ -1,9 +1,10 @@
 import streamlit as st
 import json
 import os
+from PIL import Image
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Club Lakonn - Acceso", layout="centered")
+st.set_page_config(page_title="Club Lakonn - Acceso", layout="wide")
 
 # --- FUNCIONES DE AUTENTICACIÓN ---
 def load_users():
@@ -27,45 +28,74 @@ if "user_info" not in st.session_state:
 if "unidad_seleccionada" not in st.session_state:
     st.session_state["unidad_seleccionada"] = None
 
-# --- PANTALLA DE LOGEO ---
+# --- ENCABEZADO CON LOGO (ESQUINA SUPERIOR DERECHA) ---
+col_t1, col_t2 = st.columns([8, 1])
+with col_t2:
+    try:
+        logo = Image.open("images/LogoLakonn.png")
+        st.image(logo, use_container_width=True)
+    except Exception:
+        st.caption("Logo no hallado")
+
+# --- PANTALLA DE LOGEO ELEGANTE ---
 if not st.session_state["authenticated"]:
-    st.markdown("<h1 style='text-align: center; color: #0070C0;'>ACCESO CLUB LAKONN</h1>", unsafe_allow_html=True)
+    # Centrado del formulario
+    _, center_col, _ = st.columns([1, 1.5, 1])
     
-    with st.form("login_form"):
-        user_input = st.text_input("Usuario")
-        pass_input = st.text_input("Contraseña", type="password")
-        submit = st.form_submit_button("Ingresar", use_container_width=True)
+    with center_col:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown(
+            """
+            <div style='text-align: center; background-color: #f0f2f6; padding: 30px; border-radius: 15px; border: 1px solid #0070C0;'>
+                <h1 style='color: #0070C0; margin-bottom: 0;'>BIENVENIDO</h1>
+                <p style='color: #555;'>Gestión de Conquistadores - Club Lakonn</p>
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
         
-        if submit:
-            user_data = authenticate(user_input, pass_input)
-            if user_data:
-                st.session_state["authenticated"] = True
-                st.session_state["user_info"] = user_data
-                st.rerun()
-            else:
-                st.error("Usuario o contraseña incorrectos")
+        with st.form("login_form"):
+            st.markdown("### Iniciar Sesión")
+            user_input = st.text_input("Usuario", placeholder="Ingrese su usuario")
+            pass_input = st.text_input("Contraseña", type="password", placeholder="Ingrese su contraseña")
+            st.markdown("<br>", unsafe_allow_html=True)
+            submit = st.form_submit_button("INGRESAR AL SISTEMA", use_container_width=True)
+            
+            if submit:
+                user_data = authenticate(user_input, pass_input)
+                if user_data:
+                    st.session_state["authenticated"] = True
+                    st.session_state["user_info"] = user_data
+                    st.rerun()
+                else:
+                    st.error("Credenciales incorrectas. Verifique e intente de nuevo.")
 
 # --- PANTALLA DE SELECCIÓN (SOLO SI ESTÁ AUTENTICADO) ---
 else:
     user = st.session_state["user_info"]
-    st.sidebar.write(f"**Usuario:** {user['nombre']}")
-    st.sidebar.write(f"**Cargo:** {user['cargo']}")
-    if st.sidebar.button("Cerrar Sesión"):
+    
+    # Sidebar con info del usuario
+    st.sidebar.markdown(f"### 👤 {user['nombre']}")
+    st.sidebar.info(f"**Cargo:** {user['cargo']}\n\n**Rol:** {user['rol']}")
+    
+    if st.sidebar.button("Cerrar Sesión", use_container_width=True):
         st.session_state["authenticated"] = False
         st.session_state["user_info"] = None
         st.rerun()
 
+    # Cuerpo principal
     st.markdown("<h1 style='text-align: center; color: #0070C0;'>CLUB LAKONN</h1>", unsafe_allow_html=True)
     st.write("---")
-    st.markdown(f"<h3 style='text-align: center;'>Bienvenido {user['nombre']}. Seleccione Unidad</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h4 style='text-align: center;'>Hola {user['nombre']}, por favor selecciona una unidad para gestionar:</h4>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns([1, 2, 1])
+    _, btn_col, _ = st.columns([1, 1, 1])
 
-    with col2:
+    with btn_col:
         unidades = [
-            {"nombre": "ORION", "id": "Orion"},
-            {"nombre": "PUMAS", "id": "Pumas"},
-            {"nombre": "LIDERES", "id": "Lideres"}
+            {"nombre": "🪐 UNIDAD ORION", "id": "Orion"},
+            {"nombre": "🐆 UNIDAD PUMAS", "id": "Pumas"},
+            {"nombre": "🎖️ UNIDAD LIDERES", "id": "Lideres"}
         ]
         
         for u in unidades:

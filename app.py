@@ -64,14 +64,12 @@ if client:
 
     st.divider()
 
-    # --- 6. SISTEMA DE ACTUALIZACIÓN (CON FUNCIÓN DE BORRADO) ---
+    # --- 6. SISTEMA DE ACTUALIZACIÓN CON DOBLE CONFIRMACIÓN ---
     with st.expander("📝 Registrar o Corregir Avances"):
         conquistador = st.selectbox("Seleccione al Conquistador:", df_base['Integrantes'].tolist())
         
-        # Obtener los datos actuales del conquistador seleccionado para pre-marcar los checks
+        # Obtener datos actuales
         fila_datos = df_base[df_base['Integrantes'] == conquistador].iloc[0]
-        
-        st.info("Nota: Desmarcar un requisito también lo eliminará de la base de datos.")
         
         col1, col2, col3 = st.columns(3)
         
@@ -98,32 +96,59 @@ if client:
             v_natura = st.checkbox("Especialidad Naturaleza", value=bool(fila_datos.get("Especialidad Naturaleza")))
             v_ayuda = st.checkbox("2 Horas Ayuda Comunitaria", value=bool(fila_datos.get("2 Horas Ayuda Comunitaria")))
 
+        # --- LÓGICA DE DETECCIÓN DE DESMARCADO ---
+        estado_nuevo = {
+            "Voto": v_voto, "Ley": v_ley, "Blanco": v_blanco, "Lema": v_lema,
+            "El Camino a Cristo": v_camino, "Génesis": v_genesis,
+            "Nudos Básicos": v_nudos, "Pernoctar Campamento": v_pernoctar,
+            "Armar Carpa": v_carpa, "Señales de Pista": v_senales,
+            "Temperancia de Daniel": v_temperancia, "Menú Vegetariano": v_menu,
+            "Especialidad Naturaleza": v_natura, "2 Horas Ayuda Comunitaria": v_ayuda
+        }
+
+        # Identificar si algo que estaba marcado ahora está desmarcado
+        items_desmarcados = []
+        for req, marcado_ahora in estado_nuevo.items():
+            estaba_marcado = bool(fila_datos.get(req))
+            if estaba_marcado and not marcado_ahora:
+                items_desmarcados.append(req)
+
+        # Botón de Guardar
         if st.button("💾 SINCRONIZAR CAMBIOS"):
-            fila_idx = df_base[df_base['Integrantes'] == conquistador].index[0] + 3
-            hoy = datetime.now().strftime("%d/%m/%Y")
-            
-            # Diccionario de estado actual de los checkboxes
-            estado_actual = {
-                "Voto": v_voto, "Ley": v_ley, "Blanco": v_blanco, "Lema": v_lema,
-                "El Camino a Cristo": v_camino, "Génesis": v_genesis,
-                "Nudos Básicos": v_nudos, "Pernoctar Campamento": v_pernoctar,
-                "Armar Carpa": v_carpa, "Señales de Pista": v_senales,
-                "Temperancia de Daniel": v_temperancia, "Menú Vegetariano": v_menu,
-                "Especialidad Naturaleza": v_natura, "2 Horas Ayuda Comunitaria": v_ayuda
-            }
-            
-            # Lógica de actualización o limpieza
-            for req, esta_marcado in estado_actual.items():
-                if req in headers:
-                    col_idx = headers.index(req) + 1
-                    # Si se marca, ponemos la fecha. Si se desmarca, ponemos vacío ""
-                    valor_celda = hoy if esta_marcado else ""
-                    sheet.update_cell(fila_idx, col_idx, valor_celda)
-            
-            # Actualizar fecha de control general (Columna B)
-            sheet.update_cell(fila_idx, 2, hoy)
-            
-            st.success(f"¡Base de datos sincronizada para {conquistador}!")
-            st.rerun()
+            # Si hay desmarcados, mostrar advertencia antes de procesar
+            if items_desmarcados:
+                st.warning(f"⚠️ ¡Atención! Estás a punto de borrar los siguientes requisitos: {', '.join(items_desmarcados)}")
+                confirmar_borrado = st.checkbox("He revisado y confirmo que deseo ELIMINAR estos avances.")
+                
+                if confirmar_borrado:
+                    # Proceder con la actualización (incluyendo borrados)
+                    fila_idx = df_base[df_base['Integrantes'] == conquistador].index[0] + 3
+                    hoy = datetime.now().strftime("%d/%m/%Y")
+                    
+                    for req, esta_marcado in estado_nuevo.items():
+                        if req in headers:
+                            col_idx = headers.index(req) + 1
+                            valor_celda = hoy if esta_marcado else ""
+                            sheet.update_cell(fila_idx, col_idx, valor_celda)
+                    
+                    sheet.update_cell(fila_idx, 2, hoy)
+                    st.success("✅ Cambios y eliminaciones aplicadas con éxito.")
+                    st.rerun()
+                else:
+                    st.info("Por favor, marca la casilla de confirmación arriba para aplicar los cambios.")
+            else:
+                # Si no hay desmarcados, guardar normalmente
+                fila_idx = df_base[df_base['Integrantes'] == conquistador].index[0] + 3
+                hoy = datetime.now().strftime("%d/%m/%Y")
+                
+                for req, esta_marcado in estado_nuevo.items():
+                    if req in headers:
+                        col_idx = headers.index(req) + 1
+                        if esta_marcado: # Solo actualizamos si está marcado (no hay borrados en este flujo)
+                            sheet.update_cell(fila_idx, col_idx, hoy)
+                
+                sheet.update_cell(fila_idx, 2, hoy)
+                st.success("✅ ¡Nuevos avances registrados!")
+                st.rerun()
 else:
     st.warning("Configurando conexión...")

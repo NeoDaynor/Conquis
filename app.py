@@ -6,6 +6,23 @@ from PIL import Image
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Club Lakonn - Acceso", layout="wide")
 
+# --- OCULTAR MENÚS Y "MANAGE APP" ---
+# Este bloque elimina visualmente los elementos de la interfaz de Streamlit
+st.markdown(
+    """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stAppDeployButton {display:none;}
+    div[data-testid="stStatusWidget"] {visibility: hidden;}
+    /* Ocultar el botón de Manage App específicamente */
+    button[title="Manage app"] {display: none;}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # --- FUNCIONES DE AUTENTICACIÓN ---
 def load_users():
     if os.path.exists('users.json'):
@@ -28,7 +45,7 @@ if "user_info" not in st.session_state:
 if "unidad_seleccionada" not in st.session_state:
     st.session_state["unidad_seleccionada"] = None
 
-# --- ENCABEZADO CON LOGO (ESQUINA SUPERIOR DERECHA) ---
+# --- ENCABEZADO CON LOGO ---
 col_t1, col_t2 = st.columns([8, 1])
 with col_t2:
     try:
@@ -39,7 +56,6 @@ with col_t2:
 
 # --- PANTALLA DE LOGEO ELEGANTE ---
 if not st.session_state["authenticated"]:
-    # Centrado del formulario
     _, center_col, _ = st.columns([1, 1.5, 1])
     
     with center_col:
@@ -68,13 +84,12 @@ if not st.session_state["authenticated"]:
                     st.session_state["user_info"] = user_data
                     st.rerun()
                 else:
-                    st.error("Credenciales incorrectas. Verifique e intente de nuevo.")
+                    st.error("Credenciales incorrectas.")
 
-# --- PANTALLA DE SELECCIÓN (SOLO SI ESTÁ AUTENTICADO) ---
+# --- PANTALLA DE SELECCIÓN ---
 else:
     user = st.session_state["user_info"]
     
-    # Sidebar con info del usuario
     st.sidebar.markdown(f"### 👤 {user['nombre']}")
     st.sidebar.info(f"**Cargo:** {user['cargo']}\n\n**Rol:** {user['rol']}")
     
@@ -83,10 +98,9 @@ else:
         st.session_state["user_info"] = None
         st.rerun()
 
-    # Cuerpo principal
     st.markdown("<h1 style='text-align: center; color: #0070C0;'>CLUB LAKONN</h1>", unsafe_allow_html=True)
     st.write("---")
-    st.markdown(f"<h4 style='text-align: center;'>Hola {user['nombre']}, por favor selecciona una unidad para gestionar:</h4>", unsafe_allow_html=True)
+    st.markdown(f"<h4 style='text-align: center;'>Hola {user['nombre']}, selecciona una unidad:</h4>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
     _, btn_col, _ = st.columns([1, 1, 1])

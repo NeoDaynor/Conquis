@@ -1,0 +1,11 @@
+{
+    "users": [
+        {
+            "nombre": "Daniel Inostroza",
+            "cargo": "Instructor",
+            "rol": "admin",
+            "usuario": "neo",
+            "password": "Danny7826"
+        }
+    ]
+}

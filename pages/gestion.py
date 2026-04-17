@@ -74,6 +74,7 @@ df_unidad = df_full[df_full['Unidad'] == unidad_actual].copy()
 # --- INTERFAZ ---
 st.markdown(f'<div class="main-header"><h1 style="color:#0070C0; margin:0;">UNIDAD: {unidad_actual.upper()}</h1></div>', unsafe_allow_html=True)
 
+# --- BOTON VOLVER PARA IR AL MENU --
 if st.button("⬅️ VOLVER", type="secondary", use_container_width=True):
     st.switch_page("app.py")
 
@@ -83,7 +84,7 @@ with st.container():
     st.dataframe(
         df_unidad.style.map(lambda v: 'background-color: #E0F2FE; color: #0369A1; font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:]),
         use_container_width=True, hide_index=True
-    )
+    )HOLA
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Registro

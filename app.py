@@ -107,7 +107,7 @@ else:
         with col3:
             if st.button("🎖️\n\nLIDERES", key="btn_lideres", use_container_width=True):
                 st.session_state["unidad_seleccionada"] = "Lideres"
-                st.switch_page("pages/gestion.py")
+                st.switch_page("pages/amigo.py")
 
     with st.sidebar:
         st.markdown(f"### 👤 {user['nombre']}")

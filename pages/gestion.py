@@ -80,11 +80,11 @@ if st.button("⬅️ VOLVER", type="secondary", use_container_width=True):
 
 # Tabla de Avance
 with st.container():
-    st.markdown('<div class="content-card">', unsafe_allow_html=True)
+    st.markdown('<div class="main-header">', unsafe_allow_html=True)
     st.dataframe(
         df_unidad.style.map(lambda v: 'background-color: #E0F2FE; color: #0369A1; font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:]),
         use_container_width=True, hide_index=True
-    )HOLA
+    )
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Registro

@@ -36,7 +36,7 @@ st.markdown(
     
     /* Contenedor para el panel de administración */
     .admin-card {{
-        background-color: rgba(255, 255, 255, 0.95);
+        background-color: rgba(224, 240, 255, 0.95);
         padding: 20px;
         border-radius: 15px;
         border: 1px solid #0070C0;

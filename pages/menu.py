@@ -2,7 +2,8 @@ import streamlit as st
 import base64
 
 # --- CONFIGURACIÓN ---
-st.set_page_config(page_title="Club Lakonn - Menú", layout="wide", initial_sidebar_state="collapsed")
+# Cambiamos "collapsed" por "expanded" para que veas la barra lateral de inmediato
+st.set_page_config(page_title="Club Lakonn - Menú", layout="wide", initial_sidebar_state="expanded")
 
 # Seguridad: Redirigir si no hay sesión
 if not st.session_state.get("authenticated", False):
@@ -10,15 +11,19 @@ if not st.session_state.get("authenticated", False):
 
 # Función para convertir imagen a base64
 def get_base64(bin_file):
-    with open(bin_file, 'rb') as f:
-        data = f.read()
-    return base64.b64encode(data).decode()
+    try:
+        with open(bin_file, 'rb') as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except:
+        return ""
 
+# Obtenemos info del usuario
 user = st.session_state.get("user_info", {"nombre": "Usuario", "rol": "user"})
 bin_pc = get_base64('images/fondopc.jpg')
 bin_mob = get_base64('images/fondocelu.webp')
 
-# --- ESTILOS CSS (Basados en tu código funcional) ---
+# --- ESTILOS CSS ---
 st.markdown(
     f"""
     <style>
@@ -65,111 +70,73 @@ st.markdown(
         transform: translateY(-5px);
         box-shadow: 0px 8px 20px rgba(0,112,192,0.4);
     }}
-
-    /* Estilo especial para el botón de administración en el sidebar */
-    .admin-btn-style {{
-        border: 2px solid #FFD700 !important; /* Dorado para resaltar gestión */
-    }}
     </style>
     """, 
     unsafe_allow_html=True
 )
 
-# --- CONTENIDO ---
+# --- CONTENIDO PRINCIPAL ---
 st.markdown("<h1 style='text-align: center; color: white; text-shadow: 2px 2px 8px #000;'>CLUB LAKONN</h1>", unsafe_allow_html=True)
 
-# La clave del éxito: Proporción 1:2:1 para centrar y dar tamaño justo
 _, center_col, _ = st.columns([1, 2, 1])
-
 with center_col:
-    st.markdown(
-        f"""
+    st.markdown(f"""
         <div class="welcome-card">
             <h2 style='color: #0070C0; margin:0;'>Bienvenido, {user['nombre']}</h2>
             <p style='color: #333; font-size: 1.1em;'>Selecciona una unidad para gestionar:</p>
         </div>
-        """, 
-        unsafe_allow_html=True
-    )
+        """, unsafe_allow_html=True)
 
-# --- PRIMERA FILA ---
+# --- GRILLA DE BOTONES ---
 col1, col2, col3 = st.columns(3)
-
 with col1:
-    if st.button("🪐\n\nORION", key="btn_orion", use_container_width=True):
+    if st.button("🪐\n\nORION", key="btn_orion"):
         st.session_state["unidad_seleccionada"] = "Orion"
         st.switch_page("pages/amigo.py")
-
 with col2:
-    if st.button("🐆\n\nESTER-ELLAS", key="btn_pumas", use_container_width=True):
+    if st.button("🐆\n\nESTER-ELLAS", key="btn_pumas"):
         st.session_state["unidad_seleccionada"] = "Ester-ellas"
         st.switch_page("pages/amigo.py")
-
 with col3:
-    if st.button("🎖️\n\nRAYEN", key="btn_lideres", use_container_width=True):
+    if st.button("🎖️\n\nRAYEN", key="btn_lideres"):
         st.session_state["unidad_seleccionada"] = "Rayen"
         st.switch_page("pages/amigo.py")
 
-st.write("") # Espaciador vertical
+st.write("") 
 
-# --- SEGUNDA FILA ---
 col4, col5, col6 = st.columns(3)
-
 with col4:
-    if st.button("🦅\n\nULTRASOLIS", key="btn_aguilas", use_container_width=True):
+    if st.button("🦅\n\nULTRASOLIS", key="btn_aguilas"):
         st.session_state["unidad_seleccionada"] = "Ultrasolis"
         st.switch_page("pages/amigo.py")
-
 with col5:
-    if st.button("🎖️\n\nLIDERES", key="btn_zorros", use_container_width=True):
+    if st.button("🎖️\n\nLIDERES", key="btn_lideres_2"):
         st.session_state["unidad_seleccionada"] = "Lideres"
         st.switch_page("pages/amigo.py")
-
 with col6:
-    # 1. Convertimos la imagen específica a base64
     img_sgdc = get_base64('images/SGDC.png')
-    
-    # 2. Creamos el contenedor clicable con HTML/CSS
-    st.markdown(
-        f"""
+    st.markdown(f"""
         <a href="https://sg.sdasystems.org/cms/login.php?lang=esp" target="_blank" style="text-decoration: none;">
-            <div style="
-                background-color: white;
-                border: 2px solid #0070C0;
-                border-radius: 15px;
-                height: 150px;
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.3s ease;
-                box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-                padding: 10px;
-            " onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0px 8px 20px rgba(0,112,192,0.4)';" 
-               onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0px 4px 6px rgba(0,0,0,0.1)';">
-                <img src="data:image/png;base64,{img_sgdc}" style="width: 100%; height: 100%; object-fit: cover; object-position: center; display: block;">
+            <div style="background-color: white; border: 2px solid #0070C0; border-radius: 15px; height: 150px; width: 100%; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); padding: 10px;">
+                <img src="data:image/png;base64,{img_sgdc}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
             </div>
         </a>
-        """,
-        unsafe_allow_html=True
-    )
-    
-# --- BARRA LATERAL (SIDEBAR) ---
+        """, unsafe_allow_html=True)
+
+# --- BARRA LATERAL (AQUÍ ESTÁ LA MAGIA) ---
 with st.sidebar:
     st.markdown(f"### 👤 {user['nombre']}")
-    st.markdown(f"**Rol:** {user.get('rol', 'user').capitalize()}")
+    st.write(f"Rol actual: **{user.get('rol')}**")
     
     st.divider()
 
-    # BOTÓN DE GESTIÓN DE USUARIOS (Solo visible para admins)
+    # IMPORTANTE: Solo se muestra si el usuario logueado tiene rol "admin" en el JSON
     if user.get("rol") == "admin":
-        if st.button("⚙️ Gestión de Usuarios", use_container_width=True, key="btn_admin_sys"):
+        st.subheader("Configuración")
+        if st.button("⚙️ Gestión de Usuarios", use_container_width=True):
             st.switch_page("pages/gestion_usuarios.py")
-        st.write("") # Pequeño espacio
-
-    # BOTÓN DE CERRAR SESIÓN
+    
+    st.write("")
     if st.button("🚪 Cerrar Sesión", use_container_width=True):
         st.session_state["authenticated"] = False
-        st.session_state["user_info"] = None
         st.switch_page("app.py")

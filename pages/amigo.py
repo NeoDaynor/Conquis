@@ -90,7 +90,7 @@ df_unidad = df_full[df_full['Unidad'] == unidad_actual].copy()
 # --- LÓGICA DE FILTRADO POR ROL ---
 # Si es 'conqui', solo ve su propia fila. El nombre en user_info debe coincidir con el de la planilla.
 if rol_usuario == "conqui":
-    df_unidad = df_unidad[df_unidad['Integrantes'] == usuario_activo['nombre']]
+    df_unidad = df_unidad[df_unidad['Integrantes'] == usuario_activo['usuario']]
 
 # --- ESTRUCTURA DE LA PÁGINA ---
 
@@ -101,7 +101,7 @@ if st.button("⬅️ VOLVER AL MENU"):
 
 # TARJETA 1: AVANCE GENERAL (Visible para todos, pero filtrada para conquis)
 with st.container():
-    st.markdown(f"### 📊 Dashboard de Avance: {usuario_activo['nombre'] if rol_usuario == 'conqui' else 'General'}")
+    st.markdown(f"### 📊 Dashboard de Avance: {usuario_activo['usuario'] if rol_usuario == 'conqui' else 'General'}")
     st.dataframe(
         df_unidad.style.map(lambda v: 'background-color: rgba(59, 130, 246, 0.2); color: #0070C0; font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:]),
         use_container_width=True, hide_index=True
@@ -153,10 +153,10 @@ if rol_usuario in ["admin", "lider"]:
                             estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
                             if marcado and not estaba_marcado:
                                 sheet.update_cell(idx_excel, headers.index(req) + 1, hoy)
-                                logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
+                                logs.append([ahora_log, usuario_activo['usuario'], usuario_activo['cargo'], conquistador, req, "Marcado"])
                             elif not marcado and estaba_marcado:
                                 sheet.update_cell(idx_excel, headers.index(req) + 1, "")
-                                logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
+                                logs.append([ahora_log, usuario_activo['usuario'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
                         
                         if logs: log_sheet.append_rows(logs)
                         s.update(label="Sincronizado correctamente", state="complete")

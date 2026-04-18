@@ -145,8 +145,8 @@ with col6:
                onmouseout="this.style.transform='translateY(0px)';" >
                 
                 <img src="data:image/png;base64,{img_sgdc}" style="
-                    width: 100%;
-                    height: 100%;
+                    width: 50%;
+                    height: 50%;
                     object-fit: cover;
                     object-position: center;
                     display: block;

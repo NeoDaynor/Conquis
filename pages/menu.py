@@ -129,11 +129,6 @@ with col1:
         st.session_state["unidad_seleccionada"] = "Orion"
         st.switch_page("pages/amigo.py")
 
-                if st.button("🪐\n\nORION", key="btn_orion", use_container_width=True):
-                    st.session_state["unidad_seleccionada"] = "Orion"
-                    st.switch_page("pages/amigo.py")
-
-
 with col2:
     st.markdown("""
         <div class="card-container">

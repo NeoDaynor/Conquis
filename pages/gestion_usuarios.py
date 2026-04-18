@@ -4,126 +4,125 @@ import os
 import base64
 
 # --- 1. CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Club Lakonn - Gestión", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Gestión de Usuarios - Club Lakonn", layout="wide", initial_sidebar_state="collapsed")
 
-# Seguridad
-if not st.session_state.get("authenticated", False):
-    st.switch_page("pages/login_page.py")
+# Seguridad: Solo Admins
+if not st.session_state.get("authenticated", False) or st.session_state.get("user_info", {}).get("rol") != "admin":
+    st.switch_page("app.py")
 
-# --- 2. LÓGICA DE FONDO Y ESTILOS ---
+# --- 2. FUNCIONES DE APOYO ---
 def get_base64(bin_file):
     try:
         with open(bin_file, 'rb') as f:
-            data = f.read()
-        return base64.b64encode(data).decode()
-    except:
-        return ""
+            return base64.b64encode(f.read()).decode()
+    except: return ""
 
-# ---bin_pc = get_base64('images/fondopc.jpg')
-# ---bin_mob = get_base64('images/fondocelu.webp')
-bin_pc = get_base64('')
-bin_mob = get_base64('')
+def load_users():
+    if os.path.exists('users.json'):
+        with open('users.json', 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return {"users": []}
 
+def save_users(data):
+    with open('users.json', 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
+bin_pc = get_base64('images/fondopc.jpg')
+bin_mob = get_base64('images/fondocelu.webp')
+
+# --- 3. ESTILOS CSS ---
 st.markdown(
     f"""
     <style>
     #MainMenu, footer, header, .stAppDeployButton {{visibility: hidden;}}
+    
     .stApp {{
-        background-attachment: fixed; background-size: cover; background-position: center;
+        background-attachment: fixed;
+        background-size: cover;
+        background-position: center;
     }}
     @media (min-width: 769px) {{ .stApp {{ background-image: url("data:image/jpg;base64,{bin_pc}"); }} }}
     @media (max-width: 768px) {{ .stApp {{ background-image: url("data:image/webp;base64,{bin_mob}"); }} }}
-    
-    /* SOLUCIÓN AL DIV: Estilizamos el contenedor nativo de Streamlit */
-    [data-testid="stVerticalBlockBorderWrapper"] {{
-        background-color: rgba(255, 255, 255, 0.92);
+
+    .main-container {{
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 20px;
         border-radius: 15px;
-        border: 1px solid #0070C0 !important;
-        padding: 15px;
-        margin-bottom: 10px;
-    }}
-    
-    /* Estilo para los títulos de los inputs dentro de las cajas */
-    .stTextInput label, .stSelectbox label {{
-        color: #0070C0 !important;
-        font-weight: bold !important;
+        border: 1px solid #0070C0;
     }}
     </style>
     """, 
     unsafe_allow_html=True
 )
 
-# --- 3. LÓGICA DE DATOS ---
-DB_PATH = 'users.json'
+# --- 4. BARRA DE NAVEGACIÓN SIMPLE ---
+col_back, col_spacer, col_logout = st.columns([1, 2, 1])
 
-def cargar_datos():
-    if os.path.exists(DB_PATH):
-        with open(DB_PATH, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    return {"users": []}
-
-def guardar_datos(datos):
-    with open(DB_PATH, 'w', encoding='utf-8') as f:
-        json.dump(datos, f, indent=4, ensure_ascii=False)
-
-# --- 4. NAVEGACIÓN ---
-
-           
-with st.container:
-    st.title("⚙️ Configuración")
+with col_back:
     if st.button("⬅️ Volver al Menú", use_container_width=True):
-        st.switch_page("menu.py")
-    st.divider()
+        st.switch_page("pages/menu.py")
+
+with col_logout:
     if st.button("🚪 Cerrar Sesión", use_container_width=True):
         st.session_state["authenticated"] = False
         st.switch_page("app.py")
 
-# --- 5. CONTENIDO ---
-st.markdown("<h1 style='text-align: center; color: white; text-shadow: 2px 2px 8px #000;'>ADMINISTRACIÓN DE USUARIOS</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: white; text-shadow: 2px 2px 8px #000;'>GESTIÓN DE USUARIOS</h1>", unsafe_allow_html=True)
 
-if 'data' not in st.session_state:
-    st.session_state.data = cargar_datos()
+# --- 5. LÓGICA DE USUARIOS ---
+data = load_users()
 
-# Registro de nuevo miembro
 with st.expander("➕ Registrar Nuevo Miembro"):
-    with st.form("nuevo_user_form"):
+    with st.form("new_user_form"):
         c1, c2 = st.columns(2)
-        n = c1.text_input("Nombre Completo")
-        c = c1.text_input("Cargo")
-        u = c2.text_input("Usuario")
-        p = c2.text_input("Password", type="password")
-        r = c2.selectbox("Rol", ["admin", "user"])
-        if st.form_submit_button("Guardar"):
-            ids = [usr['id'] for usr in st.session_state.data['users']]
-            nuevo = {"id": max(ids, default=0)+1, "nombre": n, "cargo": c, "rol": r, "usuario": u, "password": p, "correo": ""}
-            st.session_state.data['users'].append(nuevo)
-            guardar_datos(st.session_state.data)
+        new_nombre = c1.text_input("Nombre Completo")
+        new_cargo = c2.text_input("Cargo")
+        new_user = c1.text_input("Usuario (Login)")
+        new_pass = c2.text_input("Contraseña", type="password")
+        new_rol = st.selectbox("Rol de Sistema", ["admin", "lider", "conqui"])
+        
+        if st.form_submit_button("Guardar Usuario"):
+            new_id = max([u['id'] for u in data['users']], default=0) + 1
+            data['users'].append({
+                "id": new_id,
+                "nombre": new_nombre,
+                "cargo": new_cargo,
+                "rol": new_rol,
+                "usuario": new_user,
+                "password": new_pass
+            })
+            save_users(data)
+            st.success("Usuario creado")
             st.rerun()
 
-st.write("")
+st.divider()
 
-# Listado de usuarios con ENVOLVIMIENTO REAL
-for i, user in enumerate(st.session_state.data['users']):
-    # st.container(border=True) ahora actúa como tu "admin-card"
-    with st.container(border=True):
-        col1, col2, col3, col4, col5 = st.columns([2, 1.5, 1.5, 1, 0.5])
+# --- 6. TABLA DE EDICIÓN ---
+for idx, user in enumerate(data['users']):
+    with st.container():
+        # Usamos una fila para cada usuario imitando tu captura
+        c1, c2, c3, c4, c5 = st.columns([2, 2, 2, 1.5, 0.5])
         
-        nuevo_nom = col1.text_input("Nombre", user['nombre'], key=f"n_{i}")
-        nuevo_car = col2.text_input("Cargo", user['cargo'], key=f"c_{i}")
-        nuevo_usu = col3.text_input("User", user['usuario'], key=f"u_{i}")
-        nuevo_rol = col4.selectbox("Rol", ["admin", "user"], index=0 if user['rol']=="admin" else 1, key=f"r_{i}")
+        updated_nombre = c1.text_input("Nombre", value=user['nombre'], key=f"nom_{user['id']}")
+        updated_cargo = c2.text_input("Cargo", value=user['cargo'], key=f"car_{user['id']}")
+        updated_user = c3.text_input("User", value=user['usuario'], key=f"usr_{user['id']}")
         
-        if col5.button("🗑️", key=f"del_{i}"):
-            st.session_state.data['users'].pop(i)
-            guardar_datos(st.session_state.data)
+        # Selectbox de rol con el valor actual
+        roles = ["admin", "lider", "conqui"]
+        default_role_idx = roles.index(user.get('rol', 'conqui'))
+        updated_rol = c4.selectbox("Rol", roles, index=default_role_idx, key=f"rol_{user['id']}")
+        
+        if c5.button("🗑️", key=f"del_{user['id']}"):
+            data['users'].pop(idx)
+            save_users(data)
             st.rerun()
             
-        # Actualización automática si hay cambios
-        if (nuevo_nom != user['nombre'] or nuevo_car != user['cargo'] or 
-            nuevo_usu != user['usuario'] or nuevo_rol != user['rol']):
-            st.session_state.data['users'][i].update({
-                "nombre": nuevo_nom, "cargo": nuevo_car,
-                "usuario": nuevo_usu, "rol": nuevo_rol
-            })
-            guardar_datos(st.session_state.data)
-            st.toast("Actualizado")
+        # Si algo cambia, actualizamos el json
+        if (updated_nombre != user['nombre'] or updated_cargo != user['cargo'] or 
+            updated_user != user['usuario'] or updated_rol != user.get('rol')):
+            data['users'][idx]['nombre'] = updated_nombre
+            data['users'][idx]['cargo'] = updated_cargo
+            data['users'][idx]['usuario'] = updated_user
+            data['users'][idx]['rol'] = updated_rol
+            save_users(data)
+            st.toast(f"Actualizado: {updated_nombre}")

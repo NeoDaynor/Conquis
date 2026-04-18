@@ -122,7 +122,7 @@ with col5:
 with col6:
     # Nota: st.link_button NO genera error de duplicidad con st.button, 
     # pero es buena práctica darle su propio key si usas uno.
-    st.link_button("🌐\n\nSDA SYSTEMS", 
+    st.link_button("🌐\n\nSistema de Gestión de Clubes", 
                    "https://sg.sdasystems.org/cms/login.php?lang=esp", 
                    use_container_width=True)
 # Barra lateral

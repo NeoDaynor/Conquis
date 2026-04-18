@@ -26,6 +26,15 @@
             "rol": "conqui",
             "usuario": "Emma",
             "password": "123"
+        },
+        {
+            "id":4,
+            "nombre": "Constanza Celis Rodríguez",
+            "cargo": "Consejera",
+            "correo": "mvarklzevxdf@gmail.com",
+            "rol": "Lider",
+            "usuario": "Constanza",
+            "password": "123"
         }
     ]
 }

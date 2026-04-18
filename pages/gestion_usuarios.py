@@ -34,7 +34,7 @@ st.markdown(
     
     /* SOLUCIÓN AL DIV: Estilizamos el contenedor nativo de Streamlit */
     [data-testid="stVerticalBlockBorderWrapper"] {{
-        background-color: rgba(255, 255, 255, 0.92);
+        background-color: rgba(232, 244, 255, 0.92);
         border-radius: 15px;
         border: 1px solid #0070C0 !important;
         padding: 15px;

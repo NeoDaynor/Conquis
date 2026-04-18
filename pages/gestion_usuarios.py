@@ -2,14 +2,13 @@ import streamlit as st
 import json
 import os
 
-# Configuración del archivo según tu estructura
+# Al estar dentro de la carpeta /pages, Streamlit busca el JSON en la raíz del proyecto
 DB_PATH = 'users.json'
 
 def cargar_datos():
     if os.path.exists(DB_PATH):
         with open(DB_PATH, 'r', encoding='utf-8') as f:
             return json.load(f)
-    # Estructura inicial si el archivo no existe
     return {"users": []}
 
 def guardar_datos(datos):
@@ -17,30 +16,29 @@ def guardar_datos(datos):
         json.dump(datos, f, indent=4, ensure_ascii=False)
 
 def main():
-    st.set_page_config(page_title="Administración de Usuarios", layout="wide")
-    st.title("👤 Panel de Gestión de Usuarios")
+    st.set_page_config(page_title="Gestión de Usuarios", layout="wide")
+    st.title("👤 Administración de Usuarios (JSON)")
 
-    # Cargar datos en la sesión
+    # Inicializar datos en la sesión
     if 'data' not in st.session_state:
         st.session_state.data = cargar_datos()
 
     # --- FORMULARIO: CREAR NUEVO ---
     with st.expander("➕ Registrar Nuevo Miembro"):
         with st.form("nuevo_usuario_form", clear_on_submit=True):
-            col_a, col_b = st.columns(2)
-            with col_a:
+            c_a, c_b = st.columns(2)
+            with c_a:
                 nombre = st.text_input("Nombre Completo")
                 cargo = st.text_input("Cargo")
                 correo = st.text_input("Correo")
-            with col_b:
-                usuario = st.text_input("Nombre de Usuario (Login)")
+            with c_b:
+                usuario = st.text_input("Nombre de Usuario")
                 password = st.text_input("Contraseña", type="password")
-                rol = st.selectbox("Rol de Sistema", ["admin", "user"])
+                rol = st.selectbox("Rol", ["admin", "user"])
             
-            submit = st.form_submit_button("Guardar en JSON")
+            submit = st.form_submit_button("Guardar Usuario")
 
             if submit:
-                # Generar ID correlativo
                 ids = [u['id'] for u in st.session_state.data['users']]
                 nuevo_id = max(ids, default=0) + 1
                 
@@ -56,53 +54,41 @@ def main():
                 
                 st.session_state.data['users'].append(nuevo_user)
                 guardar_datos(st.session_state.data)
-                st.success(f"Usuario {usuario} añadido correctamente.")
+                st.success(f"Usuario {usuario} guardado.")
                 st.rerun()
 
-    # --- TABLA DE EDICIÓN Y ELIMINACIÓN ---
-    st.subheader("Listado de Usuarios Activos")
-    
-    # Encabezados de columna
-    h1, h2, h3, h4, h5, h6 = st.columns([0.5, 2, 1.5, 1.5, 1, 0.5])
-    h1.write("**ID**")
-    h2.write("**Nombre**")
-    h3.write("**Cargo**")
-    h4.write("**Usuario**")
-    h5.write("**Rol**")
-    h6.write("**Acción**")
+    st.divider()
 
-    # Iterar sobre la lista de usuarios (usamos una copia para evitar errores al eliminar)
+    # --- LISTADO DE EDICIÓN ---
+    st.subheader("Usuarios actuales")
+    
     for i, user in enumerate(st.session_state.data['users']):
-        c1, c2, c3, c4, c5, c6 = st.columns([0.5, 2, 1.5, 1.5, 1, 0.5])
-        
-        with c1:
-            st.write(user['id'])
-        with c2:
-            nuevo_nombre = st.text_input("Nom", user['nombre'], key=f"n_{i}", label_visibility="collapsed")
-        with c3:
-            nuevo_cargo = st.text_input("Car", user['cargo'], key=f"c_{i}", label_visibility="collapsed")
-        with c4:
-            nuevo_user_login = st.text_input("Usu", user['usuario'], key=f"u_{i}", label_visibility="collapsed")
-        with c5:
-            nuevo_rol = st.selectbox("Rol", ["admin", "user"], index=0 if user['rol'] == "admin" else 1, key=f"r_{i}", label_visibility="collapsed")
-        with c6:
-            if st.button("🗑️", key=f"del_{i}"):
+        with st.container():
+            col1, col2, col3, col4, col5 = st.columns([2, 1.5, 1.5, 1, 0.5])
+            
+            # Inputs con los datos actuales
+            nuevo_nom = col1.text_input(f"Nombre", user['nombre'], key=f"n_{i}")
+            nuevo_car = col2.text_input(f"Cargo", user['cargo'], key=f"c_{i}")
+            nuevo_usu = col3.text_input(f"User", user['usuario'], key=f"u_{i}")
+            nuevo_rol = col4.selectbox(f"Rol", ["admin", "user"], index=0 if user['rol']=="admin" else 1, key=f"r_{i}")
+            
+            if col5.button("🗑️", key=f"del_{i}"):
                 st.session_state.data['users'].pop(i)
                 guardar_datos(st.session_state.data)
                 st.rerun()
 
-        # Detección de cambios automática
-        if (nuevo_nombre != user['nombre'] or nuevo_cargo != user['cargo'] or 
-            nuevo_user_login != user['usuario'] or nuevo_rol != user['rol']):
-            
-            st.session_state.data['users'][i].update({
-                "nombre": nuevo_nombre,
-                "cargo": nuevo_cargo,
-                "usuario": nuevo_user_login,
-                "rol": nuevo_rol
-            })
-            guardar_datos(st.session_state.data)
-            st.toast("Cambios guardados")
+            # Guardar si hubo cambios en los inputs
+            if (nuevo_nom != user['nombre'] or nuevo_car != user['cargo'] or 
+                nuevo_usu != user['usuario'] or nuevo_rol != user['rol']):
+                
+                st.session_state.data['users'][i].update({
+                    "nombre": nuevo_nom,
+                    "cargo": nuevo_car,
+                    "usuario": nuevo_usu,
+                    "rol": nuevo_rol
+                })
+                guardar_datos(st.session_state.data)
+                st.toast("Actualizado")
 
 if __name__ == "__main__":
     main()

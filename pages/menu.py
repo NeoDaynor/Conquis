@@ -96,13 +96,33 @@ with center_col:
     
     with col2:
         if st.button("🐆\n\nPUMAS", key="btn_pumas", use_container_width=True):
-            st.session_state["unidad_seleccionada"] = "Pumas"
+            st.session_state["unidad_seleccionada"] = "Ester-ellas"
             st.switch_page("pages/amigo.py")
             
     with col3:
         if st.button("🎖️\n\nLIDERES", key="btn_lideres", use_container_width=True):
+            st.session_state["unidad_seleccionada"] = "Rayen"
+            st.switch_page("pages/amigo.py")
+
+    st.write("") # Espaciador pequeño entre filas
+    # --- SEGUNDA FILA ---
+    col4, col5, col6 = st.columns(3)
+
+    with col4:
+        if st.button("🎖️\n\nLIDERES", key="btn_lideres", use_container_width=True):
+            st.session_state["unidad_seleccionada"] = "Ultrasolis"
+            st.switch_page("pages/amigo.py")
+
+    with col5:
+        if st.button("🎖️\n\nLIDERES", key="btn_lideres", use_container_width=True):
             st.session_state["unidad_seleccionada"] = "Lideres"
             st.switch_page("pages/amigo.py")
+
+with col6:
+    # Este botón se verá igual a los demás pero funcionará como un enlace directo
+    st.link_button("🛡️\n\nSDA SYSTEMS", 
+                   "https://sg.sdasystems.org/cms/login.php?lang=esp", 
+                   use_container_width=True)
 
 # Barra lateral
 with st.sidebar:

@@ -11,7 +11,8 @@ if not st.session_state.get("authenticated", False):
 # Función para convertir imagen a base64
 def get_base64(bin_file):
     with open(bin_file, 'rb') as f:
-        return base64.b64encode(f.read()).decode()
+        data = f.read()
+    return base64.b64encode(data).decode()
 
 user = st.session_state.get("user_info", {"nombre": "Usuario"})
 bin_pc = get_base64('images/fondopc.jpg')
@@ -120,20 +121,16 @@ with col5:
         st.switch_page("pages/amigo.py")
 
 with col6:
-    import os
-    
-    # 1. VALIDACIÓN DE RUTA
-    path_img = 'images/SGDC.png'
-    
-    if os.path.exists(path_img):
-        img_sgdc = get_base64(path_img)
+    try:
+        # Convertimos la imagen a base64
+        # Asegúrate de que la ruta 'images/SGDC.png' sea exacta
+        img_base64 = get_base64('images/SGDC.png')
         
-        # 2. RENDERIZAR SÓLO SI LA IMAGEN EXISTE
         st.markdown(
             f"""
-            <a href="https://sg.sdasystems.org/cms/login.php?lang=esp" target="_blank" style="text-decoration: none; display: block;">
+            <a href="https://sg.sdasystems.org/cms/login.php?lang=esp" target="_blank" style="text-decoration: none;">
                 <div style="
-                    background-color: #000; /* Fondo negro de respaldo */
+                    background-color: black;
                     border-radius: 15px;
                     height: 150px;
                     width: 100%;
@@ -143,11 +140,10 @@ with col6:
                     justify-content: center;
                     transition: all 0.3s ease;
                     box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-                    padding: 0;
                 " onmouseover="this.style.transform='translateY(-5px)';" 
                    onmouseout="this.style.transform='translateY(0px)';" >
                     
-                    <img src="data:image/png;base64,{img_sgdc}" style="
+                    <img src="data:image/png;base64,{img_base64}" style="
                         width: 100%;
                         height: 100%;
                         object-fit: cover;
@@ -158,9 +154,8 @@ with col6:
             """,
             unsafe_allow_html=True
         )
-    else:
-        # Mensaje de error visual si la ruta está mal
-        st.error(f"No se encontró: {path_img}")
+    except Exception as e:
+        st.error(f"Error al cargar la imagen: {e}")
     
 # Barra lateral
 with st.sidebar:

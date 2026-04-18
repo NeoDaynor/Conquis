@@ -121,41 +121,35 @@ with col5:
         st.switch_page("pages/amigo.py")
 
 with col6:
-    try:
-        # Convertimos la imagen a base64
-        # Asegúrate de que la ruta 'images/SGDC.png' sea exacta
-        img_base64 = get_base64('images/SGDC.png')
-        
-        st.markdown(
-            f"""
-            <a href="https://sg.sdasystems.org/cms/login.php?lang=esp" target="_blank" style="text-decoration: none;">
-                <div style="
-                    background-color: black;
-                    border-radius: 15px;
-                    height: 150px;
-                    width: 100%;
-                    overflow: hidden;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: all 0.3s ease;
-                    box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-                " onmouseover="this.style.transform='translateY(-5px)';" 
-                   onmouseout="this.style.transform='translateY(0px)';" >
-                    
-                    <img src="data:image/png;base64,{img_base64}" style="
-                        width: 100%;
-                        height: 100%;
-                        object-fit: cover;
-                        display: block;
-                    ">
-                </div>
-            </a>
-            """,
-            unsafe_allow_html=True
-        )
-    except Exception as e:
-        st.error(f"Error al cargar la imagen: {e}")
+    # 1. Convertimos la imagen específica a base64
+    img_sgdc = get_base64('images/SGDC.png')
+    
+    # 2. Creamos el contenedor clicable con HTML/CSS
+    # Ajustamos el estilo para que se parezca a tus otros botones
+    st.markdown(
+        f"""
+        <a href="https://sg.sdasystems.org/cms/login.php?lang=esp" target="_blank" style="text-decoration: none;">
+            <div style="
+                background-color: white;
+                border: 2px solid #0070C0;
+                border-radius: 15px;
+                height: 150px;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.3s ease;
+                box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+                padding: 10px;
+            " onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0px 8px 20px rgba(0,112,192,0.4)';" 
+               onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0px 4px 6px rgba(0,0,0,0.1)';">
+                <img src="data:image/png;base64,{img_sgdc}" style="width: 100%; height: 100%; object-fit: cover; object-position: center; display: block;">
+            </div>
+        </a>
+        """,
+        unsafe_allow_html=True
+    )
     
 # Barra lateral
 with st.sidebar:

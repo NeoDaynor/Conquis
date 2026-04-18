@@ -120,42 +120,47 @@ with col5:
         st.switch_page("pages/amigo.py")
 
 with col6:
-    # 1. CARGAR LA IMAGEN (Esta es la línea que te falta)
-    # Asegúrate de que la ruta sea correcta según tu estructura de carpetas
-    img_sgdc = get_base64('images/SGDC.png') 
+    import os
     
-    # 2. RENDERIZAR EL CONTENEDOR
-    st.markdown(
-        f"""
-        <a href="https://sg.sdasystems.org/cms/login.php?lang=esp" target="_blank" style="text-decoration: none; display: block;">
-            <div style="
-                background-color: black;
-                border: none;
-                border-radius: 15px;
-                height: 150px;
-                width: 100%;
-                overflow: hidden;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.3s ease;
-                box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-                padding: 0;
-            " onmouseover="this.style.transform='translateY(-5px)';" 
-               onmouseout="this.style.transform='translateY(0px)';" >
-                
-                <img src="data:image/png;base64,{img_sgdc}" style="
-                    width: 50%;
-                    height: 50%;
-                    object-fit: cover;
-                    object-position: center;
-                    display: block;
-                ">
-            </div>
-        </a>
-        """,
-        unsafe_allow_html=True
-    )
+    # 1. VALIDACIÓN DE RUTA
+    path_img = 'images/SGDC.png'
+    
+    if os.path.exists(path_img):
+        img_sgdc = get_base64(path_img)
+        
+        # 2. RENDERIZAR SÓLO SI LA IMAGEN EXISTE
+        st.markdown(
+            f"""
+            <a href="https://sg.sdasystems.org/cms/login.php?lang=esp" target="_blank" style="text-decoration: none; display: block;">
+                <div style="
+                    background-color: #000; /* Fondo negro de respaldo */
+                    border-radius: 15px;
+                    height: 150px;
+                    width: 100%;
+                    overflow: hidden;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.3s ease;
+                    box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+                    padding: 0;
+                " onmouseover="this.style.transform='translateY(-5px)';" 
+                   onmouseout="this.style.transform='translateY(0px)';" >
+                    
+                    <img src="data:image/png;base64,{img_sgdc}" style="
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        display: block;
+                    ">
+                </div>
+            </a>
+            """,
+            unsafe_allow_html=True
+        )
+    else:
+        # Mensaje de error visual si la ruta está mal
+        st.error(f"No se encontró: {path_img}")
     
 # Barra lateral
 with st.sidebar:

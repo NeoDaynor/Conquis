@@ -14,7 +14,7 @@ def get_base64(bin_file):
         data = f.read()
     return base64.b64encode(data).decode()
 
-user = st.session_state.get("user_info", {"nombre": "Usuario"})
+user = st.session_state.get("user_info", {"nombre": "Usuario", "rol": "user"})
 bin_pc = get_base64('images/fondopc.jpg')
 bin_mob = get_base64('images/fondocelu.webp')
 
@@ -65,6 +65,11 @@ st.markdown(
         transform: translateY(-5px);
         box-shadow: 0px 8px 20px rgba(0,112,192,0.4);
     }}
+
+    /* Estilo especial para el botón de administración en el sidebar */
+    .admin-btn-style {{
+        border: 2px solid #FFD700 !important; /* Dorado para resaltar gestión */
+    }}
     </style>
     """, 
     unsafe_allow_html=True
@@ -111,12 +116,12 @@ st.write("") # Espaciador vertical
 col4, col5, col6 = st.columns(3)
 
 with col4:
-    if st.button("🦅\n\nULTRASOLIS", key="btn_aguilas", use_container_width=True): # Key único
+    if st.button("🦅\n\nULTRASOLIS", key="btn_aguilas", use_container_width=True):
         st.session_state["unidad_seleccionada"] = "Ultrasolis"
         st.switch_page("pages/amigo.py")
 
 with col5:
-    if st.button("🎖️\n\nLIDERES", key="btn_zorros", use_container_width=True): # Key único
+    if st.button("🎖️\n\nLIDERES", key="btn_zorros", use_container_width=True):
         st.session_state["unidad_seleccionada"] = "Lideres"
         st.switch_page("pages/amigo.py")
 
@@ -125,7 +130,6 @@ with col6:
     img_sgdc = get_base64('images/SGDC.png')
     
     # 2. Creamos el contenedor clicable con HTML/CSS
-    # Ajustamos el estilo para que se parezca a tus otros botones
     st.markdown(
         f"""
         <a href="https://sg.sdasystems.org/cms/login.php?lang=esp" target="_blank" style="text-decoration: none;">
@@ -151,9 +155,21 @@ with col6:
         unsafe_allow_html=True
     )
     
-# Barra lateral
+# --- BARRA LATERAL (SIDEBAR) ---
 with st.sidebar:
     st.markdown(f"### 👤 {user['nombre']}")
+    st.markdown(f"**Rol:** {user.get('rol', 'user').capitalize()}")
+    
+    st.divider()
+
+    # BOTÓN DE GESTIÓN DE USUARIOS (Solo visible para admins)
+    if user.get("rol") == "admin":
+        if st.button("⚙️ Gestión de Usuarios", use_container_width=True, key="btn_admin_sys"):
+            st.switch_page("pages/gestion_usuarios.py")
+        st.write("") # Pequeño espacio
+
+    # BOTÓN DE CERRAR SESIÓN
     if st.button("🚪 Cerrar Sesión", use_container_width=True):
         st.session_state["authenticated"] = False
+        st.session_state["user_info"] = None
         st.switch_page("app.py")

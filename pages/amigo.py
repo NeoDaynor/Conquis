@@ -101,7 +101,7 @@ if st.button("⬅️ VOLVER AL MENU"):
 
 # TARJETA 1: AVANCE GENERAL (Visible para todos, pero filtrada para conquis)
 with st.container():
-    st.markdown(f"### 📊 Dashboard de Avance: {usuario_activo['usuario'] if rol_usuario == 'conqui' else 'General'}")
+    st.markdown(f"### 📊 Dashboard de Avance: {usuario_activo['nombre'] if rol_usuario == 'conqui' else 'General'}")
     st.dataframe(
         df_unidad.style.map(lambda v: 'background-color: rgba(59, 130, 246, 0.2); color: #0070C0; font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:]),
         use_container_width=True, hide_index=True

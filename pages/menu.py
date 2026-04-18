@@ -131,15 +131,12 @@ with col6:
             <div style="
                 background-color: white;
                 border: 2px solid #0070C0;
-                border-radius: 15px;
-                height: 150px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
                 transition: all 0.3s ease;
                 box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-                padding: 10px;
             " onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0px 8px 20px rgba(0,112,192,0.4)';" 
                onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0px 4px 6px rgba(0,0,0,0.1)';">
                 <img src="data:image/png;base64,{img_sgdc}" style="max-width: 100%; object-fit: contain;">

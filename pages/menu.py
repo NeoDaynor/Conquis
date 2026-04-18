@@ -120,36 +120,35 @@ with col5:
         st.switch_page("pages/amigo.py")
 
 with col6:
-    # 1. Convertimos la imagen específica a base64 (Asegúrate de tener esta función definida)
-    # img_sgdc = get_base64('images/SGDC.png')
-    # Para pruebas, asumiremos que ya tienes img_sgdc cargada.
-
-    # 2. Creamos el contenedor clicable con HTML/CSS ajustado
-    # Importante: Quitamos el borde azul y el padding interno del DIV contenedor.
+    # 1. CARGAR LA IMAGEN (Esta es la línea que te falta)
+    # Asegúrate de que la ruta sea correcta según tu estructura de carpetas
+    img_sgdc = get_base64('images/SGDC.png') 
+    
+    # 2. RENDERIZAR EL CONTENEDOR
     st.markdown(
         f"""
         <a href="https://sg.sdasystems.org/cms/login.php?lang=esp" target="_blank" style="text-decoration: none; display: block;">
             <div style="
-                background-color: black; /* Fondo negro como en tu imagen de referencia */
-                border: none; /* Quitamos el borde para que la imagen toque el borde */
+                background-color: black;
+                border: none;
                 border-radius: 15px;
-                height: 150px; /* Mantenemos la altura de tus otros botones */
-                width: 100%; /* Ocupa todo el ancho de la columna */
-                overflow: hidden; /* Asegura que la imagen respete las esquinas redondeadas */
+                height: 150px;
+                width: 100%;
+                overflow: hidden;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 transition: all 0.3s ease;
                 box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-                padding: 0; /* CRÍTICO: Eliminamos el padding interno */
-            " onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0px 8px 20px rgba(0,112,192,0.4)';" 
-               onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0px 4px 6px rgba(0,0,0,0.1)';">
+                padding: 0;
+            " onmouseover="this.style.transform='translateY(-5px)';" 
+               onmouseout="this.style.transform='translateY(0px)';" >
                 
                 <img src="data:image/png;base64,{img_sgdc}" style="
-                    width: 100%; /* Ancho completo del DIV */
-                    height: 100%; /* Alto completo del DIV */
-                    object-fit: cover; /* CRÍTICO: Se expande para cubrir todo, recortando si es necesario */
-                    object-position: center; /* Centra la imagen */
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    object-position: center;
                     display: block;
                 ">
             </div>

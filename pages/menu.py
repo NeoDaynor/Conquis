@@ -117,7 +117,7 @@ st.markdown(f'''
 
 # 5. FILA DE TARJETAS (3 columnas equilibradas)
 col1, col2, col3 = st.columns(3, gap="medium")
-
+                    
 with col1:
     st.markdown("""
         <div class="card-container">
@@ -128,6 +128,11 @@ with col1:
     if st.button("ENTRAR", key="go_orion"):
         st.session_state["unidad_seleccionada"] = "Orion"
         st.switch_page("pages/amigo.py")
+
+                if st.button("🪐\n\nORION", key="btn_orion", use_container_width=True):
+                    st.session_state["unidad_seleccionada"] = "Orion"
+                    st.switch_page("pages/amigo.py")
+
 
 with col2:
     st.markdown("""

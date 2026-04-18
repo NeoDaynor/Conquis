@@ -1,7 +1,7 @@
 import streamlit as st
 import base64
 
-# Configuración de página en modo ancho para aprovechar la PC
+# Configuración de página: 'wide' es indispensable
 st.set_page_config(page_title="Menú - Club Lakonn", layout="wide", initial_sidebar_state="collapsed")
 
 # Seguridad: Redirigir si no hay sesión
@@ -16,13 +16,13 @@ user = st.session_state.get("user_info", {"nombre": "Usuario"})
 bin_pc = get_base64('images/fondopc.jpg')
 bin_mob = get_base64('images/fondocelu.webp')
 
-# CSS Avanzado para Interfaz Responsiva
+# CSS DEFINITIVO PARA PROPORCIÓN
 st.markdown(
     f"""
     <style>
     #MainMenu, footer, header {{visibility: hidden;}}
     
-    /* Fondo responsivo */
+    /* 1. Fondo responsivo */
     [data-testid="stAppViewContainer"] {{
         background-attachment: fixed; 
         background-size: cover; 
@@ -31,94 +31,94 @@ st.markdown(
     @media (min-width: 769px) {{ [data-testid="stAppViewContainer"] {{ background-image: url("data:image/jpg;base64,{bin_pc}"); }} }}
     @media (max-width: 768px) {{ [data-testid="stAppViewContainer"] {{ background-image: url("data:image/webp;base64,{bin_mob}"); }} }}
     
-    /* Ajuste del contenedor principal en PC */
+    /* 2. FORZAR EXPANSIÓN DEL CONTENEDOR EN PC */
+    /* Esto quita los márgenes blancos gigantes a los lados en el PC */
     .main .block-container {{
-        max-width: 1200px !important;
+        max-width: 95% !important;
         padding-top: 2rem !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
     }}
 
-    /* Tarjeta de bienvenida */
+    /* 3. Tarjeta de bienvenida proporcional */
     .welcome-card {{
         background-color: rgba(255, 255, 255, 0.9); 
-        padding: 30px; 
+        padding: 25px; 
         border-radius: 20px;
         border: 2px solid #0070C0; 
         text-align: center; 
         color: #1E293B;
-        margin-bottom: 2rem;
+        margin: 0 auto 3rem auto;
+        max-width: 800px; /* Centramos la tarjeta pero dejamos que los botones se expandan más */
         box-shadow: 0px 4px 15px rgba(0,0,0,0.2);
     }}
-    @media (prefers-color-scheme: dark) {{
-        .welcome-card {{ background-color: rgba(30, 41, 59, 0.9); color: #F1F5F9; }}
-    }}
 
-    /* Estilo de Botones del Menú - Tamaño Fijo para evitar deformación */
+    /* 4. BOTONES GRANDES Y PROPORCIONADOS */
     div.stButton > button {{
         background-color: white !important; 
         color: #0070C0 !important;
         border: 2px solid #0070C0 !important; 
         border-radius: 20px !important;
-        height: 180px !important; 
+        height: 250px !important; /* Aumentamos la altura en PC */
         width: 100% !important; 
         font-weight: bold !important;
-        font-size: 1.5rem !important;
+        font-size: 2rem !important; /* Texto mucho más grande */
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        transition: all 0.3s ease;
+        gap: 15px;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
     }}
     
     div.stButton > button:hover {{
         background-color: #0070C0 !important; 
         color: white !important;
-        transform: translateY(-5px);
-        box-shadow: 0px 8px 20px rgba(0,112,192,0.4);
+        transform: scale(1.02);
+        transition: all 0.2s ease-in-out;
     }}
 
-    /* Ajustes específicos para Celular */
+    /* 5. Ajustes para Celular (para que no se rompa) */
     @media (max-width: 768px) {{
         div.stButton > button {{
-            height: 120px !important;
-            font-size: 1.2rem !important;
+            height: 140px !important;
+            font-size: 1.3rem !important;
         }}
         .main .block-container {{
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
+            max-width: 100% !important;
+            padding: 1rem !important;
         }}
     }}
     </style>
     """, unsafe_allow_html=True
 )
 
-st.markdown("<h1 style='text-align: center; color: white; text-shadow: 2px 2px 10px #000; margin-bottom: 30px;'>CLUB LAKONN</h1>", unsafe_allow_html=True)
+# Título Superior
+st.markdown("<h1 style='text-align: center; color: white; text-shadow: 3px 3px 12px #000; font-size: 4rem; margin-top: 0;'>CLUB LAKONN</h1>", unsafe_allow_html=True)
 
-# Layout adaptativo
-_, col_center, _ = st.columns([0.1, 2, 0.1])
+# Contenedor de Bienvenida
+st.markdown(f'<div class="welcome-card"><h1>Bienvenido, {user["nombre"]}</h1><p style="font-size: 1.5rem;">Selecciona tu unidad para continuar</p></div>', unsafe_allow_html=True)
 
-with col_center:
-    st.markdown(f'<div class="welcome-card"><h2>Bienvenido, {user["nombre"]}</h2><p style="font-size: 1.2rem;">Selecciona tu unidad para continuar</p></div>', unsafe_allow_html=True)
-    
-    # Columnas de unidades
-    col_u1, col_u2, col_u3 = st.columns(3)
-    
-    with col_u1:
-        if st.button("🪐\nORION", key="btn_orion"):
-            st.session_state["unidad_seleccionada"] = "Orion"
-            st.switch_page("pages/amigo.py")
-            
-    with col_u2:
-        if st.button("🐆\nPUMAS", key="btn_pumas"):
-            st.session_state["unidad_seleccionada"] = "Pumas"
-            st.switch_page("pages/amigo.py")
-            
-    with col_u3:
-        if st.button("🎖️\nLIDERES", key="btn_lideres"):
-            st.session_state["unidad_seleccionada"] = "Lideres"
-            st.switch_page("pages/amigo.py")
+# FILA DE BOTONES: Usamos columnas con poco margen entre ellas para que se vean grandes
+# En PC esto se verá como 3 tarjetas gigantes
+col_u1, col_gap1, col_u2, col_gap2, col_u3 = st.columns([1, 0.1, 1, 0.1, 1])
 
-# Barra lateral para utilidades
+with col_u1:
+    if st.button("🪐\n\nORION", key="btn_orion"):
+        st.session_state["unidad_seleccionada"] = "Orion"
+        st.switch_page("pages/amigo.py")
+        
+with col_u2:
+    if st.button("🐆\n\nPUMAS", key="btn_pumas"):
+        st.session_state["unidad_seleccionada"] = "Pumas"
+        st.switch_page("pages/amigo.py")
+        
+with col_u3:
+    if st.button("🎖️\n\nLIDERES", key="btn_lideres"):
+        st.session_state["unidad_seleccionada"] = "Lideres"
+        st.switch_page("pages/amigo.py")
+
+# Barra lateral
 with st.sidebar:
     st.markdown(f"### 👤 {user['nombre']}")
     if st.button("🚪 Cerrar Sesión"):

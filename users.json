@@ -1,15 +1,19 @@
 {
     "users": [
         {
+            "id":1,
             "nombre": "Daniel Inostroza",
             "cargo": "Instructor",
+            "correo": "daynor@gmail.com",
             "rol": "admin",
             "usuario": "neo",
             "password": "Danny7826"
         },
         {
+            "id":2,
             "nombre": "Jose Inostroza",
             "cargo": "Guia Mayor",
+            "correo": "sin@correo.com",
             "rol": "admin",
             "usuario": "Joel",
             "password": "Pepe123"

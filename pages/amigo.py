@@ -132,7 +132,7 @@ df_unidad = df_full[df_full['Unidad'] == unidad_actual].copy()
 st.markdown(f'<div class="header-box"><h2 style="color:var(--brand-color); margin:0;">UNIDAD: {unidad_actual.upper()}</h2></div>', unsafe_allow_html=True)
 
 if st.button("⬅️ VOLVER AL MENU"):
-    st.switch_page("menu.py")
+    st.switch_page("pages/menu.py")
 
 # TARJETA 1: AVANCE GENERAL
 with st.container():

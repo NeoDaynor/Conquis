@@ -67,7 +67,9 @@ def guardar_datos(datos):
         json.dump(datos, f, indent=4, ensure_ascii=False)
 
 # --- 4. NAVEGACIÓN ---
-with st.sidebar:
+
+           
+with st.container:
     st.title("⚙️ Configuración")
     if st.button("⬅️ Volver al Menú", use_container_width=True):
         st.switch_page("menu.py")

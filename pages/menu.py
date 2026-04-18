@@ -120,11 +120,35 @@ with col5:
         st.switch_page("pages/amigo.py")
 
 with col6:
-    # Nota: st.link_button NO genera error de duplicidad con st.button, 
-    # pero es buena práctica darle su propio key si usas uno.
-    st.link_button("🌐\n\nSistema de Gestión de Clubes", 
-                   "https://sg.sdasystems.org/cms/login.php?lang=esp", 
-                   use_container_width=True)
+    # 1. Convertimos la imagen específica a base64
+    img_sgdc = get_base64('images/SGDC.png')
+    
+    # 2. Creamos el contenedor clicable con HTML/CSS
+    # Ajustamos el estilo para que se parezca a tus otros botones
+    st.markdown(
+        f"""
+        <a href="https://sg.sdasystems.org/cms/login.php?lang=esp" target="_blank" style="text-decoration: none;">
+            <div style="
+                background-color: white;
+                border: 2px solid #0070C0;
+                border-radius: 15px;
+                height: 150px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.3s ease;
+                box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+                padding: 10px;
+            " onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0px 8px 20px rgba(0,112,192,0.4)';" 
+               onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0px 4px 6px rgba(0,0,0,0.1)';">
+                <img src="data:image/png;base64,{img_sgdc}" style="max-height: 80px; max-width: 90%; object-fit: contain; margin-bottom: 10px;">
+                <span style="color: #0070C0; font-weight: bold; font-family: sans-serif; font-size: 1.1em;">SDA SYSTEMS</span>
+            </div>
+        </a>
+        """,
+        unsafe_allow_html=True
+    )
 # Barra lateral
 with st.sidebar:
     st.markdown(f"### 👤 {user['nombre']}")

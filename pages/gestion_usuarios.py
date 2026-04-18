@@ -19,8 +19,10 @@ def get_base64(bin_file):
     except:
         return ""
 
-bin_pc = get_base64('images/fondopc.jpg')
-bin_mob = get_base64('images/fondocelu.webp')
+# ---bin_pc = get_base64('images/fondopc.jpg')
+# ---bin_mob = get_base64('images/fondocelu.webp')
+bin_pc = get_base64('')
+bin_mob = get_base64('')
 
 st.markdown(
     f"""

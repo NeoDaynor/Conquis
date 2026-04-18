@@ -142,8 +142,7 @@ with col6:
                 padding: 10px;
             " onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0px 8px 20px rgba(0,112,192,0.4)';" 
                onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0px 4px 6px rgba(0,0,0,0.1)';">
-                <img src="data:image/png;base64,{img_sgdc}" style="max-height: 80px; max-width: 90%; object-fit: contain; margin-bottom: 10px;">
-                <span style="color: #0070C0; font-weight: bold; font-family: sans-serif; font-size: 1.1em;">SDA SYSTEMS</span>
+                <img src="data:image/png;base64,{img_sgdc}" style="max-height: 80px; max-width: 100%; object-fit: contain; margin-bottom: 10px;">
             </div>
         </a>
         """,

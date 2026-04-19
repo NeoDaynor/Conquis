@@ -110,6 +110,14 @@ df_full = pd.DataFrame(raw_data[2:], columns=headers)
 df_unidad = df_full[df_full['Unidad'] == unidad_actual].copy()
 
 # --- HEADER ---
+if "scroll_top" not in st.session_state:
+    st.session_state.scroll_top = False
+    
+if st.session_state.scroll_top:
+    st.success("✅ Cambios guardados correctamente")
+    st.toast("Cambios guardados", icon="✅")
+    st.session_state.scroll_top = False  # reset
+    
 st.markdown("<div id='top'></div>", unsafe_allow_html=True)
 st.markdown(f'<div class="header-box"><h2 style="color:var(--brand-color); margin:0;">UNIDAD: {unidad_actual.upper()}</h2></div>', unsafe_allow_html=True)
 
@@ -244,18 +252,11 @@ with st.container():
                 
                ## st.cache_resource.clear()
                ## st.rerun()
+                
                 st.cache_resource.clear()
-    
-                st.markdown("""
-                <script>
-                setTimeout(function() {
-                    var topElement = document.getElementById("top");
-                    if (topElement) {
-                        topElement.scrollIntoView({ behavior: "smooth" });
-                    }
-                }, 300);
-                </script>
-                """, unsafe_allow_html=True)
+                
+                # ✅ activar flag para subir “virtualmente”
+                st.session_state.scroll_top = True
                 
                 st.rerun()
 

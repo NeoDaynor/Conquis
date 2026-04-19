@@ -141,41 +141,37 @@ with st.container():
         conquistador = st.selectbox("Seleccione Integrante:", nombres)
         fila_persona = df_unidad[df_unidad['Integrantes'] == conquistador].iloc[0]
         
-        # Ampliamos a 9 columnas para una mejor distribución horizontal
+        # Definimos las columnas
         cols = st.columns(9)
         nuevo_estado = {}
-        
-        # Lista completa de tus requisitos
-        requisitos = [
-            "Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica", 
-            "Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.", 
-            "Explicar Juan 3:16", "Explicar II Timoteo 3:16", "Explicar Efesios 6:1-3", "Explicar Salmo 1", 
-            "Lectura Biblica", "Visitar a alguien", "Dar alimento", "Proyecto ecológico/educativo", 
-            "Buen Ciudadano", "10 Cualidades / Regla de oro Mateo 7:12", "Himno Nacional",
-            "Nudos y Amarras", "Explicar Daniel 1:8", "Compromiso vida saludable", "Dieta saludable / Preparar cuadro",
-            "Planear y ejecutar caminata 5K", "Especialidad Naturaleza", "Purificar Agua", "Armar Carpa",
-            "Cuidar cuerda / Hacer Nudos", "Campamento I", "10 Reglas caminata", "Señales de Pista",
-            "Especialidad Habilidades Manuales"
-        ]
+
+        # Mapeo de requisitos por columna según tu orden de categorías
+        categorias = {
+            0: ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica"],
+            1: ["Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16","Explicar Efesios 6:1-3", "Explicar Salmo 1", "Lectura Biblica"],
+            2: ["Visitar a alguien", "Dar alimento", "Proyecto ecológico/educativo", "Buen Ciudadano"],
+            3: ["10 Cualidades / Regla de oro Mateo 7:12", "Himno Nacional"],
+            4: ["Nudos y Amarras", "Explicar Daniel 1:8", "Compromiso vida saludable", "Dieta saludable / Preparar cuadro"],
+            5: ["Planear y ejecutar caminata 5K"],
+            6: ["Especialidad Naturaleza", "Purificar Agua", "Armar Carpa"],
+            7: ["Cuidar cuerda / Hacer Nudos", "Campamento I", "10 Reglas caminata", "Señales de Pista"],
+            8: ["Especialidad Habilidades Manuales"]
+        }
 
         desmarcados = []
-        total_req = len(requisitos)
-        
-        for i, r in enumerate(requisitos):
-            # Lógica para distribuir en 9 columnas (aprox 3.5 req por columna)
-            idx_col = i // 4 if i < 28 else 8 # Agrupa de a 4, los últimos van a la col 9
-            if idx_col > 8: idx_col = 8 # Asegura no salir del índice de columnas
-            
-            col = cols[idx_col]
-            
-            listo_en_db = bool(fila_persona.get(r) and str(fila_persona.get(r)).strip() != "")
-            
-            estado_check = col.checkbox(r, value=listo_en_db, key=f"f_{r}_{conquistador}")
-            nuevo_estado[r] = estado_check
-            
-            if listo_en_db and not estado_check:
-                col.markdown('<span class="inline-warning">⚠️ Borrará fecha</span>', unsafe_allow_html=True)
-                desmarcados.append(r)
+
+        # Iteramos por cada columna y sus requisitos específicos
+        for col_idx, reqs_cat in categorias.items():
+            col = cols[col_idx]
+            for r in reqs_cat:
+                listo_en_db = bool(fila_persona.get(r) and str(fila_persona.get(r)).strip() != "")
+                
+                estado_check = col.checkbox(r, value=listo_en_db, key=f"f_{r}_{conquistador}")
+                nuevo_estado[r] = estado_check
+                
+                if listo_en_db and not estado_check:
+                    col.markdown('<span class="inline-warning">⚠️ Borrará fecha</span>', unsafe_allow_html=True)
+                    desmarcados.append(r)
 
         confirmacion_final = True
         if desmarcados:

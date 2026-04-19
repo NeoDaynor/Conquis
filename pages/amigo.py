@@ -142,7 +142,7 @@ st.markdown(f'<div class="header-box"><h2 style="color:var(--brand-color); margi
 
 # 👇 MENSAJE SOLO PARA CONQUI
 if usuario_activo.get("rol") == "conqui":
-    st.info(f"👤 Viendo tu progreso: {usuario_activo.get('nombre')}")
+    st.markdown(f"👤 Viendo tu progreso: {usuario_activo.get('nombre')}")
     
 if st.button("⬅️ VOLVER AL MENU"):
     st.switch_page("pages/menu.py")

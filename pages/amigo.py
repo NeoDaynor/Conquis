@@ -19,6 +19,10 @@ if "authenticated" not in st.session_state or not st.session_state["authenticate
 unidad_actual = st.session_state.get("unidad_seleccionada")
 usuario_activo = st.session_state.get("user_info")
 
+# ✅ INICIALIZAR VARIABLE DE SCROLL (OBLIGATORIO)
+if "scroll_top" not in st.session_state:
+    st.session_state.scroll_top = False
+
 # --- FUNCIONES DE IMAGEN ---
 def get_base64_of_bin_file(bin_file):
     try:

@@ -145,7 +145,7 @@ with st.container():
         nuevo_estado = {}
         requisitos = ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica", 
                       "Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16","Explicar Efesios 6:1-3", "Explicar Salmo 1", "Lectura Biblica", 
-                      "Visitar a alguien", "Dar alimento", "Proyecto ecológico/educativo"
+                      "Visitar a alguien", "Dar alimento", "Proyecto ecológico/educativo",
                       "10 Cualidades / Regla de oro Mateo 7:12"]
 
         desmarcados = []

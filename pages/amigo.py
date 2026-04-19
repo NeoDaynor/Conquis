@@ -110,6 +110,7 @@ df_full = pd.DataFrame(raw_data[2:], columns=headers)
 df_unidad = df_full[df_full['Unidad'] == unidad_actual].copy()
 
 # --- HEADER ---
+st.markdown("<div id='top'></div>", unsafe_allow_html=True)
 st.markdown(f'<div class="header-box"><h2 style="color:var(--brand-color); margin:0;">UNIDAD: {unidad_actual.upper()}</h2></div>', unsafe_allow_html=True)
 
 if st.button("⬅️ VOLVER AL MENU"):
@@ -230,10 +231,32 @@ with st.container():
                             log_sheet.append_rows(logs)
 
                         s.update(label="¡Guardado con éxito!", state="complete")
+                        st.markdown("""
+                            <script>
+                            var topElement = document.getElementById("top");
+                            if (topElement) {
+                                topElement.scrollIntoView({ behavior: "smooth" });
+                            }
+                            </script>
+                            """, unsafe_allow_html=True)
                     else:
                         s.update(label="No se detectaron cambios nuevos.", state="complete")
                 
+               ## st.cache_resource.clear()
+               ## st.rerun()
                 st.cache_resource.clear()
+    
+                st.markdown("""
+                <script>
+                setTimeout(function() {
+                    var topElement = document.getElementById("top");
+                    if (topElement) {
+                        topElement.scrollIntoView({ behavior: "smooth" });
+                    }
+                }, 300);
+                </script>
+                """, unsafe_allow_html=True)
+                
                 st.rerun()
 
             except Exception as e:

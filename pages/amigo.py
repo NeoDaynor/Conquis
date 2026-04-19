@@ -28,7 +28,6 @@ def get_base64_of_bin_file(bin_file):
     except:
         return ""
 
-# Cargamos las imágenes antes de llamar a la función de estilos
 bin_pc = get_base64_of_bin_file('images/fondopc.jpg')
 bin_mob = get_base64_of_bin_file('images/fondocelu.webp')
 
@@ -111,8 +110,9 @@ spreadsheet = client.open("RequisitosConquistadores")
 sheet = spreadsheet.worksheet("Amigo")
 log_sheet = spreadsheet.worksheet("Log_Cambios")
 
+# Obtenemos todos los datos para procesar índices correctamente
 raw_data = sheet.get_all_values()
-headers = raw_data[1]
+headers = raw_data[1]  # La fila 2 contiene los encabezados reales
 df_full = pd.DataFrame(raw_data[2:], columns=headers)
 df_unidad = df_full[df_full['Unidad'] == unidad_actual].copy()
 
@@ -126,7 +126,6 @@ if st.button("⬅️ VOLVER AL MENU"):
 with st.container():
     st.markdown("### 📊 Avance General")
     st.dataframe(
-        # Fondo azul suave con letra oscura para que las fechas sean legibles
         df_unidad.style.map(lambda v: 'background-color: rgba(59, 130, 246, 0.2); color: #1E293B; font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:]),
         use_container_width=True, hide_index=True
     )
@@ -143,7 +142,6 @@ with st.container():
         cols = st.columns(9)
         nuevo_estado = {}
 
-        # Mapeo organizado por tus categorías y distribución exacta
         categorias = {
             0: {"titulo": "GENERALES", "items": ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica"]},
             1: {"titulo": "DESCUBRIMIENTO ESPIRITUAL", "items": ["Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16","Explicar Efesios 6:1-3", "Explicar Salmo 1", "Lectura Biblica"]},
@@ -163,6 +161,7 @@ with st.container():
             col.markdown(f"<p style='font-size: 0.75rem; font-weight: bold; color: var(--brand-color); margin-bottom: 5px; height: 35px;'>{info['titulo']}</p>", unsafe_allow_html=True)
             
             for r in info['items']:
+                # Validamos si ya tiene registro
                 listo_en_db = bool(fila_persona.get(r) and str(fila_persona.get(r)).strip() != "")
                 estado_check = col.checkbox(r, value=listo_en_db, key=f"f_{r}_{conquistador}")
                 nuevo_estado[r] = estado_check
@@ -183,34 +182,45 @@ with st.container():
                 st.error("Error: Debes confirmar el borrado para proceder.")
             else:
                 try:
+                    # LOCALIZACIÓN DE LA FILA EXACTA (Fila en Sheets = Index en DF + 3 por encabezados)
                     idx_excel = df_full[df_full['Integrantes'] == conquistador].index[0] + 3
                     hoy = ahora_chile.strftime("%d/%m/%Y")
                     ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
                     logs = []
                     hubo_cambios = False
                     
-                    with st.status("Sincronizando con la base de datos...") as s:
-                        for req, marcado in nuevo_estado.items():
+                    with st.status("Sincronizando con Google Sheets...") as s:
+                        for req, marcado en nuevo_estado.items():
                             estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
                             
+                            # Obtenemos el índice de la columna basado en los headers reales
+                            col_idx = headers.index(req) + 1
+                            
                             if marcado and not estaba_marcado:
-                                sheet.update_cell(idx_excel, headers.index(req) + 1, hoy)
+                                sheet.update_cell(idx_excel, col_idx, hoy)
                                 logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
                                 hubo_cambios = True
                             elif not marcado and estaba_marcado:
-                                sheet.update_cell(idx_excel, headers.index(req) + 1, "")
+                                sheet.update_cell(idx_excel, col_idx, "")
                                 logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
                                 hubo_cambios = True
                         
                         if hubo_cambios:
-                            # Actualización de campo "Ult. Actualizacion"
+                            # ACTUALIZACIÓN DE "Ult. Actualizacion"
+                            s.update(label="Actualizando fecha de actividad...", state="running")
                             col_idx_update = headers.index("Ult. Actualizacion") + 1
                             sheet.update_cell(idx_excel, col_idx_update, hoy)
-                            if logs: log_sheet.append_rows(logs)
+                            
+                            if logs:
+                                s.update(label="Guardando historial de cambios...", state="running")
+                                log_sheet.append_rows(logs)
                         
-                        s.update(label="Cambios guardados con éxito", state="complete")
+                        s.update(label="Sincronizado con éxito", state="complete")
                     
-                    st.success("Información actualizada correctamente.")
+                    st.success(f"Registros de {conquistador} actualizados.")
+                    st.cache_resource.clear() # Limpiamos caché para forzar lectura de datos nuevos
                     st.rerun()
+
                 except Exception as e:
-                    st.error(f"Error crítico de conexión: {e}")
+                    st.error(f"Error al guardar: {e}")
+                    st.info("Revisa si el nombre de la columna en Excel coincide exactamente con el código.")

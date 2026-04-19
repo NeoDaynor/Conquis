@@ -110,9 +110,8 @@ spreadsheet = client.open("RequisitosConquistadores")
 sheet = spreadsheet.worksheet("Amigo")
 log_sheet = spreadsheet.worksheet("Log_Cambios")
 
-# Cargamos los datos (Headers en Fila 2)
 raw_data = sheet.get_all_values()
-headers = raw_data[1]
+headers = raw_data[1]  # Fila 2
 df_full = pd.DataFrame(raw_data[2:], columns=headers)
 df_unidad = df_full[df_full['Unidad'] == unidad_actual].copy()
 
@@ -159,17 +158,15 @@ with st.container():
         for col_idx, info in categorias.items():
             col = cols[col_idx]
             col.markdown(f"<p style='font-size: 0.75rem; font-weight: bold; color: var(--brand-color); margin-bottom: 5px; height: 35px;'>{info['titulo']}</p>", unsafe_allow_html=True)
-            
             for r in info['items']:
                 listo_en_db = bool(fila_persona.get(r) and str(fila_persona.get(r)).strip() != "")
                 estado_check = col.checkbox(r, value=listo_en_db, key=f"f_{r}_{conquistador}")
                 nuevo_estado[r] = estado_check
-                
                 if listo_en_db and not estado_check:
                     col.markdown('<span class="inline-warning">⚠️ Borrará fecha</span>', unsafe_allow_html=True)
                     desmarcados.append(r)
 
-        confirmacion_final = True
+        confirmacion_final = not bool(desmarcados)
         if desmarcados:
             st.divider()
             confirmacion_final = st.toggle("Confirmar eliminación de registros históricos", value=False)
@@ -181,42 +178,44 @@ with st.container():
                 st.error("Error: Debes confirmar el borrado para proceder.")
             else:
                 try:
-                    # Encontrar fila exacta (Index + 3)
-                    idx_excel = df_full[df_full['Integrantes'] == conquistador].index[0] + 3
+                    # LOCALIZACIÓN INFALIBLE DE LA FILA (Buscamos el nombre en la lista original de Sheet)
+                    nombres_col = [r[headers.index('Integrantes')] for r in raw_data]
+                    fila_real_index = nombres_col.index(conquistador) + 1 # +1 porque gspread es base 1
+                    
                     hoy = ahora_chile.strftime("%d/%m/%Y")
                     ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
+                    
+                    updates = []
                     logs = []
                     hubo_cambios = False
                     
-                    with st.status("Sincronizando con Google Sheets...") as s:
-                        # CORRECCIÓN: Usamos 'in' en lugar de 'en' para evitar SyntaxError
+                    with st.status("Sincronizando...") as status:
                         for req, marcado in nuevo_estado.items():
                             estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
                             col_idx = headers.index(req) + 1
                             
                             if marcado and not estaba_marcado:
-                                sheet.update_cell(idx_excel, col_idx, hoy)
+                                updates.append({'range': gspread.utils.rowcol_to_a1(fila_real_index, col_idx), 'values': [[hoy]]})
                                 logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
                                 hubo_cambios = True
                             elif not marcado and estaba_marcado:
-                                sheet.update_cell(idx_excel, col_idx, "")
+                                updates.append({'range': gspread.utils.rowcol_to_a1(fila_real_index, col_idx), 'values': [[""]]})
                                 logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
                                 hubo_cambios = True
                         
                         if hubo_cambios:
-                            s.update(label="Actualizando fecha de interacción...", state="running")
-                            col_idx_update = headers.index("Ult. Actualizacion") + 1
-                            sheet.update_cell(idx_excel, col_idx_update, hoy)
+                            # Actualizar Ult. Actualización
+                            col_upd = headers.index("Ult. Actualizacion") + 1
+                            updates.append({'range': gspread.utils.rowcol_to_a1(fila_real_index, col_upd), 'values': [[hoy]]})
                             
-                            if logs:
-                                s.update(label="Guardando historial...", state="running")
-                                log_sheet.append_rows(logs)
-                        
-                        s.update(label="¡Sincronización Exitosa!", state="complete")
+                            # EJECUCIÓN EN BATCH (Súper rápido y seguro)
+                            sheet.batch_update(updates)
+                            if logs: log_sheet.append_rows(logs)
+                            
+                        status.update(label="¡Cambios guardados!", state="complete")
                     
-                    st.success(f"Datos de {conquistador} guardados.")
                     st.cache_resource.clear()
                     st.rerun()
 
                 except Exception as e:
-                    st.error(f"Error de conexión: {e}")
+                    st.error(f"Error crítico: {e}")

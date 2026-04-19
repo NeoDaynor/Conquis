@@ -143,8 +143,8 @@ with st.container():
         
         c1, c2, c3 = st.columns(3)
         nuevo_estado = {}
-        requisitos = ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Lema", "El Camino a Cristo", "Génesis",
-                      "Nudos Básicos", "Pernoctar Campamento", "Armar Carpa", "Señales de Pista",
+        requisitos = ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica", "Explicar la Creacion", "Explicar 10 Plagas",
+                      "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16",
                       "Temperancia de Daniel", "Menú Vegetariano", "Especialidad Naturaleza", "2 Horas Ayuda Comunitaria"]
 
         desmarcados = []

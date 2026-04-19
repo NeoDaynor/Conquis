@@ -27,8 +27,8 @@ def save_users(data):
     with open('users.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
-bin_pc = get_base64('images/fondopc.jpg')
-bin_mob = get_base64('images/fondocelu.webp')
+bin_pc = get_base64('')
+bin_mob = get_base64('')
 
 # --- 3. ESTILOS CSS ---
 st.markdown(

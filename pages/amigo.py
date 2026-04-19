@@ -31,7 +31,7 @@ def get_base64_of_bin_file(bin_file):
 bin_pc = get_base64_of_bin_file('images/fondopc.jpg')
 bin_mob = get_base64_of_bin_file('images/fondocelu.webp')
 
-# --- CSS INYECTADO (RESTAURADO COMPLETAMENTE) ---
+# --- CSS INYECTADO ---
 def aplicar_estilos_nativos(img_pc, img_mob):
     st.markdown(
         f"""
@@ -103,7 +103,6 @@ spreadsheet = client.open("RequisitosConquistadores")
 sheet = spreadsheet.worksheet("Amigo")
 log_sheet = spreadsheet.worksheet("Log_Cambios")
 
-# Leemos todos los valores (Encabezados en Fila 2)
 raw_data = sheet.get_all_values()
 headers = raw_data[1]
 df_full = pd.DataFrame(raw_data[2:], columns=headers)
@@ -115,7 +114,7 @@ st.markdown(f'<div class="header-box"><h2 style="color:var(--brand-color); margi
 if st.button("⬅️ VOLVER AL MENU"):
     st.switch_page("pages/menu.py")
 
-# TARJETA 1: AVANCE GENERAL
+# --- TABLA ---
 with st.container():
     st.markdown("### 📊 Avance General")
     st.dataframe(
@@ -123,7 +122,7 @@ with st.container():
         use_container_width=True, hide_index=True
     )
 
-# TARJETA 2: REGISTRO DE AVANCES
+# --- REGISTRO ---
 with st.container():
     st.markdown("### 📝 Registro de Avances")
     
@@ -146,26 +145,38 @@ with st.container():
 
         cols = st.columns(len(categorias))
         nuevo_estado = {}
+        confirmaciones = {}
 
         for col_idx, info in categorias.items():
             with cols[col_idx]:
                 st.markdown(f"<p style='font-size: 0.75rem; font-weight: bold; color: var(--brand-color);'>{info['titulo']}</p>", unsafe_allow_html=True)
+                
                 for item in info['items']:
                     valor_actual = bool(fila_persona.get(item) and str(fila_persona.get(item)).strip() != "")
-                    nuevo_estado[item] = st.checkbox(item, value=valor_actual, key=f"cb_{conquistador}_{item}")
+                    key_cb = f"cb_{conquistador}_{item}"
+                    marcado = st.checkbox(item, value=valor_actual, key=key_cb)
+
+                    # ✅ ALERTA PRO CON POPOVER
+                    if valor_actual and not marcado:
+                        with st.popover("⚠️ Confirmar"):
+                            st.warning("¿Seguro que deseas quitar esta marca?")
+                            confirmar = st.button("Sí, eliminar", key=f"btn_{key_cb}")
+                            confirmaciones[item] = confirmar
+                    else:
+                        confirmaciones[item] = True
+
+                    nuevo_estado[item] = marcado
 
         st.markdown("<br>", unsafe_allow_html=True)
         
         if st.button("💾 SINCRONIZAR CAMBIOS", type="primary"):
             try:
-                # ✅ FIX: cálculo correcto de fila (antes estaba mal)
                 fila_idx_df = df_full[df_full['Integrantes'] == conquistador].index
-
                 if len(fila_idx_df) == 0:
                     st.error("No se encontró el registro en la hoja.")
                     st.stop()
 
-                fila_real = fila_idx_df[0] + 3  # 🔥 ajuste correcto
+                fila_real = fila_idx_df[0] + 3
 
                 hoy = ahora_chile.strftime("%d/%m/%Y")
                 ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
@@ -177,6 +188,11 @@ with st.container():
                 with st.status("Sincronizando...") as s:
                     for req, marcado in nuevo_estado.items():
                         estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
+
+                        # 🚨 BLOQUEO SI NO CONFIRMA
+                        if not marcado and estaba_marcado:
+                            if not confirmaciones.get(req, False):
+                                continue
                         
                         if req in headers:
                             col_idx = headers.index(req) + 1
@@ -195,9 +211,6 @@ with st.container():
                             col_upd = headers.index("Ult. Actualizacion") + 1
                             updates.append({'range': gspread.utils.rowcol_to_a1(fila_real, col_upd), 'values': [[hoy]]})
                         
-                        # 🔍 DEBUG opcional
-                        # st.write("UPDATES:", updates)
-
                         sheet.batch_update(updates)
                         if logs:
                             log_sheet.append_rows(logs)

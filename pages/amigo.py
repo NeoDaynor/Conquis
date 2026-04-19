@@ -141,132 +141,135 @@ with st.container():
     )
 
 # TARJETA 2: REGISTRO DE AVANCES
-with st.container():
-    st.markdown("### 📝 Registro de Avances")
+if usuario_activo.get("rol") != "conqui":
+    with st.container():
+        st.markdown("### 📝 Registro de Avances")
+        
+        nombres = df_unidad['Integrantes'].tolist()
+        if nombres:
+            conquistador = st.selectbox("Seleccione Integrante:", nombres)
+            fila_persona = df_unidad[df_unidad['Integrantes'] == conquistador].iloc[0]
+            
+            categorias = {
+                0: {"titulo": "GENERALES", "items": ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica"]},
+                1: {"titulo": "DESCUBRIMIENTO ESPIRITUAL", "items": ["Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16","Explicar Efesios 6:1-3", "Explicar Salmo 1", "Lectura Biblica"]},
+                2: {"titulo": "SIRVIENDO A OTROS", "items": ["Visitar a alguien", "Dar alimento", "Proyecto ecológico/educativo", "Buen Ciudadano"]},
+                3: {"titulo": "DESARROLLO DE LA AMISTAD", "items": ["10 Cualidades / Regla de oro Mateo 7:12", "Himno Nacional"]},
+                4: {"titulo": "SALUD Y APTITUD FÍSICA", "items": ["Nudos y Amarras", "Explicar Daniel 1:8", "Compromiso vida saludable", "Dieta saludable / Preparar cuadro"]},
+                5: {"titulo": "LIDERAZGO", "items": ["Planear y ejecutar caminata 5K"]},
+                6: {"titulo": "ESTUDIO DE LA NATURALEZA", "items": ["Especialidad Naturaleza", "Purificar Agua", "Armar Carpa"]},
+                7: {"titulo": "ARTE DE ACAMPAR", "items": ["Cuidar cuerda / Hacer Nudos", "Campamento I", "10 Reglas caminata", "Señales de Pista"]},
+                8: {"titulo": "ESTILO DE VIDA", "items": ["Especialidad Habilidades Manuales"]}
+            }
     
-    nombres = df_unidad['Integrantes'].tolist()
-    if nombres:
-        conquistador = st.selectbox("Seleccione Integrante:", nombres)
-        fila_persona = df_unidad[df_unidad['Integrantes'] == conquistador].iloc[0]
-        
-        categorias = {
-            0: {"titulo": "GENERALES", "items": ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica"]},
-            1: {"titulo": "DESCUBRIMIENTO ESPIRITUAL", "items": ["Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16","Explicar Efesios 6:1-3", "Explicar Salmo 1", "Lectura Biblica"]},
-            2: {"titulo": "SIRVIENDO A OTROS", "items": ["Visitar a alguien", "Dar alimento", "Proyecto ecológico/educativo", "Buen Ciudadano"]},
-            3: {"titulo": "DESARROLLO DE LA AMISTAD", "items": ["10 Cualidades / Regla de oro Mateo 7:12", "Himno Nacional"]},
-            4: {"titulo": "SALUD Y APTITUD FÍSICA", "items": ["Nudos y Amarras", "Explicar Daniel 1:8", "Compromiso vida saludable", "Dieta saludable / Preparar cuadro"]},
-            5: {"titulo": "LIDERAZGO", "items": ["Planear y ejecutar caminata 5K"]},
-            6: {"titulo": "ESTUDIO DE LA NATURALEZA", "items": ["Especialidad Naturaleza", "Purificar Agua", "Armar Carpa"]},
-            7: {"titulo": "ARTE DE ACAMPAR", "items": ["Cuidar cuerda / Hacer Nudos", "Campamento I", "10 Reglas caminata", "Señales de Pista"]},
-            8: {"titulo": "ESTILO DE VIDA", "items": ["Especialidad Habilidades Manuales"]}
-        }
-
-        cols = st.columns(len(categorias))
-        nuevo_estado = {}
-        confirmaciones = {}
-
-        for col_idx, info in categorias.items():
-            with cols[col_idx]:
-                st.markdown(f"<p style='font-size: 0.75rem; font-weight: bold; color: var(--brand-color);'>{info['titulo']}</p>", unsafe_allow_html=True)
-                
-                for item in info['items']:
-                    valor_actual = bool(fila_persona.get(item) and str(fila_persona.get(item)).strip() != "")
-                    key_cb = f"cb_{conquistador}_{item}"
-                    marcado = st.checkbox(item, value=valor_actual, key=key_cb)
-
-                    # ✅ FIX REAL: persistencia con session_state
-                    key_confirm_state = f"confirm_state_{key_cb}"
-
-                    if key_confirm_state not in st.session_state:
-                        st.session_state[key_confirm_state] = False
-
-                    if valor_actual and not marcado:
-                        with st.popover("⚠️ Confirmar"):
-                            st.warning("¿Seguro que deseas quitar esta marca?")
-                            
-                            if st.button("Sí, eliminar", key=f"btn_{key_cb}"):
-                                st.session_state[key_confirm_state] = True
-
-                        if st.session_state[key_confirm_state]:
-                            st.success("✔ Confirmado para eliminar")
-
-                        confirmaciones[item] = st.session_state[key_confirm_state]
-                    else:
-                        confirmaciones[item] = True
-                        st.session_state[key_confirm_state] = False
-
-                    nuevo_estado[item] = marcado
-
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        if st.button("💾 SINCRONIZAR CAMBIOS", type="primary"):
-            try:
-                fila_idx_df = df_full[df_full['Integrantes'] == conquistador].index
-
-                if len(fila_idx_df) == 0:
-                    st.error("No se encontró el registro en la hoja.")
-                    st.stop()
-
-                fila_real = fila_idx_df[0] + 3
-
-                hoy = ahora_chile.strftime("%d/%m/%Y")
-                ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
-                
-                updates = []
-                logs = []
-                hubo_cambios = False
-                
-                with st.status("Sincronizando...") as s:
-                    for req, marcado in nuevo_estado.items():
-                        estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
-
-                        # 🚨 BLOQUEO SI NO CONFIRMA
-                        if not marcado and estaba_marcado:
-                            if not confirmaciones.get(req, False):
-                                continue
-                        
-                        if req in headers:
-                            col_idx = headers.index(req) + 1
-                            
-                            if marcado and not estaba_marcado:
-                                updates.append({'range': gspread.utils.rowcol_to_a1(fila_real, col_idx), 'values': [[hoy]]})
-                                logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
-                                hubo_cambios = True
-                            elif not marcado and estaba_marcado:
-                                updates.append({'range': gspread.utils.rowcol_to_a1(fila_real, col_idx), 'values': [[""]]})
-                                logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
-                                hubo_cambios = True
+            cols = st.columns(len(categorias))
+            nuevo_estado = {}
+            confirmaciones = {}
+    
+            for col_idx, info in categorias.items():
+                with cols[col_idx]:
+                    st.markdown(f"<p style='font-size: 0.75rem; font-weight: bold; color: var(--brand-color);'>{info['titulo']}</p>", unsafe_allow_html=True)
                     
-                    if hubo_cambios:
-                        if "Ult. Actualizacion" in headers:
-                            col_upd = headers.index("Ult. Actualizacion") + 1
-                            updates.append({'range': gspread.utils.rowcol_to_a1(fila_real, col_upd), 'values': [[hoy]]})
+                    for item in info['items']:
+                        valor_actual = bool(fila_persona.get(item) and str(fila_persona.get(item)).strip() != "")
+                        key_cb = f"cb_{conquistador}_{item}"
+                        marcado = st.checkbox(item, value=valor_actual, key=key_cb)
+    
+                        # ✅ FIX REAL: persistencia con session_state
+                        key_confirm_state = f"confirm_state_{key_cb}"
+    
+                        if key_confirm_state not in st.session_state:
+                            st.session_state[key_confirm_state] = False
+    
+                        if valor_actual and not marcado:
+                            with st.popover("⚠️ Confirmar"):
+                                st.warning("¿Seguro que deseas quitar esta marca?")
+                                
+                                if st.button("Sí, eliminar", key=f"btn_{key_cb}"):
+                                    st.session_state[key_confirm_state] = True
+    
+                            if st.session_state[key_confirm_state]:
+                                st.success("✔ Confirmado para eliminar")
+    
+                            confirmaciones[item] = st.session_state[key_confirm_state]
+                        else:
+                            confirmaciones[item] = True
+                            st.session_state[key_confirm_state] = False
+    
+                        nuevo_estado[item] = marcado
+    
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            if st.button("💾 SINCRONIZAR CAMBIOS", type="primary"):
+                try:
+                    fila_idx_df = df_full[df_full['Integrantes'] == conquistador].index
+    
+                    if len(fila_idx_df) == 0:
+                        st.error("No se encontró el registro en la hoja.")
+                        st.stop()
+    
+                    fila_real = fila_idx_df[0] + 3
+    
+                    hoy = ahora_chile.strftime("%d/%m/%Y")
+                    ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
+                    
+                    updates = []
+                    logs = []
+                    hubo_cambios = False
+                    
+                    with st.status("Sincronizando...") as s:
+                        for req, marcado in nuevo_estado.items():
+                            estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
+    
+                            # 🚨 BLOQUEO SI NO CONFIRMA
+                            if not marcado and estaba_marcado:
+                                if not confirmaciones.get(req, False):
+                                    continue
+                            
+                            if req in headers:
+                                col_idx = headers.index(req) + 1
+                                
+                                if marcado and not estaba_marcado:
+                                    updates.append({'range': gspread.utils.rowcol_to_a1(fila_real, col_idx), 'values': [[hoy]]})
+                                    logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
+                                    hubo_cambios = True
+                                elif not marcado and estaba_marcado:
+                                    updates.append({'range': gspread.utils.rowcol_to_a1(fila_real, col_idx), 'values': [[""]]})
+                                    logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
+                                    hubo_cambios = True
                         
-                        sheet.batch_update(updates)
-                        if logs:
-                            log_sheet.append_rows(logs)
-
-                        s.update(label="¡Guardado con éxito!", state="complete")
-                        st.markdown("""
-                            <script>
-                            var topElement = document.getElementById("top");
-                            if (topElement) {
-                                topElement.scrollIntoView({ behavior: "smooth" });
-                            }
-                            </script>
-                            """, unsafe_allow_html=True)
-                    else:
-                        s.update(label="No se detectaron cambios nuevos.", state="complete")
-                
-               ## st.cache_resource.clear()
-               ## st.rerun()
-                
-                st.cache_resource.clear()
-                
-                # ✅ activar flag para subir “virtualmente”
-                st.session_state.scroll_top = True
-                
-                st.rerun()
-
-            except Exception as e:
-                st.error(f"Error crítico al guardar: {e}")
+                        if hubo_cambios:
+                            if "Ult. Actualizacion" in headers:
+                                col_upd = headers.index("Ult. Actualizacion") + 1
+                                updates.append({'range': gspread.utils.rowcol_to_a1(fila_real, col_upd), 'values': [[hoy]]})
+                            
+                            sheet.batch_update(updates)
+                            if logs:
+                                log_sheet.append_rows(logs)
+    
+                            s.update(label="¡Guardado con éxito!", state="complete")
+                            st.markdown("""
+                                <script>
+                                var topElement = document.getElementById("top");
+                                if (topElement) {
+                                    topElement.scrollIntoView({ behavior: "smooth" });
+                                }
+                                </script>
+                                """, unsafe_allow_html=True)
+                        else:
+                            s.update(label="No se detectaron cambios nuevos.", state="complete")
+                    
+                   ## st.cache_resource.clear()
+                   ## st.rerun()
+                    
+                    st.cache_resource.clear()
+                    
+                    # ✅ activar flag para subir “virtualmente”
+                    st.session_state.scroll_top = True
+                    
+                    st.rerun()
+    
+                except Exception as e:
+                    st.error(f"Error crítico al guardar: {e}")
+else:
+    st.info("👀 Solo tienes acceso a visualización.")

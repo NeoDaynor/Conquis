@@ -20,76 +20,53 @@ unidad_actual = st.session_state.get("unidad_seleccionada")
 usuario_activo = st.session_state.get("user_info")
 
 # --- FUNCIONES DE IMAGEN ---
-def get_base64_of_bin_file(bin_file):
+def get_base64(file):
     try:
-        with open(bin_file, 'rb') as f:
-            data = f.read()
-        return base64.b64encode(data).decode()
-    except:
-        return ""
+        with open(file, 'rb') as f:
+            return base64.b64encode(f.read()).decode()
+    except: return ""
 
-bin_pc = get_base64_of_bin_file('images/fondopc.jpg')
-bin_mob = get_base64_of_bin_file('images/fondocelu.webp')
+bin_pc = get_base64('images/fondopc.jpg')
+bin_mob = get_base64('images/fondocelu.webp')
 
-# --- CSS INYECTADO (RESTAURADO) ---
-def aplicar_estilos_nativos(img_pc, img_mob):
-    st.markdown(
-        f"""
-        <style>
-        #MainMenu, footer, header, .stAppDeployButton {{visibility: hidden;}}
-        .stApp {{
-            background-attachment: fixed;
-            background-size: cover;
-            background-position: center;
-        }}
-        @media (min-width: 769px) {{ .stApp {{ background-image: url("data:image/jpg;base64,{img_pc}"); }} }}
-        @media (max-width: 768px) {{ .stApp {{ background-image: url("data:image/webp;base64,{img_mob}"); }} }}
-        
-        :root {{
-            --bg-card: rgba(255, 255, 255, 0.95);
-            --border: #0070C0;
-            --text-color: #1E293B;
-            --brand-color: #0070C0;
-        }}
-        @media (prefers-color-scheme: dark) {{
-            :root {{
-                --bg-card: rgba(30, 41, 59, 0.95);
-                --border: #334155;
-                --text-color: #F1F5F9;
-                --brand-color: #3B82F6;
-            }}
-        }}
-        .stApp {{ color: var(--text-color); }}
-        [data-testid="stVerticalBlock"] > div:has(div[data-testid="stVerticalBlock"]) {{
-            background-color: var(--bg-card) !important;
-            padding: 20px !important;
-            border-radius: 12px !important;
-            border: 1px solid var(--border) !important;
-            margin-bottom: 20px !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2) !important;
-        }}
-        .header-box {{
-            background-color: var(--bg-card);
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid var(--border);
-            margin-bottom: 20px;
-        }}
-        div.stButton > button[kind="primary"] {{
-            background-color: var(--brand-color) !important;
-            color: white !important;
-            height: 55px;
-            font-weight: bold;
-            border-radius: 10px;
-            width: 100%;
-        }}
-        </style>
-        """, 
-        unsafe_allow_html=True
-    )
-
-aplicar_estilos_nativos(bin_pc, bin_mob)
+# --- CSS INTEGRAL (RESTAURADO) ---
+st.markdown(f"""
+    <style>
+    .stApp {{
+        background-attachment: fixed;
+        background-size: cover;
+        background-position: center;
+    }}
+    @media (min-width: 769px) {{ .stApp {{ background-image: url("data:image/jpg;base64,{bin_pc}"); }} }}
+    @media (max-width: 768px) {{ .stApp {{ background-image: url("data:image/webp;base64,{bin_mob}"); }} }}
+    
+    .main-card {{
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #0070C0;
+        margin-bottom: 20px;
+        color: #1E293B;
+    }}
+    .header-box {{
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 15px;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid #0070C0;
+        margin-bottom: 20px;
+    }}
+    div.stButton > button[kind="primary"] {{
+        background-color: #0070C0 !important;
+        color: white !important;
+        font-weight: bold;
+        width: 100%;
+        height: 50px;
+    }}
+    /* Estilo para la tabla del Dashboard */
+    .stDataFrame {{ background-color: white; border-radius: 8px; }}
+    </style>
+""", unsafe_allow_html=True)
 
 # --- CONEXIÓN A DATOS ---
 @st.cache_resource
@@ -103,81 +80,89 @@ spreadsheet = client.open("RequisitosConquistadores")
 sheet = spreadsheet.worksheet("Amigo")
 log_sheet = spreadsheet.worksheet("Log_Cambios")
 
-# Cargamos TODO para rastrear posiciones reales
+# Lectura de datos crudos para posiciones exactas
 raw_values = sheet.get_all_values()
-# Tus encabezados están en la fila 2 (índice 1)
-headers = [h.strip() for h in raw_values[1]]
+headers = [h.strip() for h in raw_values[1]] # Fila 2
 df_full = pd.DataFrame(raw_values[2:], columns=headers)
 df_unidad = df_full[df_full['Unidad'] == unidad_actual].copy()
 
 # --- INTERFAZ ---
-st.markdown(f'<div class="header-box"><h2 style="color:var(--brand-color); margin:0;">UNIDAD: {unidad_actual.upper()}</h2></div>', unsafe_allow_html=True)
+st.markdown(f'<div class="header-box"><h2 style="color:#0070C0; margin:0;">UNIDAD: {unidad_actual.upper()}</h2></div>', unsafe_allow_html=True)
 
 if st.button("⬅️ VOLVER AL MENU"):
     st.switch_page("pages/menu.py")
 
-# TARJETA 2: REGISTRO DE AVANCES
+# --- BLOQUE 1: DASHBOARD DE AVANCE GENERAL (RESTAURADO) ---
 with st.container():
-    st.markdown("### 📝 Registro de Avances")
+    st.markdown('<div class="main-card">', unsafe_allow_html=True)
+    st.markdown("### 📊 Dashboard de Avance: General")
+    # Mostramos las columnas principales para el dashboard
+    cols_visualizar = ["Integrantes", "Ult. Actualizacion", "Voto y Ley", "Clase Biblica", "Lectura Biblica"]
+    cols_existentes = [c for c in cols_visualizar if c in df_unidad.columns]
+    st.dataframe(df_unidad[cols_existentes], use_container_width=True, hide_index=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# --- BLOQUE 2: REGISTRO DE AVANCES ---
+with st.container():
+    st.markdown('<div class="main-card">', unsafe_allow_html=True)
+    st.markdown("### 📝 Registro de Avances (Solo Líderes/Admin)")
     
     nombres = df_unidad['Integrantes'].tolist()
     if nombres:
         conquistador = st.selectbox("Seleccione Integrante:", nombres)
         fila_persona = df_unidad[df_unidad['Integrantes'] == conquistador].iloc[0]
         
-        # Categorías completas según tu estructura
+        # Categorías organizadas
         categorias = {
-            0: {"titulo": "GENERALES", "items": ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica"]},
-            1: {"titulo": "DESCUBRIMIENTO ESPIRITUAL", "items": ["Explicar la Creacion", "Explicar 10 Plaga", "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16", "Explicar Efesios 6:1-3", "Explicar Salmo 1", "Lectura Biblica"]},
-            2: {"titulo": "SIRVIENDO A OTROS", "items": ["Visitar a alguien", "Dar alimento", "Proyecto ecológico/educativo", "Buen Ciudadano"]}
+            "GENERALES": ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica"],
+            "DESCUBRIMIENTO": ["Explicar la Creacion", "Explicar 10 Plaga", "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16", "Explicar Efesios 6:1-3", "Explicar Salmo 1", "Lectura Biblica"],
+            "SIRVIENDO": ["Visitar a alguien", "Dar alimento", "Proyecto ecológico/educativo", "Buen Ciudadano"]
         }
 
-        cols = st.columns(len(categorias))
+        cols = st.columns(3)
         nuevo_estado = {}
 
-        for col_idx, info in categorias.items():
-            with cols[col_idx]:
-                st.markdown(f"**{info['titulo']}**")
-                for item in info['items']:
-                    # Chequeamos si la celda tiene contenido (fecha)
-                    valor_actual = bool(fila_persona.get(item) and str(fila_persona.get(item)).strip() != "")
-                    nuevo_estado[item] = st.checkbox(item, value=valor_actual, key=f"cb_{conquistador}_{item}")
+        for i, (cat_nombre, items) in enumerate(categorias.items()):
+            with cols[i]:
+                st.markdown(f"**{cat_nombre}**")
+                for item in items:
+                    if item in headers:
+                        valor_actual = bool(fila_persona.get(item) and str(fila_persona.get(item)).strip() != "")
+                        nuevo_estado[item] = st.checkbox(item, value=valor_actual, key=f"check_{conquistador}_{item}")
 
         if st.button("💾 SINCRONIZAR CAMBIOS", type="primary"):
             try:
-                # LOCALIZACIÓN INFALIBLE: Buscar nombre en Columna B de la hoja real
-                # Sumamos 1 porque gspread es base 1
-                nombres_reales = [r[headers.index('Integrantes')] for r in raw_values]
-                fila_excel = nombres_reales.index(conquistador) + 1
+                # Localización en el Excel real
+                nombres_col = [r[headers.index('Integrantes')] for r in raw_values]
+                fila_excel = nombres_col.index(conquistador) + 1
                 
                 hoy = ahora_chile.strftime("%d/%m/%Y")
-                logs = []
                 updates = []
+                logs = []
                 
-                with st.status("Sincronizando con Google Sheets...") as s:
-                    for req, marcado in nuevo_estado.items():
-                        estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
-                        col_idx = headers.index(req) + 1
-                        
-                        if marcado and not estaba_marcado:
-                            updates.append({'range': gspread.utils.rowcol_to_a1(fila_excel, col_idx), 'values': [[hoy]]})
-                            logs.append([ahora_chile.strftime("%d/%m/%Y %H:%M:%S"), usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
-                        elif not marcado and estaba_marcado:
-                            updates.append({'range': gspread.utils.rowcol_to_a1(fila_excel, col_idx), 'values': [[""]]})
-                            logs.append([ahora_chile.strftime("%d/%m/%Y %H:%M:%S"), usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
+                for req, marcado in nuevo_estado.items():
+                    estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
+                    col_idx = headers.index(req) + 1
+                    
+                    if marcado and not estaba_marcado:
+                        updates.append({'range': gspread.utils.rowcol_to_a1(fila_excel, col_idx), 'values': [[hoy]]})
+                        logs.append([ahora_chile.strftime("%d/%m/%Y %H:%M:%S"), usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
+                    elif not marcado and estaba_marcado:
+                        updates.append({'range': gspread.utils.rowcol_to_a1(fila_excel, col_idx), 'values': [[""]]})
+                        logs.append([ahora_chile.strftime("%d/%m/%Y %H:%M:%S"), usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
 
-                    if updates:
-                        # Actualizar fecha de última modificación
-                        if "Ult. Actualizacion" in headers:
-                            col_u = headers.index("Ult. Actualizacion") + 1
-                            updates.append({'range': gspread.utils.rowcol_to_a1(fila_excel, col_u), 'values': [[hoy]]})
-                        
-                        sheet.batch_update(updates)
-                        if logs: log_sheet.append_rows(logs)
-                        s.update(label="¡Datos guardados con éxito!", state="complete")
-                        st.cache_resource.clear()
-                        st.rerun()
-                    else:
-                        s.update(label="No hay cambios nuevos.", state="complete")
+                if updates:
+                    if "Ult. Actualizacion" in headers:
+                        col_u = headers.index("Ult. Actualizacion") + 1
+                        updates.append({'range': gspread.utils.rowcol_to_a1(fila_excel, col_u), 'values': [[hoy]]})
+                    
+                    sheet.batch_update(updates)
+                    if logs: log_sheet.append_rows(logs)
+                    st.success("Sincronización exitosa.")
+                    st.cache_resource.clear()
+                    st.rerun()
+                else:
+                    st.info("No se detectaron cambios.")
             except Exception as e:
-                st.error(f"Error crítico: {e}")
+                st.error(f"Error: {e}")
+    st.markdown('</div>', unsafe_allow_html=True)

@@ -109,6 +109,13 @@ headers = raw_data[1]
 df_full = pd.DataFrame(raw_data[2:], columns=headers)
 df_unidad = df_full[df_full['Unidad'] == unidad_actual].copy()
 
+# ✅ FILTRAR SOLO SU REGISTRO SI ES CONQUI
+if usuario_activo.get("rol") == "conqui":
+    df_unidad = df_unidad[
+        df_unidad['Integrantes'].str.strip().str.lower() ==
+        usuario_activo.get("usuario", "").strip().lower()
+    ]
+    
 # --- HEADER ---
 if st.session_state.scroll_top:
     st.success("✅ Cambios guardados correctamente")
@@ -129,6 +136,10 @@ if st.session_state.scroll_top:
 
 st.markdown(f'<div class="header-box"><h2 style="color:var(--brand-color); margin:0;">UNIDAD: {unidad_actual.upper()}</h2></div>', unsafe_allow_html=True)
 
+# 👇 MENSAJE SOLO PARA CONQUI
+if usuario_activo.get("rol") == "conqui":
+    st.info(f"👤 Viendo tu progreso: {usuario_activo.get('usuario')}")
+    
 if st.button("⬅️ VOLVER AL MENU"):
     st.switch_page("pages/menu.py")
 

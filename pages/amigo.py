@@ -31,7 +31,7 @@ def get_base64_of_bin_file(bin_file):
 bin_pc = get_base64_of_bin_file('images/fondopc.jpg')
 bin_mob = get_base64_of_bin_file('images/fondocelu.webp')
 
-# --- CSS INYECTADO ---
+# --- CSS INYECTADO (RESTAURADO COMPLETAMENTE) ---
 def aplicar_estilos_nativos(img_pc, img_mob):
     st.markdown(
         f"""
@@ -103,6 +103,7 @@ spreadsheet = client.open("RequisitosConquistadores")
 sheet = spreadsheet.worksheet("Amigo")
 log_sheet = spreadsheet.worksheet("Log_Cambios")
 
+# Leemos todos los valores (Encabezados en Fila 2)
 raw_data = sheet.get_all_values()
 headers = raw_data[1]
 df_full = pd.DataFrame(raw_data[2:], columns=headers)
@@ -114,7 +115,7 @@ st.markdown(f'<div class="header-box"><h2 style="color:var(--brand-color); margi
 if st.button("⬅️ VOLVER AL MENU"):
     st.switch_page("pages/menu.py")
 
-# --- TABLA ---
+# TARJETA 1: AVANCE GENERAL
 with st.container():
     st.markdown("### 📊 Avance General")
     st.dataframe(
@@ -122,7 +123,7 @@ with st.container():
         use_container_width=True, hide_index=True
     )
 
-# --- REGISTRO ---
+# TARJETA 2: REGISTRO DE AVANCES
 with st.container():
     st.markdown("### 📝 Registro de Avances")
     
@@ -156,14 +157,26 @@ with st.container():
                     key_cb = f"cb_{conquistador}_{item}"
                     marcado = st.checkbox(item, value=valor_actual, key=key_cb)
 
-                    # ✅ ALERTA PRO CON POPOVER
+                    # ✅ FIX REAL: persistencia con session_state
+                    key_confirm_state = f"confirm_state_{key_cb}"
+
+                    if key_confirm_state not in st.session_state:
+                        st.session_state[key_confirm_state] = False
+
                     if valor_actual and not marcado:
                         with st.popover("⚠️ Confirmar"):
                             st.warning("¿Seguro que deseas quitar esta marca?")
-                            confirmar = st.button("Sí, eliminar", key=f"btn_{key_cb}")
-                            confirmaciones[item] = confirmar
+                            
+                            if st.button("Sí, eliminar", key=f"btn_{key_cb}"):
+                                st.session_state[key_confirm_state] = True
+
+                        if st.session_state[key_confirm_state]:
+                            st.success("✔ Confirmado para eliminar")
+
+                        confirmaciones[item] = st.session_state[key_confirm_state]
                     else:
                         confirmaciones[item] = True
+                        st.session_state[key_confirm_state] = False
 
                     nuevo_estado[item] = marcado
 
@@ -172,6 +185,7 @@ with st.container():
         if st.button("💾 SINCRONIZAR CAMBIOS", type="primary"):
             try:
                 fila_idx_df = df_full[df_full['Integrantes'] == conquistador].index
+
                 if len(fila_idx_df) == 0:
                     st.error("No se encontró el registro en la hoja.")
                     st.stop()

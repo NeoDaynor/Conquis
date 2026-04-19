@@ -32,7 +32,7 @@ def get_base64_of_bin_file(bin_file):
 bin_pc = get_base64_of_bin_file('images/fondopc.jpg')
 bin_mob = get_base64_of_bin_file('images/fondocelu.webp')
 
-# --- CSS INYECTADO (CORREGIDO) ---
+# --- CSS INYECTADO ---
 def aplicar_estilos_nativos(img_pc, img_mob):
     st.markdown(
         f"""
@@ -97,7 +97,6 @@ def aplicar_estilos_nativos(img_pc, img_mob):
         unsafe_allow_html=True
     )
 
-# Llamamos a la función pasando las imágenes cargadas
 aplicar_estilos_nativos(bin_pc, bin_mob)
 
 # --- CONEXIÓN A DATOS ---
@@ -127,7 +126,7 @@ if st.button("⬅️ VOLVER AL MENU"):
 with st.container():
     st.markdown("### 📊 Avance General")
     st.dataframe(
-        # Opción: Fondo azul suave con letra negra para que la fecha se vea claramente
+        # Fondo azul suave con letra oscura para que las fechas sean legibles
         df_unidad.style.map(lambda v: 'background-color: rgba(59, 130, 246, 0.2); color: #1E293B; font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:]),
         use_container_width=True, hide_index=True
     )
@@ -141,11 +140,10 @@ with st.container():
         conquistador = st.selectbox("Seleccione Integrante:", nombres)
         fila_persona = df_unidad[df_unidad['Integrantes'] == conquistador].iloc[0]
         
-        # Definimos las 9 columnas
         cols = st.columns(9)
         nuevo_estado = {}
 
-        # Mapeo organizado por tus categorías del Excel
+        # Mapeo organizado por tus categorías y distribución exacta
         categorias = {
             0: {"titulo": "GENERALES", "items": ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica"]},
             1: {"titulo": "DESCUBRIMIENTO ESPIRITUAL", "items": ["Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16","Explicar Efesios 6:1-3", "Explicar Salmo 1", "Lectura Biblica"]},
@@ -160,16 +158,12 @@ with st.container():
 
         desmarcados = []
 
-        # Iteramos por cada columna
         for col_idx, info in categorias.items():
             col = cols[col_idx]
-            
-            # Ponemos el nombre de la categoría arriba de los checks
-            col.markdown(f"<p style='font-size: 0.8rem; font-weight: bold; color: var(--brand-color); margin-bottom: 5px;'>{info['titulo']}</p>", unsafe_allow_html=True)
+            col.markdown(f"<p style='font-size: 0.75rem; font-weight: bold; color: var(--brand-color); margin-bottom: 5px; height: 35px;'>{info['titulo']}</p>", unsafe_allow_html=True)
             
             for r in info['items']:
                 listo_en_db = bool(fila_persona.get(r) and str(fila_persona.get(r)).strip() != "")
-                
                 estado_check = col.checkbox(r, value=listo_en_db, key=f"f_{r}_{conquistador}")
                 nuevo_estado[r] = estado_check
                 
@@ -177,7 +171,6 @@ with st.container():
                     col.markdown('<span class="inline-warning">⚠️ Borrará fecha</span>', unsafe_allow_html=True)
                     desmarcados.append(r)
 
-        # --- Lógica de Sincronización (Se mantiene igual) ---
         confirmacion_final = True
         if desmarcados:
             st.divider()
@@ -189,28 +182,35 @@ with st.container():
             if not confirmacion_final:
                 st.error("Error: Debes confirmar el borrado para proceder.")
             else:
-                idx_excel = df_full[df_full['Integrantes'] == conquistador].index[0] + 3
-                hoy = ahora_chile.strftime("%d/%m/%Y")
-                ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
-                logs = []
-                hubo_cambios = False
-                
-                with st.status("Actualizando registros...") as s:
-                    for req, marcado in nuevo_estado.items():
-                        estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
-                        if marcado and not estaba_marcado:
-                            sheet.update_cell(idx_excel, headers.index(req) + 1, hoy)
-                            logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
-                            hubo_cambios = True
-                        elif not marcado and estaba_marcado:
-                            sheet.update_cell(idx_excel, headers.index(req) + 1, "")
-                            logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
-                            hubo_cambios = True
+                try:
+                    idx_excel = df_full[df_full['Integrantes'] == conquistador].index[0] + 3
+                    hoy = ahora_chile.strftime("%d/%m/%Y")
+                    ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
+                    logs = []
+                    hubo_cambios = False
                     
-                    if hubo_cambios:
-                        col_idx_update = headers.index("Ult. Actualizacion") + 1
-                        sheet.update_cell(idx_excel, col_idx_update, hoy)
+                    with st.status("Sincronizando con la base de datos...") as s:
+                        for req, marcado in nuevo_estado.items():
+                            estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
+                            
+                            if marcado and not estaba_marcado:
+                                sheet.update_cell(idx_excel, headers.index(req) + 1, hoy)
+                                logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
+                                hubo_cambios = True
+                            elif not marcado and estaba_marcado:
+                                sheet.update_cell(idx_excel, headers.index(req) + 1, "")
+                                logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
+                                hubo_cambios = True
+                        
+                        if hubo_cambios:
+                            # Actualización de campo "Ult. Actualizacion"
+                            col_idx_update = headers.index("Ult. Actualizacion") + 1
+                            sheet.update_cell(idx_excel, col_idx_update, hoy)
+                            if logs: log_sheet.append_rows(logs)
+                        
+                        s.update(label="Cambios guardados con éxito", state="complete")
                     
-                    if logs: log_sheet.append_rows(logs)
-                    s.update(label="Sincronizado correctamente", state="complete")
-                st.rerun()
+                    st.success("Información actualizada correctamente.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Error crítico de conexión: {e}")

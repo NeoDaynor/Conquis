@@ -9,7 +9,7 @@ import base64
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Gestión Club Lakonn", layout="wide", initial_sidebar_state="collapsed")
 
-# --- SEGURIDAD Y ROL ---
+# --- SEGURIDAD Y ZONA HORARIA ---
 chile_tz = pytz.timezone('America/Santiago')
 ahora_chile = datetime.now(chile_tz)
 
@@ -17,18 +17,15 @@ if "authenticated" not in st.session_state or not st.session_state["authenticate
     st.switch_page("app.py")
 
 unidad_actual = st.session_state.get("unidad_seleccionada")
-usuario_activo = st.session_state.get("user_info", {})
-rol_usuario = usuario_activo.get("rol", "conqui") # Por defecto el más restrictivo
+usuario_activo = st.session_state.get("user_info")
 
-# --- FUNCIONES DE IMAGEN (Protocolo Base64) ---
+# --- FUNCIONES DE IMAGEN ---
 def get_base64_of_bin_file(bin_file):
-    try:
-        with open(bin_file, 'rb') as f:
-            data = f.read()
-        return base64.b64encode(data).decode()
-    except: return ""
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
 
-# --- CSS INYECTADO (Identidad Visual) ---
+# --- CSS INYECTADO DIRECTO A COMPONENTES NATIVOS ---
 def aplicar_estilos_nativos():
     bin_str_pc = get_base64_of_bin_file('images/fondopc.jpg')
     bin_str_mob = get_base64_of_bin_file('images/fondocelu.webp')
@@ -38,17 +35,27 @@ def aplicar_estilos_nativos():
         <style>
         #MainMenu, footer, header, .stAppDeployButton {{visibility: hidden;}}
         .stApp {{
-            background-attachment: fixed; background-size: cover; background-position: center;
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
         }}
         @media (min-width: 769px) {{ .stApp {{ background-image: url("data:image/jpg;base64,{bin_str_pc}"); }} }}
-        @media (max-width: 768px) {{ .stApp {{ background-image: url("data:image/webp;base64,{bin_str_mob}"); }} }}
-
+        @media (max-width: 768px) {{ .stApp {{ background-image: url("data:image/webp;base64,{bin_mob}"); }} }}
         :root {{
             --bg-card: rgba(255, 255, 255, 0.95);
             --border: #0070C0;
+            --text-color: #1E293B;
             --brand-color: #0070C0;
         }}
-
+        @media (prefers-color-scheme: dark) {{
+            :root {{
+                --bg-card: rgba(30, 41, 59, 0.95);
+                --border: #334155;
+                --text-color: #F1F5F9;
+                --brand-color: #3B82F6;
+            }}
+        }}
+        .stApp {{ color: var(--text-color); }}
         [data-testid="stVerticalBlock"] > div:has(div[data-testid="stVerticalBlock"]) {{
             background-color: var(--bg-card) !important;
             padding: 20px !important;
@@ -57,11 +64,28 @@ def aplicar_estilos_nativos():
             margin-bottom: 20px !important;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2) !important;
         }}
-
         .header-box {{
             background-color: var(--bg-card);
-            padding: 15px; border-radius: 12px; text-align: center;
-            border: 1px solid var(--border); margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }}
+        .inline-warning {{
+            color: #F59E0B;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: block;
+            margin-top: -10px;
+            margin-bottom: 5px;
+        }}
+        div.stButton > button[kind="primary"] {{
+            background-color: var(--brand-color) !important;
+            color: white !important;
+            height: 55px;
+            font-weight: bold;
+            border-radius: 10px;
         }}
         </style>
         """, 
@@ -87,80 +111,82 @@ headers = raw_data[1]
 df_full = pd.DataFrame(raw_data[2:], columns=headers)
 df_unidad = df_full[df_full['Unidad'] == unidad_actual].copy()
 
-# --- LÓGICA DE FILTRADO POR ROL ---
-# Si es 'conqui', solo ve su propia fila. El nombre en user_info debe coincidir con el de la planilla.
-if rol_usuario == "conqui":
-    df_unidad = df_unidad[df_unidad['Integrantes'] == usuario_activo['usuario']]
-
 # --- ESTRUCTURA DE LA PÁGINA ---
-
 st.markdown(f'<div class="header-box"><h2 style="color:var(--brand-color); margin:0;">UNIDAD: {unidad_actual.upper()}</h2></div>', unsafe_allow_html=True)
 
 if st.button("⬅️ VOLVER AL MENU"):
     st.switch_page("pages/menu.py")
 
-# TARJETA 1: AVANCE GENERAL (Visible para todos, pero filtrada para conquis)
+# TARJETA 1: AVANCE GENERAL
 with st.container():
-    st.markdown(f"### 📊 Dashboard de Avance: {usuario_activo['nombre'] if rol_usuario == 'conqui' else 'General'}")
+    st.markdown("### 📊 Avance General")
     st.dataframe(
-        df_unidad.style.map(lambda v: 'background-color: rgba(59, 130, 246, 0.2); color: #0070C0; font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:]),
+        df_unidad.style.map(lambda v: 'background-color: rgba(59, 130, 246, 0.2); color: var(--brand-color); font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:]),
         use_container_width=True, hide_index=True
     )
 
-# TARJETA 2: REGISTRO DE AVANCES (OCULTA PARA ROL "CONQUI")
-if rol_usuario in ["admin", "lider"]:
-    with st.container():
-        st.markdown("### 📝 Registro de Avances (Solo Líderes/Admin)")
+# TARJETA 2: REGISTRO DE AVANCES
+with st.container():
+    st.markdown("### 📝 Registro de Avances")
+    
+    nombres = df_unidad['Integrantes'].tolist()
+    if nombres:
+        conquistador = st.selectbox("Seleccione Integrante:", nombres)
+        fila_persona = df_unidad[df_unidad['Integrantes'] == conquistador].iloc[0]
         
-        nombres = df_unidad['Integrantes'].tolist()
-        if nombres:
-            conquistador = st.selectbox("Seleccione Integrante:", nombres)
-            fila_persona = df_unidad[df_unidad['Integrantes'] == conquistador].iloc[0]
-            
-            c1, c2, c3 = st.columns(3)
-            nuevo_estado = {}
-            requisitos = ["Voto", "Ley", "Blanco", "Lema", "El Camino a Cristo", "Génesis",
-                          "Nudos Básicos", "Pernoctar Campamento", "Armar Carpa", "Señales de Pista",
-                          "Temperancia de Daniel", "Menú Vegetariano", "Especialidad Naturaleza", "2 Horas Ayuda Comunitaria"]
+        c1, c2, c3 = st.columns(3)
+        nuevo_estado = {}
+        requisitos = ["Voto", "Ley", "Blanco", "Lema", "El Camino a Cristo", "Génesis",
+                      "Nudos Básicos", "Pernoctar Campamento", "Armar Carpa", "Señales de Pista",
+                      "Temperancia de Daniel", "Menú Vegetariano", "Especialidad Naturaleza", "2 Horas Ayuda Comunitaria"]
 
-            desmarcados = []
-            for i, r in enumerate(requisitos):
-                col = c1 if i < 6 else (c2 if i < 10 else c3)
-                listo_en_db = bool(fila_persona.get(r) and str(fila_persona.get(r)).strip() != "")
-                estado_check = col.checkbox(r, value=listo_en_db, key=f"f_{r}_{conquistador}")
-                nuevo_estado[r] = estado_check
+        desmarcados = []
+        for i, r in enumerate(requisitos):
+            col = c1 if i < 6 else (c2 if i < 10 else c3)
+            listo_en_db = bool(fila_persona.get(r) and str(fila_persona.get(r)).strip() != "")
+            
+            estado_check = col.checkbox(r, value=listo_en_db, key=f"f_{r}_{conquistador}")
+            nuevo_estado[r] = estado_check
+            
+            if listo_en_db and not estado_check:
+                col.markdown('<span class="inline-warning">⚠️ Borrará fecha</span>', unsafe_allow_html=True)
+                desmarcados.append(r)
+
+        confirmacion_final = True
+        if desmarcados:
+            st.divider()
+            confirmacion_final = st.toggle("Confirmar eliminación de registros históricos", value=False)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        if st.button("💾 SINCRONIZAR CAMBIOS", type="primary"):
+            if not confirmacion_final:
+                st.error("Error: Debes confirmar el borrado para proceder.")
+            else:
+                idx_excel = df_full[df_full['Integrantes'] == conquistador].index[0] + 3
+                hoy = ahora_chile.strftime("%d/%m/%Y")
+                ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
+                logs = []
+                hubo_cambios = False # Bandera para actualizar Ult. Actualización
                 
-                if listo_en_db and not estado_check:
-                    col.markdown('<span style="color:#F59E0B; font-size:0.8rem;">⚠️ Borrará fecha</span>', unsafe_allow_html=True)
-                    desmarcados.append(r)
-
-            confirmacion_final = True
-            if desmarcados:
-                st.divider()
-                confirmacion_final = st.toggle("Confirmar eliminación de registros históricos", value=False)
-            
-            if st.button("💾 SINCRONIZAR CAMBIOS", type="primary"):
-                if not confirmacion_final:
-                    st.error("Error: Debes confirmar el borrado para proceder.")
-                else:
-                    idx_excel = df_full[df_full['Integrantes'] == conquistador].index[0] + 3
-                    hoy = ahora_chile.strftime("%d/%m/%Y")
-                    ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
-                    logs = []
+                with st.status("Actualizando registros...") as s:
+                    for req, marcado in nuevo_estado.items():
+                        estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
+                        if marcado and not estaba_marcado:
+                            sheet.update_cell(idx_excel, headers.index(req) + 1, hoy)
+                            logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
+                            hubo_cambios = True
+                        elif not marcado and estaba_marcado:
+                            sheet.update_cell(idx_excel, headers.index(req) + 1, "")
+                            logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
+                            hubo_cambios = True
                     
-                    with st.status("Actualizando registros...") as s:
-                        for req, marcado in nuevo_estado.items():
-                            estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
-                            if marcado and not estaba_marcado:
-                                sheet.update_cell(idx_excel, headers.index(req) + 1, hoy)
-                                logs.append([ahora_log, usuario_activo['usuario'], usuario_activo['cargo'], conquistador, req, "Marcado"])
-                            elif not marcado and estaba_marcado:
-                                sheet.update_cell(idx_excel, headers.index(req) + 1, "")
-                                logs.append([ahora_log, usuario_activo['usuario'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
-                        
-                        if logs: log_sheet.append_rows(logs)
-                        s.update(label="Sincronizado correctamente", state="complete")
-                    st.rerun()
-else:
-    # Mensaje informativo para el conquistador
-    st.info("💡 Solo puedes visualizar tu avance. Si crees que falta algún registro, contacta a tu líder de unidad.")
+                    # SI HUBO CAMBIOS, ACTUALIZAR CAMPO "Ult. Actualizacion"
+                    if hubo_cambios:
+                        # Buscamos el índice de la columna "Ult. Actualizacion"
+                        col_idx_update = headers.index("Ult. Actualizacion") + 1
+                        sheet.update_cell(idx_excel, col_idx_update, hoy)
+                    
+                    if logs: log_sheet.append_rows(logs)
+                    s.update(label="Sincronizado correctamente", state="complete")
+                st.rerun()

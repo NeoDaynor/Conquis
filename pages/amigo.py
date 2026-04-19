@@ -127,9 +127,9 @@ if st.button("⬅️ VOLVER AL MENU"):
 with st.container():
     st.markdown("### 📊 Avance General")
     st.dataframe(
-        df_unidad.style.map(lambda v: 'background-color: rgba(59, 130, 246, 0.2); color: var(--brand-color); font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:]),
+        ##df_unidad.style.map(lambda v: 'background-color: rgba(59, 130, 246, 0.2); color: var(--brand-color); font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:]),
         # Opción: Fondo azul suave con letra negra para que la fecha se vea claramente
-        #df_unidad.style.map(lambda v: 'background-color: rgba(59, 130, 246, 0.2); color: #1E293B; font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:])
+        df_unidad.style.map(lambda v: 'background-color: rgba(59, 130, 246, 0.2); color: #1E293B; font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:]),
         use_container_width=True, hide_index=True
     )
 

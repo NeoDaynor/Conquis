@@ -150,7 +150,7 @@ with st.container():
 
         desmarcados = []
         for i, r in enumerate(requisitos):
-            col = c1 if i < 6 else (c2 if i < 10 else c3)
+            col = c1 if i < 4 else (c2 if i < 13 else c3)
             listo_en_db = bool(fila_persona.get(r) and str(fila_persona.get(r)).strip() != "")
             
             estado_check = col.checkbox(r, value=listo_en_db, key=f"f_{r}_{conquistador}")

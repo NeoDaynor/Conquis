@@ -300,8 +300,7 @@ if usuario_activo.get("rol") != "conqui":
                 except Exception as e:
                     st.error(f"Error crítico al guardar: {e}")
 else:
-    if usuario_activo.get("rol") == "conqui":
-    st.markdown(f"""
+    st.markdown("""
     <div style="
         background-color: var(--bg-card);
         border: 1px solid var(--border);
@@ -312,6 +311,6 @@ else:
         font-weight: 500;
         display: inline-block;
     ">
-        👀 Solo tienes acceso a visualización.</b>
+        👀 Solo tienes acceso a visualización.
     </div>
     """, unsafe_allow_html=True)

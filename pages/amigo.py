@@ -141,29 +141,33 @@ with st.container():
         conquistador = st.selectbox("Seleccione Integrante:", nombres)
         fila_persona = df_unidad[df_unidad['Integrantes'] == conquistador].iloc[0]
         
-        # Definimos las columnas
+        # Definimos las 9 columnas
         cols = st.columns(9)
         nuevo_estado = {}
 
-        # Mapeo de requisitos por columna según tu orden de categorías
+        # Mapeo organizado por tus categorías del Excel
         categorias = {
-            0: ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica"],
-            1: ["Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16","Explicar Efesios 6:1-3", "Explicar Salmo 1", "Lectura Biblica"],
-            2: ["Visitar a alguien", "Dar alimento", "Proyecto ecológico/educativo", "Buen Ciudadano"],
-            3: ["10 Cualidades / Regla de oro Mateo 7:12", "Himno Nacional"],
-            4: ["Nudos y Amarras", "Explicar Daniel 1:8", "Compromiso vida saludable", "Dieta saludable / Preparar cuadro"],
-            5: ["Planear y ejecutar caminata 5K"],
-            6: ["Especialidad Naturaleza", "Purificar Agua", "Armar Carpa"],
-            7: ["Cuidar cuerda / Hacer Nudos", "Campamento I", "10 Reglas caminata", "Señales de Pista"],
-            8: ["Especialidad Habilidades Manuales"]
+            0: {"titulo": "GENERALES", "items": ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica"]},
+            1: {"titulo": "DESCUBRIMIENTO ESPIRITUAL", "items": ["Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16","Explicar Efesios 6:1-3", "Explicar Salmo 1", "Lectura Biblica"]},
+            2: {"titulo": "SIRVIENDO A OTROS", "items": ["Visitar a alguien", "Dar alimento", "Proyecto ecológico/educativo", "Buen Ciudadano"]},
+            3: {"titulo": "DESARROLLO DE LA AMISTAD", "items": ["10 Cualidades / Regla de oro Mateo 7:12", "Himno Nacional"]},
+            4: {"titulo": "SALUD Y APTITUD FÍSICA", "items": ["Nudos y Amarras", "Explicar Daniel 1:8", "Compromiso vida saludable", "Dieta saludable / Preparar cuadro"]},
+            5: {"titulo": "LIDERAZGO", "items": ["Planear y ejecutar caminata 5K"]},
+            6: {"titulo": "ESTUDIO DE LA NATURALEZA", "items": ["Especialidad Naturaleza", "Purificar Agua", "Armar Carpa"]},
+            7: {"titulo": "ARTE DE ACAMPAR", "items": ["Cuidar cuerda / Hacer Nudos", "Campamento I", "10 Reglas caminata", "Señales de Pista"]},
+            8: {"titulo": "ESTILO DE VIDA", "items": ["Especialidad Habilidades Manuales"]}
         }
 
         desmarcados = []
 
-        # Iteramos por cada columna y sus requisitos específicos
-        for col_idx, reqs_cat in categorias.items():
+        # Iteramos por cada columna
+        for col_idx, info in categorias.items():
             col = cols[col_idx]
-            for r in reqs_cat:
+            
+            # Ponemos el nombre de la categoría arriba de los checks
+            col.markdown(f"<p style='font-size: 0.8rem; font-weight: bold; color: var(--brand-color); margin-bottom: 5px;'>{info['titulo']}</p>", unsafe_allow_html=True)
+            
+            for r in info['items']:
                 listo_en_db = bool(fila_persona.get(r) and str(fila_persona.get(r)).strip() != "")
                 
                 estado_check = col.checkbox(r, value=listo_en_db, key=f"f_{r}_{conquistador}")
@@ -173,6 +177,7 @@ with st.container():
                     col.markdown('<span class="inline-warning">⚠️ Borrará fecha</span>', unsafe_allow_html=True)
                     desmarcados.append(r)
 
+        # --- Lógica de Sincronización (Se mantiene igual) ---
         confirmacion_final = True
         if desmarcados:
             st.divider()

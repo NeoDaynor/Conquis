@@ -142,7 +142,20 @@ st.markdown(f'<div class="header-box"><h2 style="color:var(--brand-color); margi
 
 # 👇 MENSAJE SOLO PARA CONQUI
 if usuario_activo.get("rol") == "conqui":
-    st.markdown(f"👤 Viendo tu progreso: {usuario_activo.get('nombre')}")
+    st.markdown(f"""
+    <div style="
+        background-color: var(--bg-card);
+        border: 1px solid var(--border);
+        color: var(--text-color);
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        font-weight: 500;
+        display: inline-block;
+    ">
+        👤 Viendo tu progreso: <b>{usuario_activo.get('nombre')}</b>
+    </div>
+    """, unsafe_allow_html=True)
     
 if st.button("⬅️ VOLVER AL MENU"):
     st.switch_page("pages/menu.py")
@@ -287,4 +300,18 @@ if usuario_activo.get("rol") != "conqui":
                 except Exception as e:
                     st.error(f"Error crítico al guardar: {e}")
 else:
-    st.info("👀 Solo tienes acceso a visualización.")
+    if usuario_activo.get("rol") == "conqui":
+    st.markdown(f"""
+    <div style="
+        background-color: var(--bg-card);
+        border: 1px solid var(--border);
+        color: var(--text-color);
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        font-weight: 500;
+        display: inline-block;
+    ">
+        👀 Solo tienes acceso a visualización.</b>
+    </div>
+    """, unsafe_allow_html=True)

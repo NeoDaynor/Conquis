@@ -110,9 +110,9 @@ spreadsheet = client.open("RequisitosConquistadores")
 sheet = spreadsheet.worksheet("Amigo")
 log_sheet = spreadsheet.worksheet("Log_Cambios")
 
-# Obtenemos todos los datos para procesar índices correctamente
+# Cargamos los datos (Headers en Fila 2)
 raw_data = sheet.get_all_values()
-headers = raw_data[1]  # La fila 2 contiene los encabezados reales
+headers = raw_data[1]
 df_full = pd.DataFrame(raw_data[2:], columns=headers)
 df_unidad = df_full[df_full['Unidad'] == unidad_actual].copy()
 
@@ -161,7 +161,6 @@ with st.container():
             col.markdown(f"<p style='font-size: 0.75rem; font-weight: bold; color: var(--brand-color); margin-bottom: 5px; height: 35px;'>{info['titulo']}</p>", unsafe_allow_html=True)
             
             for r in info['items']:
-                # Validamos si ya tiene registro
                 listo_en_db = bool(fila_persona.get(r) and str(fila_persona.get(r)).strip() != "")
                 estado_check = col.checkbox(r, value=listo_en_db, key=f"f_{r}_{conquistador}")
                 nuevo_estado[r] = estado_check
@@ -182,7 +181,7 @@ with st.container():
                 st.error("Error: Debes confirmar el borrado para proceder.")
             else:
                 try:
-                    # LOCALIZACIÓN DE LA FILA EXACTA (Fila en Sheets = Index en DF + 3 por encabezados)
+                    # Encontrar fila exacta (Index + 3)
                     idx_excel = df_full[df_full['Integrantes'] == conquistador].index[0] + 3
                     hoy = ahora_chile.strftime("%d/%m/%Y")
                     ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
@@ -190,10 +189,9 @@ with st.container():
                     hubo_cambios = False
                     
                     with st.status("Sincronizando con Google Sheets...") as s:
-                        for req, marcado en nuevo_estado.items():
+                        # CORRECCIÓN: Usamos 'in' en lugar de 'en' para evitar SyntaxError
+                        for req, marcado in nuevo_estado.items():
                             estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
-                            
-                            # Obtenemos el índice de la columna basado en los headers reales
                             col_idx = headers.index(req) + 1
                             
                             if marcado and not estaba_marcado:
@@ -206,21 +204,19 @@ with st.container():
                                 hubo_cambios = True
                         
                         if hubo_cambios:
-                            # ACTUALIZACIÓN DE "Ult. Actualizacion"
-                            s.update(label="Actualizando fecha de actividad...", state="running")
+                            s.update(label="Actualizando fecha de interacción...", state="running")
                             col_idx_update = headers.index("Ult. Actualizacion") + 1
                             sheet.update_cell(idx_excel, col_idx_update, hoy)
                             
                             if logs:
-                                s.update(label="Guardando historial de cambios...", state="running")
+                                s.update(label="Guardando historial...", state="running")
                                 log_sheet.append_rows(logs)
                         
-                        s.update(label="Sincronizado con éxito", state="complete")
+                        s.update(label="¡Sincronización Exitosa!", state="complete")
                     
-                    st.success(f"Registros de {conquistador} actualizados.")
-                    st.cache_resource.clear() # Limpiamos caché para forzar lectura de datos nuevos
+                    st.success(f"Datos de {conquistador} guardados.")
+                    st.cache_resource.clear()
                     st.rerun()
 
                 except Exception as e:
-                    st.error(f"Error al guardar: {e}")
-                    st.info("Revisa si el nombre de la columna en Excel coincide exactamente con el código.")
+                    st.error(f"Error de conexión: {e}")

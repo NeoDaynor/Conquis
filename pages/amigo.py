@@ -21,15 +21,19 @@ usuario_activo = st.session_state.get("user_info")
 
 # --- FUNCIONES DE IMAGEN ---
 def get_base64_of_bin_file(bin_file):
-    with open(bin_file, 'rb') as f:
-        data = f.read()
-    return base64.b64encode(data).decode()
+    try:
+        with open(bin_file, 'rb') as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except:
+        return ""
 
-# --- CSS INYECTADO DIRECTO A COMPONENTES NATIVOS ---
-def aplicar_estilos_nativos():
-    bin_str_pc = get_base64_of_bin_file('images/fondopc.jpg')
-    bin_str_mob = get_base64_of_bin_file('images/fondocelu.webp')
+# Cargamos las imágenes antes de llamar a la función de estilos
+bin_pc = get_base64_of_bin_file('images/fondopc.jpg')
+bin_mob = get_base64_of_bin_file('images/fondocelu.webp')
 
+# --- CSS INYECTADO (CORREGIDO) ---
+def aplicar_estilos_nativos(img_pc, img_mob):
     st.markdown(
         f"""
         <style>
@@ -39,8 +43,9 @@ def aplicar_estilos_nativos():
             background-size: cover;
             background-position: center;
         }}
-        @media (min-width: 769px) {{ .stApp {{ background-image: url("data:image/jpg;base64,{bin_str_pc}"); }} }}
-        @media (max-width: 768px) {{ .stApp {{ background-image: url("data:image/webp;base64,{bin_mob}"); }} }}
+        @media (min-width: 769px) {{ .stApp {{ background-image: url("data:image/jpg;base64,{img_pc}"); }} }}
+        @media (max-width: 768px) {{ .stApp {{ background-image: url("data:image/webp;base64,{img_mob}"); }} }}
+        
         :root {{
             --bg-card: rgba(255, 255, 255, 0.95);
             --border: #0070C0;
@@ -92,7 +97,8 @@ def aplicar_estilos_nativos():
         unsafe_allow_html=True
     )
 
-aplicar_estilos_nativos()
+# Llamamos a la función pasando las imágenes cargadas
+aplicar_estilos_nativos(bin_pc, bin_mob)
 
 # --- CONEXIÓN A DATOS ---
 @st.cache_resource
@@ -167,7 +173,7 @@ with st.container():
                 hoy = ahora_chile.strftime("%d/%m/%Y")
                 ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
                 logs = []
-                hubo_cambios = False # Bandera para actualizar Ult. Actualización
+                hubo_cambios = False
                 
                 with st.status("Actualizando registros...") as s:
                     for req, marcado in nuevo_estado.items():
@@ -181,9 +187,7 @@ with st.container():
                             logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
                             hubo_cambios = True
                     
-                    # SI HUBO CAMBIOS, ACTUALIZAR CAMPO "Ult. Actualizacion"
                     if hubo_cambios:
-                        # Buscamos el índice de la columna "Ult. Actualizacion"
                         col_idx_update = headers.index("Ult. Actualizacion") + 1
                         sheet.update_cell(idx_excel, col_idx_update, hoy)
                     

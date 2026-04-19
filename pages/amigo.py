@@ -141,16 +141,33 @@ with st.container():
         conquistador = st.selectbox("Seleccione Integrante:", nombres)
         fila_persona = df_unidad[df_unidad['Integrantes'] == conquistador].iloc[0]
         
-        c1, c2, c3, c4 = st.columns(4)
+        # Ampliamos a 9 columnas para una mejor distribución horizontal
+        cols = st.columns(9)
         nuevo_estado = {}
-        requisitos = ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica", 
-                      "Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16","Explicar Efesios 6:1-3", "Explicar Salmo 1", "Lectura Biblica", 
-                      "Visitar a alguien", "Dar alimento", "Proyecto ecológico/educativo",
-                      "10 Cualidades / Regla de oro Mateo 7:12"]
+        
+        # Lista completa de tus requisitos
+        requisitos = [
+            "Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica", 
+            "Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.", 
+            "Explicar Juan 3:16", "Explicar II Timoteo 3:16", "Explicar Efesios 6:1-3", "Explicar Salmo 1", 
+            "Lectura Biblica", "Visitar a alguien", "Dar alimento", "Proyecto ecológico/educativo", 
+            "Buen Ciudadano", "10 Cualidades / Regla de oro Mateo 7:12", "Himno Nacional",
+            "Nudos y Amarras", "Explicar Daniel 1:8", "Compromiso vida saludable", "Dieta saludable / Preparar cuadro",
+            "Planear y ejecutar caminata 5K", "Especialidad Naturaleza", "Purificar Agua", "Armar Carpa",
+            "Cuidar cuerda / Hacer Nudos", "Campamento I", "10 Reglas caminata", "Señales de Pista",
+            "Especialidad Habilidades Manuales"
+        ]
 
         desmarcados = []
+        total_req = len(requisitos)
+        
         for i, r in enumerate(requisitos):
-            col = c1 if i < 4 else (c2 if i < 13 else (c3 if i < 3 else c4))
+            # Lógica para distribuir en 9 columnas (aprox 3.5 req por columna)
+            idx_col = i // 4 if i < 28 else 8 # Agrupa de a 4, los últimos van a la col 9
+            if idx_col > 8: idx_col = 8 # Asegura no salir del índice de columnas
+            
+            col = cols[idx_col]
+            
             listo_en_db = bool(fila_persona.get(r) and str(fila_persona.get(r)).strip() != "")
             
             estado_check = col.checkbox(r, value=listo_en_db, key=f"f_{r}_{conquistador}")

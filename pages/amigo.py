@@ -105,7 +105,7 @@ log_sheet = spreadsheet.worksheet("Log_Cambios")
 
 # Leemos todos los valores (Encabezados en Fila 2)
 raw_data = sheet.get_all_values()
-headers = raw_data[1]  # Los requisitos están aquí
+headers = raw_data[1]
 df_full = pd.DataFrame(raw_data[2:], columns=headers)
 df_unidad = df_full[df_full['Unidad'] == unidad_actual].copy()
 
@@ -132,7 +132,6 @@ with st.container():
         conquistador = st.selectbox("Seleccione Integrante:", nombres)
         fila_persona = df_unidad[df_unidad['Integrantes'] == conquistador].iloc[0]
         
-        # CATEGORÍAS COMPLETAS RESTAURADAS
         categorias = {
             0: {"titulo": "GENERALES", "items": ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica"]},
             1: {"titulo": "DESCUBRIMIENTO ESPIRITUAL", "items": ["Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16","Explicar Efesios 6:1-3", "Explicar Salmo 1", "Lectura Biblica"]},
@@ -159,10 +158,15 @@ with st.container():
         
         if st.button("💾 SINCRONIZAR CAMBIOS", type="primary"):
             try:
-                # 1. LOCALIZAR FILA EXACTA EN GOOGLE SHEETS
-                lista_integrantes = [r[headers.index('Integrantes')] for r in raw_data]
-                fila_real = lista_integrantes.index(conquistador) + 1
-                
+                # ✅ FIX: cálculo correcto de fila (antes estaba mal)
+                fila_idx_df = df_full[df_full['Integrantes'] == conquistador].index
+
+                if len(fila_idx_df) == 0:
+                    st.error("No se encontró el registro en la hoja.")
+                    st.stop()
+
+                fila_real = fila_idx_df[0] + 3  # 🔥 ajuste correcto
+
                 hoy = ahora_chile.strftime("%d/%m/%Y")
                 ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
                 
@@ -187,13 +191,17 @@ with st.container():
                                 hubo_cambios = True
                     
                     if hubo_cambios:
-                        # Actualizar Ult. Actualización
                         if "Ult. Actualizacion" in headers:
                             col_upd = headers.index("Ult. Actualizacion") + 1
                             updates.append({'range': gspread.utils.rowcol_to_a1(fila_real, col_upd), 'values': [[hoy]]})
                         
+                        # 🔍 DEBUG opcional
+                        # st.write("UPDATES:", updates)
+
                         sheet.batch_update(updates)
-                        if logs: log_sheet.append_rows(logs)
+                        if logs:
+                            log_sheet.append_rows(logs)
+
                         s.update(label="¡Guardado con éxito!", state="complete")
                     else:
                         s.update(label="No se detectaron cambios nuevos.", state="complete")

@@ -107,6 +107,15 @@
             "rol": "lider",
             "usuario": "Agustin",
             "password": "Lakonn2026"
+        },
+        {
+            "id":14,
+            "nombre": "Patricio Gonzalez",
+            "cargo": "Consejera",
+            "correo": "sin@correo.com",
+            "rol": "lider",
+            "usuario": "Patricio",
+            "password": "Lakonn2026"
         }
     ]
 }

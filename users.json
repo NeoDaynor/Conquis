@@ -75,7 +75,7 @@
         {
             "id":10,
             "nombre": "Norman Sanchez",
-            "cargo": "Consejero",
+            "cargo": "Subdirector / Consejero",
             "correo": "sin@correo.com",
             "rol": "lider",
             "usuario": "Norman",
@@ -111,7 +111,7 @@
         {
             "id":14,
             "nombre": "Patricio Gonzalez",
-            "cargo": "Consejera",
+            "cargo": "Director",
             "correo": "sin@correo.com",
             "rol": "lider",
             "usuario": "Patricio",

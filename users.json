@@ -35,6 +35,78 @@
             "rol": "lider",
             "usuario": "Constanza",
             "password": "123"
+        },
+        {
+            "id":5,
+            "nombre": "Susana Mujica",
+            "cargo": "Consejera",
+            "correo": "sin@correo.com",
+            "rol": "lider",
+            "usuario": "Susana",
+            "password": "Lakonn2026"
+        },
+        {
+            "id":6,
+            "nombre": "Fernanda del Rio",
+            "cargo": "Consejera",
+            "correo": "sin@correo.com",
+            "rol": "lider",
+            "usuario": "Fernanda",
+            "password": "Lakonn2026"
+        },
+        {
+            "id":7,
+            "nombre": "Helena Gonzalez",
+            "cargo": "Consejera",
+            "correo": "sin@correo.com",
+            "rol": "lider",
+            "usuario": "Helena",
+            "password": "Lakonn2026"
+        },
+        {
+            "id":8,
+            "nombre": "Loreto Pizarro",
+            "cargo": "Consejera",
+            "correo": "sin@correo.com",
+            "rol": "lider",
+            "usuario": "Loreto",
+            "password": "Lakonn2026"
+        },
+        {
+            "id":10,
+            "nombre": "Norman Sanchez",
+            "cargo": "Consejero",
+            "correo": "sin@correo.com",
+            "rol": "lider",
+            "usuario": "Norman",
+            "password": "Lakonn2026"
+        },
+        {
+            "id":11,
+            "nombre": "Ivan Navas",
+            "cargo": "Consejera",
+            "correo": "sin@correo.com",
+            "rol": "lider",
+            "usuario": "Ivan",
+            "password": "Lakonn2026"
+        },
+        {
+            "id":12,
+            "nombre": "Arelis Cordova",
+            "cargo": "Consejera",
+            "correo": "sin@correo.com",
+            "rol": "lider",
+            "usuario": "Arelis",
+            "password": "Lakonn2026"
+        },
+        {
+            "id":13,
+            "nombre": "Agustin Valdez",
+            "cargo": "Consejera",
+            "correo": "sin@correo.com",
+            "rol": "lider",
+            "usuario": "Agustin",
+            "password": "Lakonn2026"
         }
     ]
 }

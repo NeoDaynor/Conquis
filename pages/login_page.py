@@ -1,45 +1,24 @@
 import streamlit as st
-import base64
+
 from login import mostrar_login
+from ui_theme import apply_app_theme, render_hero
 
-# Configuración de página
-st.set_page_config(page_title="Login - Club Lakonn", layout="wide", initial_sidebar_state="collapsed")
 
-def get_base64(bin_file):
-    with open(bin_file, 'rb') as f:
-        return base64.b64encode(f.read()).decode()
-
-# Imágenes de fondo
-bin_pc = get_base64('images/fondopc.jpg')
-bin_mob = get_base64('images/fondocelu.webp')
-
-# CSS Correctivo para PC y Móvil
-st.markdown(
-    f"""
-    <style>
-    #MainMenu, footer, header {{visibility: hidden;}}
-    
-    /* Fondo responsivo aplicado al contenedor principal */
-    [data-testid="stAppViewContainer"] {{
-        background-attachment: fixed; 
-        background-size: cover; 
-        background-position: center;
-    }}
-    @media (min-width: 769px) {{ [data-testid="stAppViewContainer"] {{ background-image: url("data:image/jpg;base64,{bin_pc}"); }} }}
-    @media (max-width: 768px) {{ [data-testid="stAppViewContainer"] {{ background-image: url("data:image/webp;base64,{bin_mob}"); }} }}
-    
-    /* Ajuste del contenedor de login para que no se estire en PC */
-    .main .block-container {{
-        max-width: 500px !important;
-        padding-top: 5rem;
-    }}
-    </style>
-    """, unsafe_allow_html=True
+st.set_page_config(
+    page_title="Login - Club Lakonn",
+    layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
-# Lógica de redirección si ya está autenticado
+apply_app_theme(max_width=800)
+
 if st.session_state.get("authenticated", False):
     st.switch_page("pages/menu.py")
 
-# Llamada a la función de login
+render_hero(
+    "Acceso al sistema",
+    "Ingresa con tu cuenta para administrar el club y continuar con el flujo de trabajo desde cualquier dispositivo.",
+    eyebrow="Inicio de sesion",
+)
+
 mostrar_login()

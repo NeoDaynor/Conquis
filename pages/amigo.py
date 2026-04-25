@@ -1,316 +1,396 @@
-import streamlit as st
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-import pandas as pd
 from datetime import datetime
+from time import sleep
+
+import gspread
+import pandas as pd
 import pytz
-import base64
+import streamlit as st
+from oauth2client.service_account import ServiceAccountCredentials
+from streamlit.errors import StreamlitSecretNotFoundError
 
-# --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Gestión Club Lakonn", layout="wide", initial_sidebar_state="collapsed")
+from ui_theme import apply_app_theme, render_hero
 
-# --- SEGURIDAD Y ZONA HORARIA ---
-chile_tz = pytz.timezone('America/Santiago')
+
+st.set_page_config(
+    page_title="Gestion Club Lakonn",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
+
+chile_tz = pytz.timezone("America/Santiago")
 ahora_chile = datetime.now(chile_tz)
 
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
     st.switch_page("app.py")
 
-unidad_actual = st.session_state.get("unidad_seleccionada")
-usuario_activo = st.session_state.get("user_info")
+unidad_actual = st.session_state.get("unidad_seleccionada", "Sin unidad")
+usuario_activo = st.session_state.get("user_info", {})
 
-# ✅ INICIALIZAR VARIABLE DE SCROLL (OBLIGATORIO)
 if "scroll_top" not in st.session_state:
     st.session_state.scroll_top = False
 
-# --- FUNCIONES DE IMAGEN ---
-def get_base64_of_bin_file(bin_file):
-    try:
-        with open(bin_file, 'rb') as f:
-            data = f.read()
-        return base64.b64encode(data).decode()
-    except:
-        return ""
+apply_app_theme(max_width=1280)
 
-bin_pc = get_base64_of_bin_file('images/fondopc.jpg')
-bin_mob = get_base64_of_bin_file('images/fondocelu.webp')
+st.markdown(
+    """
+    <style>
+    .st-key-dashboard_wrap,
+    .st-key-registro_wrap {
+        border-radius: 22px;
+        padding: 20px;
+        background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 18px 45px rgba(5, 10, 20, 0.16);
+        backdrop-filter: blur(8px);
+        margin-bottom: 16px;
+    }
 
-# --- CSS INYECTADO (RESTAURADO COMPLETAMENTE) ---
-def aplicar_estilos_nativos(img_pc, img_mob):
-    st.markdown(
-        f"""
-        <style>
-        #MainMenu, footer, header, .stAppDeployButton {{visibility: hidden;}}
-        .stApp {{
-            background-attachment: fixed;
-            background-size: cover;
-            background-position: center;
-        }}
-        @media (min-width: 769px) {{ .stApp {{ background-image: url("data:image/jpg;base64,{img_pc}"); }} }}
-        @media (max-width: 768px) {{ .stApp {{ background-image: url("data:image/webp;base64,{img_mob}"); }} }}
-        
-        :root {{
-            --bg-card: rgba(255, 255, 255, 0.95);
-            --border: #0070C0;
-            --text-color: #1E293B;
-            --brand-color: #0070C0;
-        }}
-        @media (prefers-color-scheme: dark) {{
-            :root {{
-                --bg-card: rgba(30, 41, 59, 0.95);
-                --border: #334155;
-                --text-color: #F1F5F9;
-                --brand-color: #3B82F6;
-            }}
-        }}
-        .stApp {{ color: var(--text-color); }}
-        [data-testid="stVerticalBlock"] > div:has(div[data-testid="stVerticalBlock"]) {{
-            background-color: var(--bg-card) !important;
-            padding: 20px !important;
-            border-radius: 12px !important;
-            border: 1px solid var(--border) !important;
-            margin-bottom: 20px !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2) !important;
-        }}
-        .header-box {{
-            background-color: var(--bg-card);
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid var(--border);
-            margin-bottom: 20px;
-        }}
-        div.stButton > button[kind="primary"] {{
-            background-color: var(--brand-color) !important;
-            color: white !important;
-            height: 55px;
-            font-weight: bold;
-            border-radius: 10px;
-            width: 100%;
-        }}
-        </style>
-        """, 
-        unsafe_allow_html=True
-    )
+    .st-key-dashboard_wrap .section-card,
+    .st-key-registro_wrap .section-card {
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        padding: 14px 18px 18px 18px;
+        margin-bottom: 0;
+    }
 
-aplicar_estilos_nativos(bin_pc, bin_mob)
+    .st-key-dashboard_wrap .section-card h3,
+    .st-key-registro_wrap .section-card h3 {
+        margin-top: 0.35rem;
+        margin-bottom: 1rem;
+    }
 
-# --- CONEXIÓN A DATOS ---
+    .st-key-dashboard_wrap .section-card p,
+    .st-key-registro_wrap .section-card p {
+        margin-top: 0;
+        margin-bottom: 0.4rem;
+    }
+
+    .st-key-registro_inner_wrap {
+        border-radius: 18px;
+        padding: 18px 18px 8px 18px;
+        background: rgba(9, 20, 37, 0.52);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        margin-top: 6px;
+    }
+
+    .st-key-registro_inner_wrap .stSelectbox,
+    .st-key-registro_inner_wrap .stCheckbox,
+    .st-key-registro_inner_wrap .stButton {
+        position: relative;
+        z-index: 1;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
 @st.cache_resource
 def get_client():
     creds = st.secrets["gcp_service_account"]
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    scope = [
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/drive",
+    ]
     return gspread.authorize(ServiceAccountCredentials.from_json_keyfile_dict(creds, scope))
 
-client = get_client()
-spreadsheet = client.open("RequisitosConquistadores")
-sheet = spreadsheet.worksheet("Amigo")
-log_sheet = spreadsheet.worksheet("Log_Cambios")
 
-# Leemos todos los valores (Encabezados en Fila 2)
-raw_data = sheet.get_all_values()
-headers = raw_data[1]
-df_full = pd.DataFrame(raw_data[2:], columns=headers)
-df_unidad = df_full[df_full['Unidad'] == unidad_actual].copy()
+def render_error_view(message, detail=None):
+    render_hero(
+        f"Registro de {unidad_actual}",
+        message,
+        eyebrow="Tarjeta progresiva",
+        pills=[f"Unidad: {unidad_actual}", f"Usuario: {usuario_activo.get('nombre', 'Usuario')}"],
+    )
+    left, right = st.columns(2)
+    with left:
+        if st.button("Volver al menu", use_container_width=True):
+            st.switch_page("pages/menu.py")
+    with right:
+        if st.button("Cerrar sesion", key="logout_error", use_container_width=True):
+            st.session_state["authenticated"] = False
+            st.session_state.pop("user_info", None)
+            st.switch_page("app.py")
+    st.error(message)
+    if detail:
+        st.warning(detail)
+    st.stop()
 
-# ✅ FILTRAR SOLO SU REGISTRO SI ES CONQUI
+
+def load_sheet_snapshot(retries=3, delay_seconds=1.2):
+    last_error = None
+    for attempt in range(retries):
+        try:
+            client = get_client()
+            spreadsheet = client.open("RequisitosConquistadores")
+            sheet = spreadsheet.worksheet("Amigo")
+            log_sheet = spreadsheet.worksheet("Log_Cambios")
+            raw_data = sheet.get_all_values()
+            headers = raw_data[1]
+            df_full = pd.DataFrame(raw_data[2:], columns=headers)
+            return {
+                "sheet": sheet,
+                "log_sheet": log_sheet,
+                "headers": headers,
+                "df_full": df_full,
+            }
+        except Exception as error:
+            last_error = error
+            if attempt < retries - 1:
+                sleep(delay_seconds)
+    raise last_error
+
+
+try:
+    snapshot = load_sheet_snapshot()
+    sheet = snapshot["sheet"]
+    log_sheet = snapshot["log_sheet"]
+    headers = snapshot["headers"]
+    df_full = snapshot["df_full"]
+    st.session_state["amigo_snapshot"] = snapshot
+    df_unidad = df_full[df_full["Unidad"] == unidad_actual].copy()
+except StreamlitSecretNotFoundError:
+    render_error_view(
+        "No se encontro la configuracion de secretos para conectar Google Sheets.",
+        "Configura gcp_service_account en .streamlit/secrets.toml para usar esta vista en local.",
+    )
+except Exception as error:
+    snapshot = st.session_state.get("amigo_snapshot")
+    if snapshot:
+        sheet = snapshot["sheet"]
+        log_sheet = snapshot["log_sheet"]
+        headers = snapshot["headers"]
+        df_full = snapshot["df_full"]
+        df_unidad = df_full[df_full["Unidad"] == unidad_actual].copy()
+        st.warning(
+            "Google Sheets no respondio en este intento. Se esta mostrando la ultima informacion cargada correctamente."
+        )
+    else:
+        render_error_view(
+            "No fue posible cargar los datos de la tarjeta progresiva.",
+            f"Detalle tecnico: {error}",
+        )
+
 if usuario_activo.get("rol") == "conqui":
     df_unidad = df_unidad[
-        df_unidad['Integrantes'].str.strip().str.lower() ==
-        usuario_activo.get("usuario", "").strip().lower()
+        df_unidad["Integrantes"].str.strip().str.lower()
+        == usuario_activo.get("usuario", "").strip().lower()
     ]
+
+render_hero(
+    f"Registro de {unidad_actual}",
+    "Visualiza avances, revisa integrantes y sincroniza el progreso de la clase con la misma linea visual del panel principal.",
+    eyebrow="Tarjeta progresiva / Amigo",
+    pills=[f"Hola de nuevo {usuario_activo.get('nombre', '')}"
+    ,f"Tu correo es {usuario_activo.get('correo', '')}"
+    ,f"Te desempeñas como: {usuario_activo.get('rol', '').upper()}"
+    ],
     
-# --- HEADER ---
-if st.session_state.scroll_top:
-    st.success("✅ Cambios guardados correctamente")
-    st.toast("Cambios guardados", icon="✅")
+)
 
-    # 🔥 FIX REAL PARA CELULAR Y PC
-    st.markdown("""
-    <script>
-    setTimeout(function() {
-        window.scrollTo(0, 0);
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-    }, 200);
-    </script>
-    """, unsafe_allow_html=True)
+top_left, top_right = st.columns([3, 1])
+with top_left:
+    st.markdown('<p class="section-label">Navegacion</p>', unsafe_allow_html=True)
+with top_right:
+    if st.button("Cerrar sesion", key="logout_top", use_container_width=True):
+        st.session_state["authenticated"] = False
+        st.session_state.pop("user_info", None)
+        st.switch_page("app.py")
 
-    st.session_state.scroll_top = False
-
-st.markdown(f'<div class="header-box"><h2 style="color:var(--brand-color); margin:0;">UNIDAD: {unidad_actual.upper()}</h2></div>', unsafe_allow_html=True)
-
-# 👇 MENSAJE SOLO PARA CONQUI
-if usuario_activo.get("rol") == "conqui":
-    st.markdown(f"""
-    <div style="
-        background-color: var(--bg-card);
-        border: 1px solid var(--border);
-        color: var(--text-color);
-        padding: 12px 16px;
-        border-radius: 10px;
-        margin-bottom: 10px;
-        font-weight: 500;
-        display: inline-block;
-    ">
-        👤 Viendo tu progreso: <b>{usuario_activo.get('nombre')}</b>
-    </div>
-    """, unsafe_allow_html=True)
-    
-if st.button("⬅️ VOLVER AL MENU"):
+if st.button("Volver al menu", key="back_menu", use_container_width=True):
     st.switch_page("pages/menu.py")
 
-# TARJETA 1: AVANCE GENERAL
-with st.container():
-    st.markdown("### 📊 Avance General")
-    st.dataframe(
-        df_unidad.style.map(lambda v: 'background-color: rgba(59, 130, 246, 0.2); font-weight: bold;' if v and str(v).strip() != "" else '', subset=df_unidad.columns[3:]),
-        use_container_width=True, hide_index=True
+if st.session_state.scroll_top:
+    st.success("Cambios guardados correctamente.")
+    st.toast("Cambios guardados", icon="✅")
+    st.session_state.scroll_top = False
+
+if usuario_activo.get("rol") == "conqui":
+    st.info(f"Viendo tu progreso: {usuario_activo.get('nombre')}")
+else:
+    st.markdown(
+        '<p class="muted-note">Modo de trabajo con permisos de edicion habilitados para liderazgo y administracion.</p>',
+        unsafe_allow_html=True,
     )
 
-# TARJETA 2: REGISTRO DE AVANCES
+st.markdown('<p class="section-label">Avance general</p>', unsafe_allow_html=True)
+with st.container(key="dashboard_wrap"):
+    st.markdown(
+        """
+        <div class="section-card">
+            <span class="mini-label">Resumen</span>
+            <h3>Vista consolidada por unidad</h3>
+            <p>Tabla general del progreso actual filtrada segun la unidad seleccionada.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.dataframe(
+        df_unidad.style.map(
+            lambda value: "background-color: rgba(159, 211, 255, 0.28); font-weight: bold;"
+            if value and str(value).strip() != ""
+            else "",
+            subset=df_unidad.columns[3:],
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+
 if usuario_activo.get("rol") != "conqui":
-    with st.container():
-        st.markdown("### 📝 Registro de Avances")
-        
-        nombres = df_unidad['Integrantes'].tolist()
+    st.markdown('<p class="section-label">Registro de avances</p>', unsafe_allow_html=True)
+    with st.container(key="registro_wrap"):
+        st.markdown(
+            """
+            <div class="section-card">
+                <span class="mini-label">Edicion</span>
+                <h3>Actualizacion por integrante</h3>
+                <p>Marca o desmarca requisitos para sincronizar los avances directamente con Google Sheets.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        nombres = df_unidad["Integrantes"].tolist()
         if nombres:
-            conquistador = st.selectbox("Seleccione Integrante:", nombres)
-            fila_persona = df_unidad[df_unidad['Integrantes'] == conquistador].iloc[0]
-            
-            categorias = {
-                0: {"titulo": "GENERALES", "items": ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica"]},
-                1: {"titulo": "DESCUBRIMIENTO ESPIRITUAL", "items": ["Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16","Explicar Efesios 6:1-3", "Explicar Salmo 1", "Lectura Biblica"]},
-                2: {"titulo": "SIRVIENDO A OTROS", "items": ["Visitar a alguien", "Dar alimento", "Proyecto ecológico/educativo", "Buen Ciudadano"]},
-                3: {"titulo": "DESARROLLO DE LA AMISTAD", "items": ["10 Cualidades / Regla de oro Mateo 7:12", "Himno Nacional"]},
-                4: {"titulo": "SALUD Y APTITUD FÍSICA", "items": ["Nudos y Amarras", "Explicar Daniel 1:8", "Compromiso vida saludable", "Dieta saludable / Preparar cuadro"]},
-                5: {"titulo": "LIDERAZGO", "items": ["Planear y ejecutar caminata 5K"]},
-                6: {"titulo": "ESTUDIO DE LA NATURALEZA", "items": ["Especialidad Naturaleza", "Purificar Agua", "Armar Carpa"]},
-                7: {"titulo": "ARTE DE ACAMPAR", "items": ["Cuidar cuerda / Hacer Nudos", "Campamento I", "10 Reglas caminata", "Señales de Pista"]},
-                8: {"titulo": "ESTILO DE VIDA", "items": ["Especialidad Habilidades Manuales"]}
-            }
-    
-            cols = st.columns(len(categorias))
-            nuevo_estado = {}
-            confirmaciones = {}
-    
-            for col_idx, info in categorias.items():
-                with cols[col_idx]:
-                    st.markdown(f"<p style='font-size: 0.75rem; font-weight: bold; color: var(--brand-color);'>{info['titulo']}</p>", unsafe_allow_html=True)
-                    
-                    for item in info['items']:
-                        valor_actual = bool(fila_persona.get(item) and str(fila_persona.get(item)).strip() != "")
-                        key_cb = f"cb_{conquistador}_{item}"
-                        marcado = st.checkbox(item, value=valor_actual, key=key_cb)
-    
-                        # ✅ FIX REAL: persistencia con session_state
-                        key_confirm_state = f"confirm_state_{key_cb}"
-    
-                        if key_confirm_state not in st.session_state:
-                            st.session_state[key_confirm_state] = False
-    
-                        if valor_actual and not marcado:
-                            with st.popover("⚠️ Confirmar"):
-                                st.warning("¿Seguro que deseas quitar esta marca?")
-                                
-                                if st.button("Sí, eliminar", key=f"btn_{key_cb}"):
-                                    st.session_state[key_confirm_state] = True
-    
-                            if st.session_state[key_confirm_state]:
-                                st.success("✔ Confirmado para eliminar")
-    
-                            confirmaciones[item] = st.session_state[key_confirm_state]
-                        else:
-                            confirmaciones[item] = True
-                            st.session_state[key_confirm_state] = False
-    
-                        nuevo_estado[item] = marcado
-    
-            st.markdown("<br>", unsafe_allow_html=True)
-            
-            if st.button("💾 SINCRONIZAR CAMBIOS", type="primary"):
-                try:
-                    fila_idx_df = df_full[df_full['Integrantes'] == conquistador].index
-    
-                    if len(fila_idx_df) == 0:
-                        st.error("No se encontró el registro en la hoja.")
-                        st.stop()
-    
-                    fila_real = fila_idx_df[0] + 3
-    
-                    hoy = ahora_chile.strftime("%d/%m/%Y")
-                    ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
-                    
-                    updates = []
-                    logs = []
-                    hubo_cambios = False
-                    
-                    with st.status("Sincronizando...") as s:
-                        for req, marcado in nuevo_estado.items():
-                            estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
-    
-                            # 🚨 BLOQUEO SI NO CONFIRMA
-                            if not marcado and estaba_marcado:
-                                if not confirmaciones.get(req, False):
+            with st.container(key="registro_inner_wrap"):
+                conquistador = st.selectbox("Seleccione integrante", nombres)
+                fila_persona = df_unidad[df_unidad["Integrantes"] == conquistador].iloc[0]
+
+                categorias = {
+                    0: {"titulo": "Generales", "items": ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica"]},
+                    1: {"titulo": "Descubrimiento espiritual", "items": ["Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16", "Explicar Efesios 6:1-3", "Explicar Salmo 1", "Lectura Biblica"]},
+                    2: {"titulo": "Sirviendo a otros", "items": ["Visitar a alguien", "Dar alimento", "Proyecto ecológico/educativo", "Buen Ciudadano"]},
+                    3: {"titulo": "Desarrollo de la amistad", "items": ["10 Cualidades / Regla de oro Mateo 7:12", "Himno Nacional"]},
+                    4: {"titulo": "Salud y aptitud fisica", "items": ["Nudos y Amarras", "Explicar Daniel 1:8", "Compromiso vida saludable", "Dieta saludable / Preparar cuadro"]},
+                    5: {"titulo": "Liderazgo", "items": ["Planear y ejecutar caminata 5K"]},
+                    6: {"titulo": "Estudio de la naturaleza", "items": ["Especialidad Naturaleza", "Purificar Agua", "Armar Carpa"]},
+                    7: {"titulo": "Arte de acampar", "items": ["Cuidar cuerda / Hacer Nudos", "Campamento I", "10 Reglas caminata", "Señales de Pista"]},
+                    8: {"titulo": "Estilo de vida", "items": ["Especialidad Habilidades Manuales"]},
+                }
+
+                cols = st.columns(len(categorias))
+                nuevo_estado = {}
+                confirmaciones = {}
+
+                for col_idx, info in categorias.items():
+                    with cols[col_idx]:
+                        st.markdown(
+                            f"<p class='mini-label' style='display:block; margin-bottom:0.55rem;'>{info['titulo']}</p>",
+                            unsafe_allow_html=True,
+                        )
+
+                        for item in info["items"]:
+                            valor_actual = bool(fila_persona.get(item) and str(fila_persona.get(item)).strip() != "")
+                            key_cb = f"cb_{conquistador}_{item}"
+                            marcado = st.checkbox(item, value=valor_actual, key=key_cb)
+                            key_confirm_state = f"confirm_state_{key_cb}"
+
+                            if key_confirm_state not in st.session_state:
+                                st.session_state[key_confirm_state] = False
+
+                            if valor_actual and not marcado:
+                                with st.popover("Confirmar cambio"):
+                                    st.warning("Estas quitando una marca ya registrada.")
+                                    if st.button("Si, eliminar", key=f"btn_{key_cb}"):
+                                        st.session_state[key_confirm_state] = True
+
+                                if st.session_state[key_confirm_state]:
+                                    st.success("Confirmado para eliminar.")
+
+                                confirmaciones[item] = st.session_state[key_confirm_state]
+                            else:
+                                confirmaciones[item] = True
+                                st.session_state[key_confirm_state] = False
+
+                            nuevo_estado[item] = marcado
+
+                if st.button("Sincronizar cambios", type="primary", use_container_width=True):
+                    try:
+                        fila_idx_df = df_full[df_full["Integrantes"] == conquistador].index
+                        if len(fila_idx_df) == 0:
+                            st.error("No se encontro el registro en la hoja.")
+                            st.stop()
+
+                        fila_real = fila_idx_df[0] + 3
+                        hoy = ahora_chile.strftime("%d/%m/%Y")
+                        ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
+                        updates = []
+                        logs = []
+                        hubo_cambios = False
+
+                        with st.status("Sincronizando...") as status:
+                            for requisito, marcado in nuevo_estado.items():
+                                estaba_marcado = bool(
+                                    fila_persona.get(requisito) and str(fila_persona.get(requisito)).strip() != ""
+                                )
+
+                                if not marcado and estaba_marcado and not confirmaciones.get(requisito, False):
                                     continue
-                            
-                            if req in headers:
-                                col_idx = headers.index(req) + 1
-                                
-                                if marcado and not estaba_marcado:
-                                    updates.append({'range': gspread.utils.rowcol_to_a1(fila_real, col_idx), 'values': [[hoy]]})
-                                    logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
-                                    hubo_cambios = True
-                                elif not marcado and estaba_marcado:
-                                    updates.append({'range': gspread.utils.rowcol_to_a1(fila_real, col_idx), 'values': [[""]]})
-                                    logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
-                                    hubo_cambios = True
-                        
-                        if hubo_cambios:
-                            if "Ult. Actualizacion" in headers:
-                                col_upd = headers.index("Ult. Actualizacion") + 1
-                                updates.append({'range': gspread.utils.rowcol_to_a1(fila_real, col_upd), 'values': [[hoy]]})
-                            
-                            sheet.batch_update(updates)
-                            if logs:
-                                log_sheet.append_rows(logs)
-    
-                            s.update(label="¡Guardado con éxito!", state="complete")
-                            st.markdown("""
-                                <script>
-                                var topElement = document.getElementById("top");
-                                if (topElement) {
-                                    topElement.scrollIntoView({ behavior: "smooth" });
-                                }
-                                </script>
-                                """, unsafe_allow_html=True)
-                        else:
-                            s.update(label="No se detectaron cambios nuevos.", state="complete")
-                    
-                   ## st.cache_resource.clear()
-                   ## st.rerun()
-                    
-                    st.cache_resource.clear()
-                    
-                    # ✅ activar flag para subir “virtualmente”
-                    st.session_state.scroll_top = True
-                    
-                    st.rerun()
-    
-                except Exception as e:
-                    st.error(f"Error crítico al guardar: {e}")
+
+                                if requisito in headers:
+                                    col_idx = headers.index(requisito) + 1
+                                    if marcado and not estaba_marcado:
+                                        updates.append(
+                                            {"range": gspread.utils.rowcol_to_a1(fila_real, col_idx), "values": [[hoy]]}
+                                        )
+                                        logs.append(
+                                            [
+                                                ahora_log,
+                                                usuario_activo["nombre"],
+                                                usuario_activo["cargo"],
+                                                conquistador,
+                                                requisito,
+                                                "Marcado",
+                                            ]
+                                        )
+                                        hubo_cambios = True
+                                    elif not marcado and estaba_marcado:
+                                        updates.append(
+                                            {"range": gspread.utils.rowcol_to_a1(fila_real, col_idx), "values": [[""]]}
+                                        )
+                                        logs.append(
+                                            [
+                                                ahora_log,
+                                                usuario_activo["nombre"],
+                                                usuario_activo["cargo"],
+                                                conquistador,
+                                                requisito,
+                                                "Desmarcado",
+                                            ]
+                                        )
+                                        hubo_cambios = True
+
+                            if hubo_cambios:
+                                if "Ult. Actualizacion" in headers:
+                                    col_upd = headers.index("Ult. Actualizacion") + 1
+                                    updates.append(
+                                        {"range": gspread.utils.rowcol_to_a1(fila_real, col_upd), "values": [[hoy]]}
+                                    )
+
+                                sheet.batch_update(updates)
+                                if logs:
+                                    log_sheet.append_rows(logs)
+
+                                status.update(label="Guardado con exito.", state="complete")
+                            else:
+                                status.update(label="No se detectaron cambios nuevos.", state="complete")
+
+                        st.cache_resource.clear()
+                        st.session_state.scroll_top = True
+                        st.rerun()
+
+                    except Exception as error:
+                        st.error(f"Error critico al guardar: {error}")
 else:
-    st.markdown("""
-    <div style="
-        background-color: var(--bg-card);
-        border: 1px solid var(--border);
-        color: var(--text-color);
-        padding: 12px 16px;
-        border-radius: 10px;
-        margin-bottom: 10px;
-        font-weight: 500;
-        display: inline-block;
-    ">
-        👀 Solo tienes acceso a visualización.
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="section-card">
+            <span class="mini-label">Visualizacion</span>
+            <h4>Acceso de solo lectura</h4>
+            <p>Este perfil puede revisar avances, pero no editar registros dentro de la tarjeta progresiva.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )

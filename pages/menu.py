@@ -1,181 +1,434 @@
-import streamlit as st
 import base64
 
-# --- CONFIGURACIÓN ORIGINAL RESTAURADA ---
-st.set_page_config(page_title="Club Lakonn - Menú", layout="wide", initial_sidebar_state="collapsed")
+import streamlit as st
 
-# Seguridad: Redirigir si no hay sesión
+
+st.set_page_config(
+    page_title="Club Lakonn - Menu",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
+
+
 if not st.session_state.get("authenticated", False):
     st.switch_page("pages/login_page.py")
 
-# Función para convertir imagen a base64
-def get_base64(bin_file):
+
+def get_base64(path):
     try:
-        with open(bin_file, 'rb') as f:
-            data = f.read()
-        return base64.b64encode(data).decode()
-    except:
+        with open(path, "rb") as file:
+            return base64.b64encode(file.read()).decode()
+    except OSError:
         return ""
 
-user = st.session_state.get("user_info", {"nombre": "Usuario", "rol": "user"})
-bin_pc = get_base64('images/fondopc.jpg')
-bin_mob = get_base64('images/fondocelu.webp')
 
-# --- ESTILOS CSS ORIGINALES ---
+def open_placeholder(section, title, description):
+    st.session_state["menu_placeholder"] = {
+        "section": section,
+        "title": title,
+        "description": description,
+    }
+    st.switch_page("pages/seccion.py")
+
+
+def open_registro_unidades(nivel):
+    st.session_state["nivel_tarjeta"] = nivel
+    st.switch_page("pages/registro_unidades.py")
+
+
+user = st.session_state.get("user_info", {"nombre": "Usuario", "rol": "user"})
+bg_pc = get_base64("images/fondopc.jpg")
+bg_mobile = get_base64("images/fondocelu.webp")
+logo = get_base64("images/LogoLakonn.png")
+
 st.markdown(
     f"""
     <style>
-    #MainMenu, footer, header, .stAppDeployButton {{visibility: hidden;}}
-    
-    .stApp {{
-        background-attachment: fixed;
-        background-size: cover;
-        background-position: center;
-    }}
-    
-    @media (min-width: 769px) {{ .stApp {{ background-image: url("data:image/jpg;base64,{bin_pc}"); }} }}
-    @media (max-width: 768px) {{ .stApp {{ background-image: url("data:image/webp;base64,{bin_mob}"); }} }}
-    
-    .welcome-card {{
-        background-color: rgba(255, 255, 255, 0.9);
-        padding: 40px;
-        border-radius: 20px;
-        border: 1px solid #0070C0;
-        box-shadow: 0px 10px 30px rgba(0,0,0,0.3);
-        text-align: center;
-        margin-bottom: 30px;
+    #MainMenu, footer, header, .stAppDeployButton {{
+        visibility: hidden;
     }}
 
-    div.stButton > button {{
-        background-color: white !important;
-        color: #0070C0 !important;
-        border: 2px solid #0070C0 !important;
-        border-radius: 15px !important;
-        height: 150px !important;
-        width: 100% !important;
-        font-size: 1.2em !important;
-        font-weight: bold !important;
-        transition: all 0.3s ease !important;
+    .stApp {{
+        background:
+            linear-gradient(135deg, rgba(7, 22, 43, 0.88), rgba(7, 61, 120, 0.72)),
+            url("data:image/jpg;base64,{bg_pc}") center/cover fixed;
+        color: #f6f8fb;
+    }}
+
+    @media (max-width: 768px) {{
+        .stApp {{
+            background:
+                linear-gradient(180deg, rgba(7, 22, 43, 0.92), rgba(7, 61, 120, 0.76)),
+                url("data:image/webp;base64,{bg_mobile}") center/cover fixed;
+        }}
+    }}
+
+    .block-container {{
+        max-width: 1100px;
+        padding-top: 2.2rem;
+        padding-bottom: 3rem;
+    }}
+
+    .hero-shell {{
+        background: linear-gradient(145deg, rgba(7, 22, 43, 0.82), rgba(15, 84, 153, 0.68));
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 28px;
+        padding: 28px;
+        box-shadow: 0 24px 60px rgba(5, 10, 20, 0.28);
+        backdrop-filter: blur(10px);
+        margin-bottom: 1rem;
+    }}
+
+    .hero-top {{
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }}
+
+    .hero-logo {{
+        width: 84px;
+        height: 84px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.16);
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-direction: column;
+        overflow: hidden;
+        flex-shrink: 0;
     }}
-    
+
+    .hero-logo img {{
+        width: 76%;
+        height: 76%;
+        object-fit: contain;
+    }}
+
+    .hero-eyebrow {{
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+        color: #9ed0ff;
+        margin: 0 0 0.45rem 0;
+    }}
+
+    .hero-title {{
+        font-size: clamp(2rem, 5vw, 3.35rem);
+        line-height: 1;
+        font-weight: 700;
+        margin: 0;
+        color: #ffffff;
+    }}
+
+    .hero-subtitle {{
+        margin: 0.7rem 0 0 0;
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.82);
+        max-width: 760px;
+    }}
+
+    .pill-row {{
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }}
+
+    .info-pill {{
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0.6rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        color: #eef6ff;
+        font-size: 0.92rem;
+    }}
+
+    .section-label {{
+        margin-top: 1.6rem;
+        margin-bottom: 0.55rem;
+        font-size: 0.82rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #b8dbff;
+    }}
+
+    .stExpander {{
+        border: 0 !important;
+        background: transparent !important;
+    }}
+
+    .stExpander details {{
+        border-radius: 22px !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        background: rgba(8, 20, 38, 0.62) !important;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 18px 45px rgba(5, 10, 20, 0.2);
+        overflow: hidden;
+    }}
+
+    .stExpander summary {{
+        padding: 1rem 1.15rem !important;
+        font-size: 1.08rem !important;
+        font-weight: 600 !important;
+        color: #ffffff !important;
+    }}
+
+    .stExpander summary:hover {{
+        background: rgba(255, 255, 255, 0.05);
+    }}
+
+    .section-card {{
+        border-radius: 22px;
+        padding: 20px;
+        background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        margin-bottom: 16px;
+    }}
+
+    .section-card h3,
+    .section-card h4 {{
+        margin: 0;
+        color: #ffffff;
+    }}
+
+    .section-card p {{
+        margin: 0.55rem 0 0 0;
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.55;
+    }}
+
+    .mini-label {{
+        display: inline-block;
+        margin-bottom: 0.8rem;
+        font-size: 0.76rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #9ed0ff;
+    }}
+
+    div.stButton > button {{
+        width: 100%;
+        min-height: 3rem;
+        border-radius: 14px !important;
+        border: 1px solid rgba(125, 196, 255, 0.45) !important;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(236, 244, 255, 0.96)) !important;
+        color: #0f3660 !important;
+        font-weight: 600 !important;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
+        box-shadow: 0 12px 24px rgba(8, 22, 43, 0.18);
+    }}
+
     div.stButton > button:hover {{
-        background-color: #0070C0 !important;
-        color: white !important;
-        transform: translateY(-5px);
-        box-shadow: 0px 8px 20px rgba(0,112,192,0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 16px 26px rgba(8, 22, 43, 0.24);
+        border-color: rgba(15, 84, 153, 0.8) !important;
+        color: #0a2a49 !important;
+    }}
+
+    .muted-note {{
+        font-size: 0.93rem;
+        color: rgba(255, 255, 255, 0.72);
+        margin-top: 0.7rem;
     }}
     </style>
-    """, 
-    unsafe_allow_html=True
+    """,
+    unsafe_allow_html=True,
 )
 
-# --- BOTÓN FLOTANTE SIMPLE (Esquina superior derecha) ---
-st.markdown("""
-    <style>
-    .element-container:has(#admin_btn_container) {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 999999;
-        width: auto;
-    }
-    </style>
-    <div id="admin_btn_container"></div>
-    """, unsafe_allow_html=True)
+logo_html = (
+    f'<div class="hero-logo"><img src="data:image/png;base64,{logo}" alt="Club Lakonn"></div>'
+    if logo
+    else '<div class="hero-logo"></div>'
+)
+
+st.markdown(
+    f"""
+    <div class="hero-shell">
+        <div class="hero-top">
+            {logo_html}
+            <div>
+                <p class="hero-eyebrow">Panel principal</p>
+                <h1 class="hero-title">Club Lakonn</h1>
+                <p class="hero-subtitle">
+                    Menu central con acceso claro a administracion, tarjetas progresivas,
+                    recursos y especialidades.
+                </p>
+            </div>
+        </div>
+        <div class="pill-row">
+            <span class="info-pill">Hola de nuevo {user.get("nombre", "Usuario")}</span>
+            <span class="info-pill">Tu correo es: {user.get("correo", "Correo")}</span>
+            <span class="info-pill">Te desempeñas como: {user.get("rol", "rol").upper()}</span>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+top_left, top_right = st.columns([3, 1])
+
+with top_left:
+    st.markdown('<p class="section-label">Accesos rapidos</p>', unsafe_allow_html=True)
+
+with top_right:
+    if st.button("Cerrar sesion", key="logout_top", use_container_width=True):
+        st.session_state["authenticated"] = False
+        st.session_state.pop("user_info", None)
+        st.switch_page("app.py")
 
 if user.get("rol") == "admin":
+    st.markdown('<p class="section-label">Administracion de Usuarios</p>', unsafe_allow_html=True)
     with st.container():
-        if st.button("⚙️", key="btn_fast_admin", help="Gestión de Usuarios"):
-            st.switch_page("pages/gestion_usuarios.py")
-
-# --- CONTENIDO ---
-st.markdown("<h1 style='text-align: center; color: white; text-shadow: 2px 2px 8px #000;'>CLUB LAKONN</h1>", unsafe_allow_html=True)
-
-_, center_col, _ = st.columns([1, 2, 1])
-
-with center_col:
-    st.markdown(
-        f"""
-        <div class="welcome-card">
-            <h2 style='color: #0070C0; margin:0;'>Bienvenido, {user['nombre']}</h2>
-            <p style='color: #333; font-size: 1.1em;'>Selecciona una unidad para gestionar:</p>
-        </div>
-        """, 
-        unsafe_allow_html=True
-    )
-
-# --- PRIMERA FILA ---
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    if st.button("🪐\n\nORION", key="btn_orion", use_container_width=True):
-        st.session_state["unidad_seleccionada"] = "Orion"
-        st.switch_page("pages/amigo.py")
-
-with col2:
-    if st.button("🐆\n\nESTER-ELLAS", key="btn_pumas", use_container_width=True):
-        st.session_state["unidad_seleccionada"] = "Ester-ellas"
-        st.switch_page("pages/amigo.py")
-
-with col3:
-    if st.button("🎖️\n\nRAYEN", key="btn_lideres", use_container_width=True):
-        st.session_state["unidad_seleccionada"] = "Rayen"
-        st.switch_page("pages/amigo.py")
-
-st.write("") 
-
-# --- SEGUNDA FILA ---
-col4, col5, col6 = st.columns(3)
-
-with col4:
-    if st.button("🦅\n\nULTRASOLIS", key="btn_aguilas", use_container_width=True):
-        st.session_state["unidad_seleccionada"] = "Ultrasolis"
-        st.switch_page("pages/amigo.py")
-
-with col5:
-    if st.button("🎖️\n\nLIDERES", key="btn_zorros", use_container_width=True):
-        st.session_state["unidad_seleccionada"] = "Lideres"
-        st.switch_page("pages/amigo.py")
-
-with col6:
-    img_sgdc = get_base64('images/SGDC.png')
-    st.markdown(
-        f"""
-        <a href="https://sg.sdasystems.org/cms/login.php?lang=esp" target="_blank" style="text-decoration: none;">
-            <div style="
-                background-color: white;
-                border: 2px solid #0070C0;
-                border-radius: 15px;
-                height: 150px;
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.3s ease;
-                box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-                padding: 10px;
-            " onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0px 8px 20px rgba(0,112,192,0.4)';" 
-               onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0px 4px 6px rgba(0,0,0,0.1)';">
-                <img src="data:image/png;base64,{img_sgdc}" style="width: 100%; height: 100%; object-fit: cover; object-position: center; display: block;">
+        st.markdown(
+            """
+            <div class="section-card">
+                <span class="mini-label">Administracion</span>
+                <h3>Gestion de usuarios del sistema</h3>
+                <p>Acceso directo para crear, editar y mantener cuentas internas del club.</p>
             </div>
-        </a>
-        """,
-        unsafe_allow_html=True
-    )
-    
-# --- BARRA LATERAL ---
-with st.sidebar:
-    st.markdown(f"### 👤 {user['nombre']}")
-    
-    if user.get("rol") == "admin":
-        if st.button("⚙️ Gestión de Usuarios", key="sidebar_admin", use_container_width=True):
-            st.switch_page("pages/gestion_usuarios.py")
+            """,
+            unsafe_allow_html=True,
+        )
+        with top_left:
+            if st.button("Abrir administracion de usuarios", key="go_admin", use_container_width=True):
+                st.switch_page("pages/gestion_usuarios.py")
 
-    if st.button("🚪 Cerrar Sesión", use_container_width=True):
-        st.session_state["authenticated"] = False
-        st.switch_page("app.py")
+st.markdown('<p class="section-label">Tarjetas Progresivas</p>', unsafe_allow_html=True)
+with st.expander("Amigo", expanded=True):
+    st.markdown(
+        """
+        <div class="section-card">
+            <span class="mini-label">Tarjeta progresiva</span>
+            <h4>Ruta de trabajo: Amigo</h4>
+            <p>Accesos organizados para gestionar el progreso, la documentacion y el material de apoyo.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    a_col1, a_col2 = st.columns(2)
+    with a_col1:
+        if st.button("Registro Unidades", key="amigo_registro", use_container_width=True):
+            open_registro_unidades("Amigo")
+        if st.button("Cuadernillo", key="amigo_cuadernillo", use_container_width=True):
+            open_placeholder(
+                "Tarjetas progresivas / Amigo",
+                "Cuadernillo de Amigo",
+                "Espacio preparado para alojar el cuadernillo digital, contenidos y seguimiento de trabajo.",
+            )
+    with a_col2:
+        if st.button("Tarjeta", key="amigo_tarjeta", use_container_width=True):
+            open_placeholder(
+                "Tarjetas progresivas / Amigo",
+                "Tarjeta de Amigo",
+                "Vista reservada para mostrar, imprimir o validar la tarjeta progresiva de la clase Amigo.",
+            )
+        if st.button("Material de Apoyo", key="amigo_material", use_container_width=True):
+            open_placeholder(
+                "Tarjetas progresivas / Amigo",
+                "Material de Apoyo - Amigo",
+                "Modulo pensado para centralizar guias, fichas, recursos descargables y apoyo para instructores.",
+            )
+
+with st.expander("Companero", expanded=False):
+    st.markdown(
+        """
+        <div class="section-card">
+            <span class="mini-label">Tarjeta progresiva</span>
+            <h4>Ruta de trabajo: Companero</h4>
+            <p>Estructura lista para continuar la siguiente etapa del programa.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    c_col1, c_col2 = st.columns(2)
+    with c_col1:
+        if st.button("Registro Unidades", key="companero_registro", use_container_width=True):
+            open_registro_unidades("Companero")
+        if st.button("Cuadernillo", key="companero_cuadernillo", use_container_width=True):
+            open_placeholder(
+                "Tarjetas progresivas / Companero",
+                "Cuadernillo de Companero",
+                "Seccion preparada para el cuadernillo de la clase Companero y su futura navegacion.",
+            )
+    with c_col2:
+        if st.button("Tarjeta", key="companero_tarjeta", use_container_width=True):
+            open_placeholder(
+                "Tarjetas progresivas / Companero",
+                "Tarjeta de Companero",
+                "Vista reservada para la tarjeta progresiva de Companero y su posterior integracion.",
+            )
+        if st.button("Material de Apoyo", key="companero_material", use_container_width=True):
+            open_placeholder(
+                "Tarjetas progresivas / Companero",
+                "Material de Apoyo - Companero",
+                "Area disponible para recursos metodologicos, descargables y apoyo de clase.",
+            )
+
+st.markdown('<p class="section-label">Recursos</p>', unsafe_allow_html=True)
+with st.expander("Manuales", expanded=False):
+    st.markdown(
+        """
+        <div class="section-card">
+            <span class="mini-label">Recursos</span>
+            <h4>Biblioteca de manuales</h4>
+            <p>Acceso pensado para concentrar documentos, instructivos y referencia institucional.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.button("Abrir manuales", key="manuales", use_container_width=True):
+        open_placeholder(
+            "Recursos",
+            "Manuales",
+            "Seccion lista para centralizar manuales internos, documentos PDF y referencias del club.",
+        )
+
+st.markdown('<p class="section-label">Especialidades</p>', unsafe_allow_html=True)
+with st.expander("Catalogo de especialidades", expanded=False):
+    st.markdown(
+        """
+        <div class="section-card">
+            <span class="mini-label">Especialidades</span>
+            <h4>Rutas de aprendizaje practico</h4>
+            <p>Menu preparado para abrir contenidos, guias y seguimiento por especialidad.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    e_col1, e_col2 = st.columns(2)
+    with e_col1:
+        if st.button("Nudos", key="esp_nudos", use_container_width=True):
+            open_placeholder(
+                "Especialidades",
+                "Nudos",
+                "Espacio preparado para teoria, materiales y avances de la especialidad de Nudos.",
+            )
+        if st.button("Amarras", key="esp_amarras", use_container_width=True):
+            open_placeholder(
+                "Especialidades",
+                "Amarras",
+                "Seccion lista para desarrollar el contenido, practicas y material de apoyo de Amarras.",
+            )
+    with e_col2:
+        if st.button("Arte de Acampar", key="esp_arte", use_container_width=True):
+            open_placeholder(
+                "Especialidades",
+                "Arte de Acampar",
+                "Vista diseñada para reunir contenidos, requisitos y recursos de Arte de Acampar.",
+            )
+        if st.button("Campamento 1", key="esp_camp1", use_container_width=True):
+            open_placeholder(
+                "Especialidades",
+                "Campamento 1",
+                "Area preparada para checklist, contenidos y evidencias relacionadas con Campamento 1.",
+            )
+
+st.markdown(
+    '<p class="muted-note">Algunas secciones se mantienen en construcción.</p>',
+    unsafe_allow_html=True,
+)

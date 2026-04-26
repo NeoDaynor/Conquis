@@ -1,5 +1,6 @@
 import streamlit as st
 import gspread
+from gspread.utils import rowcol_to_a1
 from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 from datetime import datetime
@@ -184,17 +185,44 @@ with st.container():
                 hoy = ahora_chile.strftime("%d/%m/%Y")
                 ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
                 logs = []
+                cambios_pendientes = [] # <--- Nueva lista para acumular cambios
                 
                 with st.status("Actualizando registros...") as s:
+          #          for req, marcado in nuevo_estado.items():
+          #              estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
+          #              if marcado and not estaba_marcado:
+          #                  sheet.update_cell(idx_excel, headers.index(req) + 1, hoy)
+          #                  logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
+          #              elif not marcado and estaba_marcado:
+          #                  sheet.update_cell(idx_excel, headers.index(req) + 1, "")
+          #                  logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
                     for req, marcado in nuevo_estado.items():
                         estaba_marcado = bool(fila_persona.get(req) and str(fila_persona.get(req)).strip() != "")
+                        
+                        # Calculamos la coordenada de la celda (ejemplo: 'B5')
+                        columna_idx = headers.index(req) + 1
+                        celda_a1 = rowcol_to_a1(idx_excel, columna_idx)
+
                         if marcado and not estaba_marcado:
-                            sheet.update_cell(idx_excel, headers.index(req) + 1, hoy)
+                            # En lugar de update_cell, guardamos el cambio en la lista
+                            cambios_pendientes.append({"range": celda_a1, "values": [[hoy]]})
                             logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Marcado"])
+                        
                         elif not marcado and estaba_marcado:
-                            sheet.update_cell(idx_excel, headers.index(req) + 1, "")
+                            # Guardamos el borrado en la lista
+                            cambios_pendientes.append({"range": celda_a1, "values": [[""]]})
                             logs.append([ahora_log, usuario_activo['nombre'], usuario_activo['cargo'], conquistador, req, "Desmarcado"])
+
+                   
+              #      if logs: log_sheet.append_rows(logs)
+              #      s.update(label="Sincronizado correctamente", state="complete")
+
+                # 🚀 ENVÍO MASIVO A GOOGLE SHEETS
+                    if cambios_pendientes:
+                        sheet.batch_update(cambios_pendientes)
                     
-                    if logs: log_sheet.append_rows(logs)
-                    s.update(label="Sincronizado correctamente", state="complete")
+                    if logs: 
+                        log_sheet.append_rows(logs)
+                        
+                    s.update(label="¡Sincronización rápida completada!", state="complete")
                 st.rerun()

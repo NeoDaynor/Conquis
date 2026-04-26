@@ -94,7 +94,7 @@ with st.container():
             st.success("Usuario creado correctamente.")
             st.rerun()
 
-st.markdown('<p class="section-label">Usuarios existentes</p>', unsafe_allow_html=True)
+st.markdown('<p class="section-label">Usuarios existentes</p> </br> <p>Edita los datos del miembro, actualiza su rol o elimina el registro si ya no corresponde.</p>', unsafe_allow_html=True)
 
 if duplicated_ids:
     duplicated_ids_text = ", ".join(str(user_id) for user_id in duplicated_ids)
@@ -110,7 +110,7 @@ for idx, row in enumerate(data["users"]):
             <div class="section-card">
                 <!--<span class="mini-label">Usuario #{row.get("id", "sin_id")}</span>-->
                 <h4>{row.get("nombre", "Sin nombre")}</h4>
-                <p>Edita los datos del miembro, actualiza su rol o elimina el registro si ya no corresponde.</p>
+                
             </div>
             """,
             unsafe_allow_html=True,

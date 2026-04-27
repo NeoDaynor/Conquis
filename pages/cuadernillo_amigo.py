@@ -20,28 +20,37 @@ if not st.session_state.get("authenticated", False):
 usuario_activo = st.session_state.get("user_info", {})
 apply_app_theme(max_width=1100)
 
-# --- INICIALIZACIÓN DE ESTADO DE NAVEGACIÓN ---
-if "seccion_index" not in st.session_state:
-    st.session_state.seccion_index = 0
+# --- NAVEGACIÓN FORZADA (STATE) ---
+# Esta es la lista maestra de secciones. Debe coincidir exactamente.
+secciones_lista = [
+    "1. Datos Personales", 
+    "2. Generales", 
+    "3. Descubrimiento Espiritual", 
+    "4. Sirviendo a los Demás"
+]
 
-# --- CORRECCIÓN DE VISIBILIDAD (CSS) ---
+if "nav_index" not in st.session_state:
+    st.session_state.nav_index = 0
+
+# --- CORRECCIÓN DE VISIBILIDAD Y COLORES (CSS) ---
 st.markdown("""
     <style>
-    /* Corrige el color del texto en todos los inputs para que no sea blanco */
-    input, div[data-baseweb="input"], textarea {
-        color: #1a1a1a !important;
+    /* Forzamos que el texto de CUALQUIER input sea negro sobre fondo blanco */
+    input, textarea, [data-baseweb="select"] > div {
+        color: #000000 !important;
         background-color: #ffffff !important;
     }
-    /* Estilo para los títulos de los campos */
+    /* Aseguramos que los números en inputs de edad sean negros */
+    input[type="number"] {
+        color: #000000 !important;
+    }
+    /* Labels en blanco para que resalten sobre el fondo oscuro de la app */
     label p {
         color: #ffffff !important;
-        font-size: 1rem !important;
-        font-weight: 600 !important;
+        font-weight: bold;
+        font-size: 1rem;
     }
-    /* Estilo para los números en los inputs de tipo número */
-    input[type=number] {
-        color: #1a1a1a !important;
-    }
+    .stAlert p { color: #ffffff !important; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -71,142 +80,171 @@ def obtener_o_crear_carpeta(nombre_carpeta, parent_id, drive_service):
     carpeta_nueva = drive_service.files().create(body=file_metadata, fields='id').execute()
     return carpeta_nueva.get('id')
 
-# --- UI PRINCIPAL ---
-render_hero("Cuadernillo Digital", f"Hola {usuario_activo.get('nombre', 'Conquistador')}, estás trabajando en tu clase de Amigo.", eyebrow="Club Lakonn")
-
-# Definición de Secciones
-secciones_lista = [
-    "1. Datos Personales", 
-    "2. Generales", 
-    "3. Descubrimiento Espiritual", 
-    "4. Sirviendo a los Demás"
-]
-
-# Sidebar con Radio sincronizado con el estado
+# --- SIDEBAR (MENÚ LATERAL) ---
+# Usamos el state para que el radio button cambie cuando presionamos botones
 seccion_actual = st.sidebar.radio(
-    "Navegación:", 
+    "Navegación del Cuadernillo:", 
     secciones_lista, 
-    index=st.session_state.seccion_index,
-    key="radio_nav"
+    index=st.session_state.nav_index,
+    key="radio_navegacion"
 )
+# Sincronizamos el índice si el usuario hace clic manualmente en el radio
+st.session_state.nav_index = secciones_lista.index(seccion_actual)
 
-# Actualizar el índice si el usuario cambia el radio manualmente
-if secciones_lista.index(seccion_actual) != st.session_state.seccion_index:
-    st.session_state.seccion_index = secciones_lista.index(seccion_actual)
+# --- CUERPO DE LA PÁGINA ---
+render_hero("Cuadernillo Digital", f"Clase de Amigo: {usuario_activo.get('nombre')}", eyebrow="Club Lakonn")
 
-# --- LÓGICA DE LAS SECCIONES ---
-
-# SECCIÓN 1: DATOS PERSONALES
+# ==========================================
+# SECCIÓN 1: DATOS PERSONALES (Página 2 PDF)
+# ==========================================
 if seccion_actual == "1. Datos Personales":
     st.header("📋 I. DATOS PERSONALES")
-    with st.form("form_personales"):
-        col1, col2 = st.columns(2)
-        with col1:
-            n_f = st.text_input("Nombre completo", value=usuario_activo.get("nombre"))
-            e_f = st.number_input("Edad", min_value=10, max_value=20, step=1)
-            d_f = st.text_input("Dirección")
-            b_f = st.text_input("Barrio")
-        with col2:
-            g_f = st.text_input("Grado / Año escolar")
-            c_f = st.text_input("Ciudad / Provincia")
-            t_f = st.text_input("Teléfono")
-            em_f = st.text_input("Correo electrónico", value=usuario_activo.get("correo"))
-        
+    with st.form("form_p1"):
+        c1, c2 = st.columns(2)
+        with c1:
+            f_nom = st.text_input("Nombre", value=usuario_activo.get("nombre"))
+            f_eda = st.number_input("Edad", min_value=10, max_value=20, step=1)
+            f_gra = st.text_input("Grado / Año escolar")
+            f_dir = st.text_input("Dirección")
+            f_bar = st.text_input("Barrio")
+            f_cp  = st.text_input("Código Postal")
+            f_clu = st.text_input("Club", value="Lakonn")
+            f_uni = st.text_input("Unidad")
+        with c2:
+            f_ciu = st.text_input("Ciudad")
+            f_pro = st.text_input("Provincia")
+            f_ema = st.text_input("Email", value=usuario_activo.get("correo"))
+            f_tel = st.text_input("Teléfono")
+            f_con = st.text_input("Consejero de Unidad")
+            f_igl = st.text_input("Iglesia")
+            f_aso = st.text_input("Asociación / Misión")
+            f_union = st.text_input("Unión")
+
         st.markdown("---")
-        st.subheader("🏥 Información Médica")
+        st.subheader("🏥 INFORMACIÓN MÉDICA")
         m1, m2, m3 = st.columns(3)
-        ts = m1.selectbox("Tipo Sanguíneo", ["O", "A", "B", "AB", "No sé"])
-        rh = m2.radio("Factor RH", ["+", "-"], horizontal=True)
-        vt = m3.radio("Vacuna Antitetánica", ["Sí", "No"], horizontal=True)
+        with m1: f_sangre = st.selectbox("Tipo Sanguíneo", ["O", "A", "B", "AB", "No sé"])
+        with m2: f_rh = st.radio("Factor RH", ["+", "-"], horizontal=True)
+        with m3: f_tetano = st.radio("Vacuna Antitetánica", ["Sí", "No"], horizontal=True)
         
-        al = st.text_area("Alergias o condiciones médicas especiales")
+        st.write("**Sufro de:**")
+        s1, s2, s3, s4, s5 = st.columns(5)
+        f_dia = s1.checkbox("Diabetes")
+        f_epi = s2.checkbox("Epilepsia")
+        f_car = s3.checkbox("P. Cardíacos")
+        f_hem = s4.checkbox("Hemofilia")
+        f_asm = s5.checkbox("Asma / Bronquitis")
+        
+        f_ale = st.text_area("Alergias (Penicilina, suero, otros) o condiciones adicionales:")
 
         if st.form_submit_button("💾 GUARDAR DATOS PERSONALES", use_container_width=True):
             try:
-                with st.spinner("Guardando en el libro RequisitosConquistadores..."):
+                with st.spinner("Sincronizando con RequisitosConquistadores..."):
                     client, _ = iniciar_servicios()
                     libro = client.open("RequisitosConquistadores")
                     hoja = libro.worksheet("Cuadernillo_Amigo")
-                    hoja.append_row([
-                        datetime.now().strftime("%d/%m/%Y"), usuario_activo.get("usuario"), 
-                        "Datos Personales", f"Nombre: {n_f}, Edad: {e_f}, Tel: {t_f}, Sangre: {ts}{rh}, Alergias: {al}"
-                    ])
-                    st.success("¡Datos personales guardados!")
+                    
+                    fila = [
+                        datetime.now().strftime("%d/%m/%Y %H:%M"),
+                        usuario_activo.get("usuario"),
+                        f_nom, f_eda, f_dir, f_tel, f_ema, f_uni,
+                        f"{f_sangre}{f_rh}", f_tetano, str(f_dia), str(f_asm), f_ale
+                    ]
+                    hoja.append_row(fila)
+                    st.success("¡Datos guardados correctamente en tu libro!")
                     st.balloons()
             except Exception as e: st.error(f"Error: {e}")
 
-    # Botón para avanzar a la siguiente sección
-    if st.button("Siguiente sección: Generales ➡️", use_container_width=True):
-        st.session_state.seccion_index = 1
+    # BOTÓN DE NAVEGACIÓN FORZADA
+    st.markdown("---")
+    if st.button("IR A SECCIÓN 2: GENERALES ➡️", type="primary", use_container_width=True):
+        st.session_state.nav_index = 1  # Forzamos índice a 1 (Sección 2)
         st.rerun()
 
-# SECCIÓN 2: GENERALES
+# ==========================================
+# SECCIÓN 2: GENERALES (Páginas 3-8 PDF)
+# ==========================================
 elif seccion_actual == "2. Generales":
-    st.header("🎖️ II. GENERALES")
+    st.header("🎖️ II. REQUISITOS GENERALES")
     
-    st.markdown("### 1. Edad y Documentación")
+    # 1. Edad
+    st.markdown("#### 1. Edad y Documentación")
     st.write("Tener como mínimo diez años de edad.")
-    up_carnet = st.file_uploader("Sube tu Carnet o Certificado de Nacimiento", type=["jpg", "png", "pdf"])
+    up_carnet = st.file_uploader("Sube tu Carnet o Certificado de Nacimiento", type=["jpg", "png", "jpeg", "pdf"], key="up_c")
 
     st.markdown("---")
-    st.markdown("### 2. Miembro Activo")
-    st.write("Sube fotos de tus mejores momentos en el Club este año.")
-    up_fotos = st.file_uploader("Puedes subir varias fotos", type=["jpg", "png", "jpeg"], accept_multiple_files=True)
+    # 2. Miembro Activo
+    st.markdown("#### 2. Ser miembro activo del Club")
+    up_fotos = st.file_uploader("Sube fotos de tus actividades", type=["jpg", "png", "jpeg"], accept_multiple_files=True, key="up_f")
 
     st.markdown("---")
-    st.markdown("### 3. Voto y Ley")
-    txt_voto = st.text_area("Explica el significado del Voto con tus palabras:")
-    txt_ley = st.text_area("Explica el significado de la Ley con tus palabras:")
+    # 3. Voto y Ley
+    st.markdown("#### 3. Memorizar y explicar el Voto y la Ley")
+    txt_voto = st.text_area("¿Qué significa el VOTO para ti?", key="t_voto")
+    txt_ley = st.text_area("¿Qué significa la LEY para ti?", key="t_ley")
 
     st.markdown("---")
-    st.markdown("### 4, 5 y 6. Libros y Gema")
-    inf_libro = st.text_area("Informe del Libro del Club de Lectura:")
-    inf_camino = st.text_area("Resumen del libro 'El Camino a Cristo':")
-    gema_listo = st.checkbox("He completado los requisitos de la Gema Bíblica")
+    # 4 y 5. Lectura
+    st.markdown("#### 4 y 5. Libros y Lectura")
+    inf_club = st.text_area("Informe del Libro del Club de Lectura (Título y Resumen):", key="t_lib")
+    inf_camino = st.text_area("Resumen del libro 'El Camino a Cristo':", key="t_cam")
 
-    if st.button("🚀 GUARDAR CAPÍTULO: GENERALES", type="primary", use_container_width=True):
+    st.markdown("---")
+    # 6. Gema Bíblica
+    st.markdown("#### 6. Gema Bíblica")
+    f_gema = st.checkbox("He completado los requisitos de la Gema Bíblica de Amigo", key="chk_gema")
+
+    if st.button("🚀 GUARDAR CAPÍTULO I COMPLETO", type="primary", use_container_width=True):
         try:
-            with st.status("Subiendo a Drive y registrando...") as status:
+            with st.status("Subiendo archivos a tu carpeta en Drive...") as status:
                 client, drive_service = iniciar_servicios()
-                ID_PADRE = "1dmjbODLWcpimKiynkqFqeo-krXEco0ps"
-                id_nino = obtener_o_crear_carpeta(usuario_activo.get("nombre"), ID_PADRE, drive_service)
+                ID_AMIGO = "1dmjbODLWcpimKiynkqFqeo-krXEco0ps"
                 
+                # Crear o buscar carpeta del niño
+                id_nino = obtener_o_crear_carpeta(usuario_activo.get("nombre"), ID_AMIGO, drive_service)
+                
+                # Subir Carnet
                 link_c = subir_a_drive(up_carnet, id_nino, drive_service) if up_carnet else "No subido"
+                # Subir fotos de actividades
                 if up_fotos:
                     for f in up_fotos: subir_a_drive(f, id_nino, drive_service)
                 
+                # Registrar en Excel
                 libro = client.open("RequisitosConquistadores")
                 hoja = libro.worksheet("Cuadernillo_Amigo")
                 hoja.append_row([
-                    datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                    datetime.now().strftime("%d/%m/%Y %H:%M"),
                     usuario_activo.get("usuario"),
-                    "Sección Generales",
-                    f"Carnet: {link_c} | Gema: {gema_listo} | Voto/Ley: Completado"
+                    "REQUISITOS GENERALES",
+                    f"Carnet: {link_c} | Gema: {f_gema} | Voto/Ley: Explicados"
                 ])
-                status.update(label="¡Sección Generales guardada exitosamente!", state="complete")
+                status.update(label="¡Capítulo I guardado en Drive y Excel!", state="complete")
                 st.balloons()
-        except Exception as e: st.error(f"Error: {e}")
+        except Exception as e: st.error(f"Error técnico: {e}")
 
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-        if st.button("⬅️ Anterior"):
-            st.session_state.seccion_index = 0
+    # BOTONES DE NAVEGACIÓN
+    st.markdown("---")
+    b1, b2 = st.columns(2)
+    with b1:
+        if st.button("⬅️ Volver a Datos Personales"):
+            st.session_state.nav_index = 0
             st.rerun()
-    with col_btn2:
-        if st.button("Siguiente: Espiritual ➡️"):
-            st.session_state.seccion_index = 2
+    with b2:
+        if st.button("Ir a Sección 3: Espiritual ➡️"):
+            st.session_state.nav_index = 2
             st.rerun()
 
+# ==========================================
 # SECCIÓN 3: DESCUBRIMIENTO ESPIRITUAL
+# ==========================================
 elif seccion_actual == "3. Descubrimiento Espiritual":
     st.header("📖 III. DESCUBRIMIENTO ESPIRITUAL")
-    st.info("Esta sección se habilitará pronto para completar los estudios bíblicos.")
-    
-    if st.button("⬅️ Volver a Generales"):
-        st.session_state.seccion_index = 1
+    st.info("Esta sección se está preparando basándose en el PDF de estudios bíblicos.")
+    if st.button("⬅️ Anterior"):
+        st.session_state.nav_index = 1
         st.rerun()
 
-# --- BOTÓN PARA VOLVER AL MENÚ PRINCIPAL ---
+# --- VOLVER AL MENÚ ---
 st.sidebar.markdown("---")
-if st.sidebar.button("🏠 Volver al Menú Principal", use_container_width=True):
+if st.sidebar.button("🏠 Volver al Panel Principal", use_container_width=True):
     st.switch_page("pages/menu.py")

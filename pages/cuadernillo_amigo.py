@@ -20,26 +20,16 @@ if not st.session_state.get("authenticated", False):
 usuario_activo = st.session_state.get("user_info", {})
 apply_app_theme(max_width=1100)
 
-# --- CONFIGURACIÓN DE APIS ---
-# === CÓDIGO ANTERIOR COMENTADO (PROTOCOLO NO BORRADO) ===
-# def iniciar_servicios():
-#     scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
-#     creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
-#     client = gspread.authorize(creds)
-#     drive_service = build('drive', 'v3', credentials=creds)
-#     return client, drive_service
-
-# === NUEVA VERSIÓN MÁS ROBUSTA ===
+# --- CONFIGURACIÓN DE APIS (VERSIÓN ROBUSTA) ---
 def iniciar_servicios():
     scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
-    
-    # Convertimos explícitamente a diccionario real para evitar errores de formato
     secret_dict = dict(st.secrets["gcp_service_account"])
     creds = ServiceAccountCredentials.from_json_keyfile_dict(secret_dict, scope)
-    client = gspread.authorize(creds)
     
-    # Agregamos 'static_discovery=False' para evitar el error <Response [200]> en la nube
+    client = gspread.authorize(creds)
+    # static_discovery=False evita el error de red en Streamlit Cloud
     drive_service = build('drive', 'v3', credentials=creds, static_discovery=False)
+    
     return client, drive_service
 
 def subir_a_drive(file, folder_id, drive_service):
@@ -51,10 +41,28 @@ def subir_a_drive(file, folder_id, drive_service):
     drive_service.permissions().create(fileId=uploaded_file.get('id'), body={'type': 'anyone', 'role': 'viewer'}).execute()
     return uploaded_file.get('webViewLink')
 
+def obtener_o_crear_carpeta(nombre_carpeta, parent_id, drive_service):
+    """Busca una carpeta por nombre. Si no existe, la crea dentro del parent_id."""
+    query = f"name='{nombre_carpeta}' and '{parent_id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false"
+    response = drive_service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+    carpetas = response.get('files', [])
+
+    if carpetas:
+        return carpetas[0].get('id') # Ya existe, devuelve el ID
+    else:
+        # No existe, la crea
+        file_metadata = {
+            'name': nombre_carpeta,
+            'mimeType': 'application/vnd.google-apps.folder',
+            'parents': [parent_id]
+        }
+        carpeta_nueva = drive_service.files().create(body=file_metadata, fields='id').execute()
+        return carpeta_nueva.get('id')
+
 # --- UI PRINCIPAL ---
 render_hero(
     "Cuadernillo Digital",
-    f"Bienvenido conqui {usuario_activo.get('nombre')}. Completa tu cuadernillo de Amigo aquí.",
+    f"Bienvenido conqui {usuario_activo.get('nombre', 'Usuario')}. Completa tu cuadernillo de Amigo aquí.",
     eyebrow="Clase de Amigo"
 )
 
@@ -97,7 +105,7 @@ if seccion_actual == "1. Datos Personales":
             try:
                 with st.spinner("Guardando en la nube..."):
                     client, _ = iniciar_servicios()
-                    # ⚠️ CAMBIA ESTO POR EL NOMBRE DE TU EXCEL
+                    # CONEXIÓN EXACTA A TU LIBRO
                     libro = client.open("RequisitosConquistadores") 
                     hoja = libro.worksheet("Cuadernillo_Amigo")
                     
@@ -111,40 +119,59 @@ if seccion_actual == "1. Datos Personales":
                     st.success("¡Datos personales guardados correctamente!")
                     st.balloons()
             except Exception as e:
-                st.error(f"Error al conectar con Google: {e}")
+                st.error(f"Error al conectar con Google Sheets: {e}")
 
 elif seccion_actual == "2. Generales":
     st.subheader("II. GENERALES")
     st.write("1. Tener como mínimo diez años de edad.")
+    st.info("Sube una foto o PDF de tu Certificado de Nacimiento o Carnet de Identidad.")
     
-    archivo_id = st.file_uploader("Sube tu Certificado de Nacimiento o Carnet (Imagen o PDF)", type=["jpg", "png", "pdf"])
+    archivo_id = st.file_uploader("Seleccionar archivo", type=["jpg", "png", "jpeg", "pdf"], key="uploader_generales")
     
-    if st.button("🚀 SUBIR EVIDENCIA", type="primary"):
+    if st.button("🚀 SUBIR EVIDENCIA Y REGISTRAR", type="primary", use_container_width=True):
         if archivo_id:
             try:
-                with st.spinner("Subiendo archivo a Drive..."):
+                with st.status("Procesando evidencia en la nube...") as status:
                     client, drive_service = iniciar_servicios()
                     
-                    # ⚠️ CAMBIA ESTO POR EL ID DE TU CARPETA "AMIGO" EN DRIVE
-                    ID_CARPETA_DRIVE = "TU_ID_AQUI" 
+                    # TU ID EXACTO DE LA CARPETA TarjetaAmigo
+                    ID_CARPETA_PADRE = "1dmjbODLWcpimKiynkqFqeo-krXEco0ps"
                     
-                    link_archivo = subir_a_drive(archivo_id, ID_CARPETA_DRIVE, drive_service)
+                    nombre_conquistador = usuario_activo.get("nombre", "Sin_Nombre")
                     
-                    # Guardamos el link en el Sheet
-                    libro = client.open("GESTION CLUB LAKONN")
+                    # Busca o crea la carpeta del niño dentro de TarjetaAmigo
+                    status.update(label=f"Buscando o creando carpeta para {nombre_conquistador}...")
+                    id_carpeta_nino = obtener_o_crear_carpeta(nombre_conquistador, ID_CARPETA_PADRE, drive_service)
+                    
+                    # Sube el archivo directamente a la carpeta del niño
+                    status.update(label="Subiendo archivo...")
+                    link_archivo = subir_a_drive(archivo_id, id_carpeta_nino, drive_service)
+                    
+                    # Guarda el registro en tu libro
+                    status.update(label="Registrando en Excel...")
+                    libro = client.open("RequisitosConquistadores")
                     hoja = libro.worksheet("Cuadernillo_Amigo")
-                    # Buscamos la fila del usuario para actualizar o agregamos nueva
-                    hoja.append_row([datetime.now().strftime("%d/%m/%Y"), usuario_activo.get("usuario"), "SUBIDA_ARCHIVO", link_archivo])
                     
-                    st.success(f"¡Archivo subido! Puedes verlo aquí: {link_archivo}")
+                    hoja.append_row([
+                        datetime.now().strftime("%d/%m/%Y %H:%M:%S"), 
+                        usuario_activo.get("usuario"), 
+                        "Evidencia: Carnet/Certificado", 
+                        link_archivo
+                    ])
+                    
+                    status.update(label=f"¡Éxito! Evidencia guardada.", state="complete")
+                    st.success(f"Archivo subido correctamente a la carpeta de {nombre_conquistador}.")
+                    st.markdown(f"🔗 [Abrir archivo subido]({link_archivo})")
+                    st.balloons()
             except Exception as e:
-                st.error(f"Error al subir: {e}")
+                st.error(f"Error técnico en la subida: {e}")
         else:
-            st.warning("Por favor selecciona un archivo primero.")
+            st.warning("⚠️ Debes seleccionar un archivo antes de presionar el botón.")
 
 else:
     st.info("Esta sección se habilitará una vez completemos el mapeo del PDF.")
 
 # Botón para volver
-if st.sidebar.button("⬅️ Volver al Menú"):
+st.sidebar.markdown("---")
+if st.sidebar.button("⬅️ Volver al Menú", use_container_width=True):
     st.switch_page("pages/menu.py")

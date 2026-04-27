@@ -96,7 +96,13 @@ with st.form("form_datos_personales"):
         except Exception as e:
             st.error(f"Error al conectar: {e}")
 
-# Botón de navegación lateral para el futuro
+# --- BOTÓN DE NAVEGACIÓN HACIA S1 ---
+st.markdown("---")
+st.write("¿Ya guardaste tus datos? Pasa al siguiente capítulo:")
+if st.button("➡️ IR A SECCIÓN 1: GENERALES", type="primary", use_container_width=True):
+    st.switch_page("pages/cuadernillo_amigoS1.py")
+
+# Sidebar
 st.sidebar.markdown("---")
 if st.sidebar.button("🏠 Menú Principal"):
     st.switch_page("pages/menu.py")

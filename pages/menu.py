@@ -314,12 +314,21 @@ with st.expander("Amigo", expanded=True):
     with a_col1:
         if st.button("Registro Unidades", key="amigo_registro", use_container_width=True):
             open_registro_unidades("Amigo")
-        if st.button("Cuadernillo", key="amigo_cuadernillo", use_container_width=True):
-            open_placeholder(
-                "Tarjetas progresivas / Amigo",
-                "Cuadernillo de Amigo",
-                "Espacio preparado para alojar el cuadernillo digital, contenidos y seguimiento de trabajo.",
-            )
+            
+        # ===== CÓDIGO ANTERIOR COMENTADO (PROTOCOLO NO BORRADO) =====
+        # if st.button("Cuadernillo", key="amigo_cuadernillo", use_container_width=True):
+        #     open_placeholder(
+        #         "Tarjetas progresivas / Amigo",
+        #         "Cuadernillo de Amigo",
+        #         "Espacio preparado para alojar el cuadernillo digital, contenidos y seguimiento de trabajo.",
+        #     )
+        # ============================================================
+        
+        # ===== NUEVO CÓDIGO =====
+        if st.button("📓 Cuadernillo", key="amigo_cuadernillo_link", use_container_width=True):
+            st.switch_page("pages/cuadernillo_amigo.py")
+        # ========================
+            
     with a_col2:
         if st.button("Tarjeta", key="amigo_tarjeta", use_container_width=True):
             open_placeholder(

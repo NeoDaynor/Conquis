@@ -98,7 +98,7 @@ if seccion_actual == "1. Datos Personales":
                 with st.spinner("Guardando en la nube..."):
                     client, _ = iniciar_servicios()
                     # ⚠️ CAMBIA ESTO POR EL NOMBRE DE TU EXCEL
-                    libro = client.open("GESTION CLUB LAKONN") 
+                    libro = client.open("RequisitosConquistadores") 
                     hoja = libro.worksheet("Cuadernillo_Amigo")
                     
                     nueva_fila = [

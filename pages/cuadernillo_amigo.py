@@ -34,7 +34,7 @@ def conectar_excel():
     scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
     client = gspread.authorize(creds)
-    return client.open("RequisitosConquistadores").worksheet("Datos_Personales")
+    return client.open("RequisitosConquistadores").worksheet("C_Amigo_DatosP")
 
 # --- UI PRINCIPAL ---
 render_hero("Sección 1", "Datos Personales y Médicos", eyebrow="Cuadernillo de Amigo")

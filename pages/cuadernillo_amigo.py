@@ -21,12 +21,25 @@ usuario_activo = st.session_state.get("user_info", {})
 apply_app_theme(max_width=1100)
 
 # --- CONFIGURACIÓN DE APIS ---
+# === CÓDIGO ANTERIOR COMENTADO (PROTOCOLO NO BORRADO) ===
+# def iniciar_servicios():
+#     scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+#     creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
+#     client = gspread.authorize(creds)
+#     drive_service = build('drive', 'v3', credentials=creds)
+#     return client, drive_service
+
+# === NUEVA VERSIÓN MÁS ROBUSTA ===
 def iniciar_servicios():
     scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
-    # Usamos tus secretos ya configurados en Streamlit
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
+    
+    # Convertimos explícitamente a diccionario real para evitar errores de formato
+    secret_dict = dict(st.secrets["gcp_service_account"])
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(secret_dict, scope)
     client = gspread.authorize(creds)
-    drive_service = build('drive', 'v3', credentials=creds)
+    
+    # Agregamos 'static_discovery=False' para evitar el error <Response [200]> en la nube
+    drive_service = build('drive', 'v3', credentials=creds, static_discovery=False)
     return client, drive_service
 
 def subir_a_drive(file, folder_id, drive_service):

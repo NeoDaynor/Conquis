@@ -51,13 +51,16 @@ st.markdown("#### 1. Tener como mínimo diez años de edad")
 up_carnet = st.file_uploader("Sube tu Carnet o Certificado de Nacimiento (JPG, PNG, PDF)", type=["jpg", "png", "pdf"])
 
 st.markdown("---")
-st.markdown("#### 2. Ser miembro activo del Club")
+st.markdown("#### 2. Ser miembro activo del Club de Conquistadores")
+txt_activo = st.text_area("Da un resumen de las actividades que realizas en el Club:")
 up_fotos = st.file_uploader("Sube fotos de tus actividades en el Club", type=["jpg", "png"], accept_multiple_files=True)
 
 st.markdown("---")
 st.markdown("#### 3. Memorizar y explicar el Voto y la Ley")
 txt_voto = st.text_area("Explica con tus palabras el significado del Voto:")
+txt_ver_voto = st.text_area("Busca un versículo biblico que corrobore el significado del Voto:")
 txt_ley = st.text_area("Explica con tus palabras el significado de la Ley:")
+txt_ver_ley = st.text_area("Busca un versículo biblico que confirme el significado de la Ley:")
 
 st.markdown("---")
 st.markdown("#### 4 y 5. Club de Lectura y El Camino a Cristo")

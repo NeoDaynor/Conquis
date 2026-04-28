@@ -347,12 +347,22 @@ with st.expander("Amigo", expanded=True):
         # ========================
             
     with a_col2:
-        if st.button("Tarjeta", key="amigo_tarjeta", use_container_width=True):
-            open_placeholder(
-                "Tarjetas progresivas / Amigo",
-                "Tarjeta de Amigo",
-                "Vista reservada para mostrar, imprimir o validar la tarjeta progresiva de la clase Amigo.",
-            )
+# ===== CÓDIGO ANTERIOR COMENTADO (PROTOCOLO NO BORRADO) =====
+        # if st.button("Tarjeta", key="amigo_tarjeta", use_container_width=True):
+        #     open_placeholder(
+        #         "Tarjetas progresivas / Amigo",
+        #         "Tarjeta de Amigo",
+        #         "Vista reservada para mostrar, imprimir o validar la tarjeta progresiva de la clase Amigo.",
+        #     )
+        # ============================================================
+
+        # ===== NUEVO BOTÓN: TARJETA DE AMIGO (PDF) =====
+        st.link_button(
+            "💳 Abrir Tarjeta de Amigo", 
+            "https://drive.google.com/file/d/1812uegmnFCSG1CUl4SFSTzXNvbDAEMM0/view?usp=drive_link", 
+            use_container_width=True
+        )
+        # ===============================================
         if st.button("Material de Apoyo", key="amigo_material", use_container_width=True):
             open_placeholder(
                 "Tarjetas progresivas / Amigo",

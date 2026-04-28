@@ -307,7 +307,7 @@ if user.get("rol") == "admin":
                 st.switch_page("pages/gestion_usuarios.py")
 
 st.markdown('<p class="section-label">Tarjetas Progresivas</p>', unsafe_allow_html=True)
-with st.expander("Amigo", expanded=True):
+with st.expander("Amigo", expanded=False):
     st.markdown(
         """
         <div class="section-card">

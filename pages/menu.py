@@ -28,7 +28,7 @@ def open_placeholder(section, title, description):
         "title": title,
         "description": description,
     }
-    st.switch_page("pages/manuales.py")
+    st.switch_page("pages/biblioteca.py")
 
 
 def open_registro_unidades(nivel):

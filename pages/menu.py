@@ -318,7 +318,7 @@ with st.expander("Amigo", expanded=True):
         """,
         unsafe_allow_html=True,
     )
-    a_col1, a_col2 = st.columns(2)
+    a_col1, a_col2, a_col3 = st.columns(3)
     with a_col1:
         if st.button("Registro Unidades", key="amigo_registro", use_container_width=True):
             open_registro_unidades("Amigo")        
@@ -370,6 +370,7 @@ with st.expander("Amigo", expanded=True):
             use_container_width=True
         )
         # ===================================================
+    with a_col3:
         # ===== NUEVO BOTÓN: EL HACHA Y EL CUCHILLO =====
         st.link_button(
             "🪓 Especialidad: El hacha y el cuchillo", 

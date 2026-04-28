@@ -362,13 +362,28 @@ with st.expander("Amigo", expanded=True):
             "https://drive.google.com/file/d/1812uegmnFCSG1CUl4SFSTzXNvbDAEMM0/view?usp=drive_link", 
             use_container_width=True
         )
+
+        # ===== NUEVO BOTÓN: LIBRO POR LA GRACIA DE DIOS =====
+        st.link_button(
+            "📖 Libro: Por la gracia de Dios", 
+            "https://drive.google.com/file/d/1rNuZk_dLsz6XMluzcebawFU89hNAc2L2/view?usp=drive_link", 
+            use_container_width=True
+        )
+        # ===================================================
+        # ===== NUEVO BOTÓN: EL HACHA Y EL CUCHILLO =====
+        st.link_button(
+            "🪓 Especialidad: El hacha y el cuchillo", 
+            "https://drive.google.com/file/d/1j-WXa0Rtzq8S24Nk1heG7sOtmxfzWGkA/view?usp=drive_link", 
+            use_container_width=True
+        )
         # ===============================================
-        if st.button("Material de Apoyo", key="amigo_material", use_container_width=True):
-            open_placeholder(
-                "Tarjetas progresivas / Amigo",
-                "Material de Apoyo - Amigo",
-                "Modulo pensado para centralizar guias, fichas, recursos descargables y apoyo para instructores.",
-            )
+        # ===== NUEVO BOTÓN: VOTO Y LA LEY =====
+        st.link_button(
+            "📜 Voto y la Ley", 
+            "https://drive.google.com/file/d/1SdwWARDUB9TcnYjjPPaWVRX5zieS4Exa/view?usp=drive_link", 
+            use_container_width=True
+        )
+        # =====================================
 
 with st.expander("Companero", expanded=False):
     st.markdown(

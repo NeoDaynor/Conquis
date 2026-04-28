@@ -63,7 +63,12 @@ txt_ley = st.text_area("Explica con tus palabras el significado de la Ley:")
 txt_ver_ley = st.text_area("Busca un versículo biblico que confirme el significado de la Ley:")
 
 st.markdown("---")
-st.markdown("#### 4 y 5. Club de Lectura y El Camino a Cristo")
+st.markdown("#### 4. Leer el libro del curso de lectura del año.")
+txt_club = st.text_area("Informe del Libro del Club de Lectura (Escribe un resumen detallado):")
+txt_camino = st.text_area("Resumen del libro 'El Camino a Cristo':")
+
+st.markdown("---")
+st.markdown("#### 5. Club de Lectura y El Camino a Cristo")
 txt_club = st.text_area("Informe del Libro del Club de Lectura (Escribe un resumen detallado):")
 txt_camino = st.text_area("Resumen del libro 'El Camino a Cristo':")
 

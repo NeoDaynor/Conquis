@@ -64,8 +64,11 @@ txt_ver_ley = st.text_area("Busca un versículo biblico que confirme el signific
 
 st.markdown("---")
 st.markdown("#### 4. Leer el libro del curso de lectura del año.")
-txt_club = st.text_area("Informe del Libro del Club de Lectura (Escribe un resumen detallado):")
-txt_camino = st.text_area("Resumen del libro 'El Camino a Cristo':")
+txt_club = st.text_input("¿Cuál es el titulo del libro?")
+txt_club = st.text_input("Cuál es el autor del libro")
+txt_club = st.text_input("Cuál es el editor")
+txt_club = st.text_input("Cuál es el nombre del personaje principal")
+txt_camino = st.text_area("Escribe un resumen del libro:")
 
 st.markdown("---")
 st.markdown("#### 5. Club de Lectura y El Camino a Cristo")

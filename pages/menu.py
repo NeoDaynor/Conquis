@@ -211,7 +211,8 @@ st.markdown(
         color: #9ed0ff;
     }}
 
-    div.stButton > button {{
+/* Estilo unificado para botones normales y botones de enlace */
+    div.stButton > button, div.stLinkButton > a {{
         width: 100%;
         min-height: 3rem;
         border-radius: 14px !important;
@@ -221,13 +222,20 @@ st.markdown(
         font-weight: 600 !important;
         transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
         box-shadow: 0 12px 24px rgba(8, 22, 43, 0.18);
+        
+        /* Ajustes extra para que el enlace se comporte como botón */
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-decoration: none !important;
     }}
 
-    div.stButton > button:hover {{
+    div.stButton > button:hover, div.stLinkButton > a:hover {{
         transform: translateY(-2px);
         box-shadow: 0 16px 26px rgba(8, 22, 43, 0.24);
         border-color: rgba(15, 84, 153, 0.8) !important;
         color: #0a2a49 !important;
+        text-decoration: none !important;
     }}
 
     .muted-note {{

@@ -315,7 +315,7 @@ with st.expander("Amigo", expanded=True):
         if st.button("Registro Unidades", key="amigo_registro", use_container_width=True):
             open_registro_unidades("Amigo")        
         
-        if st.link_button(
+        st.link_button(
         "📓 Abrir Cuadernillo PDF", 
         "https://drive.google.com/file/d/16r__Nuf-c7sx8cEtU60Ts-6leMD0U1sr/view?usp=sharing", 
         use_container_width=True

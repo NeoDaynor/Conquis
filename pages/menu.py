@@ -312,7 +312,10 @@ with st.expander("Amigo", expanded=True):
     )
     a_col1, a_col2 = st.columns(2)
     with a_col1:
-        st.link_button(
+        if st.button("Registro Unidades", key="amigo_registro", use_container_width=True):
+            open_registro_unidades("Amigo")        
+        
+        if st.link_button(
         "📓 Abrir Cuadernillo PDF", 
         "https://drive.google.com/file/d/16r__Nuf-c7sx8cEtU60Ts-6leMD0U1sr/view?usp=sharing", 
         use_container_width=True

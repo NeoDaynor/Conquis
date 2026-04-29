@@ -41,21 +41,6 @@ st.markdown(
         visibility: hidden;
     }}
 
-    .stApp {{
-        background:
-            linear-gradient(135deg, rgba(7, 22, 43, 0.88), rgba(7, 61, 120, 0.72)),
-            url("data:image/jpg;base64,{bg_pc}") center/cover fixed;
-        color: #f6f8fb;
-    }}
-
-    @media (max-width: 768px) {{
-        .stApp {{
-            background:
-                linear-gradient(180deg, rgba(7, 22, 43, 0.92), rgba(7, 61, 120, 0.76)),
-                url("data:image/webp;base64,{bg_mobile}") center/cover fixed;
-        }}
-    }}
-
     .block-container {{
         max-width: 1100px;
         padding-top: 2.2rem;

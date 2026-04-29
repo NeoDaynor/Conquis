@@ -226,6 +226,85 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+st.markdown('<p class="section-label">Tarjetas Progresivas</p>', unsafe_allow_html=True)
+with st.expander("Amigo", expanded=False):
+    st.markdown(
+        """
+        <div class="section-card">
+            <span class="mini-label">Tarjeta progresiva</span>
+            <h4>Ruta de trabajo: Amigo</h4>
+            <p>Accesos organizados para gestionar el progreso, la documentacion y el material de apoyo.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    a_col1, a_col2, a_col3 = st.columns(3)
+    with a_col1:
+        if st.button("Registro Unidades", key="amigo_registro", use_container_width=True):
+            open_registro_unidades("Amigo")        
+        
+        st.link_button(
+        "📓 Abrir Cuadernillo PDF", 
+        "https://drive.google.com/file/d/16r__Nuf-c7sx8cEtU60Ts-6leMD0U1sr/view?usp=sharing", 
+        use_container_width=True
+        )
+        
+        #if st.button("Registro Unidades", key="amigo_registro", use_container_width=True):
+        #    open_registro_unidades("Amigo")
+            
+        # ===== CÓDIGO ANTERIOR COMENTADO (PROTOCOLO NO BORRADO) =====
+        # if st.button("Cuadernillo", key="amigo_cuadernillo", use_container_width=True):
+        #     open_placeholder(
+        #         "Tarjetas progresivas / Amigo",
+        #         "Cuadernillo de Amigo",
+        #         "Espacio preparado para alojar el cuadernillo digital, contenidos y seguimiento de trabajo.",
+        #     )
+        # ============================================================
+        
+        # ===== NUEVO CÓDIGO =====
+        #if st.button("📓 Cuadernillo", key="amigo_cuadernillo_link", use_container_width=True):
+        #    st.switch_page("pages/cuadernillo_amigo.py")
+        # ========================
+            
+    with a_col2:
+# ===== CÓDIGO ANTERIOR COMENTADO (PROTOCOLO NO BORRADO) =====
+        # if st.button("Tarjeta", key="amigo_tarjeta", use_container_width=True):
+        #     open_placeholder(
+        #         "Tarjetas progresivas / Amigo",
+        #         "Tarjeta de Amigo",
+        #         "Vista reservada para mostrar, imprimir o validar la tarjeta progresiva de la clase Amigo.",
+        #     )
+        # ============================================================
+
+        # ===== NUEVO BOTÓN: TARJETA DE AMIGO (PDF) =====
+        st.link_button(
+            "💳 Abrir Tarjeta de Amigo", 
+            "https://drive.google.com/file/d/1812uegmnFCSG1CUl4SFSTzXNvbDAEMM0/view?usp=drive_link", 
+            use_container_width=True
+        )
+
+        # ===== NUEVO BOTÓN: LIBRO POR LA GRACIA DE DIOS =====
+        st.link_button(
+            "📖 Libro: Por la gracia de Dios", 
+            "https://drive.google.com/file/d/1rNuZk_dLsz6XMluzcebawFU89hNAc2L2/view?usp=drive_link", 
+            use_container_width=True
+        )
+        # ===================================================
+    with a_col3:
+        # ===== NUEVO BOTÓN: EL HACHA Y EL CUCHILLO =====
+        st.link_button(
+            "🪓 Especialidad: El hacha y el cuchillo", 
+            "https://drive.google.com/file/d/1j-WXa0Rtzq8S24Nk1heG7sOtmxfzWGkA/view?usp=drive_link", 
+            use_container_width=True
+        )
+        # ===============================================
+        # ===== NUEVO BOTÓN: VOTO Y LA LEY =====
+        st.link_button(
+            "📜 Voto y la Ley", 
+            "https://drive.google.com/file/d/1SdwWARDUB9TcnYjjPPaWVRX5zieS4Exa/view?usp=drive_link", 
+            use_container_width=True
+        )
+        # =====================================
 
 
 col1, col2 = st.columns(2)

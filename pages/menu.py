@@ -306,6 +306,29 @@ if user.get("rol") == "admin":
             if st.button("Abrir administracion de usuarios", key="go_admin", use_container_width=True):
                 st.switch_page("pages/gestion_usuarios.py")
 
+st.markdown('<p class="section-label">Primeros Pasos</p>', unsafe_allow_html=True)
+with st.expander("Aspirante a Conquistador", expanded=False):
+    st.markdown(
+        """
+        <div class="section-card">
+            <span class="mini-label">Tarjeta Aspirante de Conquistadores</span>
+            <h4>Ruta de trabajo: Tarjeta Aspirante</h4>
+            <p>Accesos organizados para gestionar el progreso, la documentacion y el material de apoyo.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    a_col1 = st.columns(1)
+    with a_col1:
+        
+        st.link_button(
+        "📓 Tarjeta Aspirante de conquistadores", 
+        "https://drive.google.com/file/d/1Jx8cSiz3loRxAjrC6cLNDaRt30BcVoQJ/view?usp=drive_link", 
+        use_container_width=True
+        )
+
+#-*--------------------------------------
+
 st.markdown('<p class="section-label">Tarjetas Progresivas</p>', unsafe_allow_html=True)
 with st.expander("Amigo", expanded=False):
     st.markdown(

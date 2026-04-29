@@ -422,7 +422,7 @@ with st.expander("Companero", expanded=False):
             )
 
 st.markdown('<p class="section-label">Recursos</p>', unsafe_allow_html=True)
-with st.expander("Manuales", expanded=False):
+with st.expander("Biblioteca", expanded=False):
     st.markdown(
         """
         <div class="section-card">

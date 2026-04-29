@@ -318,8 +318,7 @@ with st.expander("Aspirante a Conquistador", expanded=False):
         """,
         unsafe_allow_html=True,
     )
-    a_col1 = st.columns(1)
-    with a_col1:
+
         
         st.link_button(
         "📓 Tarjeta Aspirante de conquistadores", 

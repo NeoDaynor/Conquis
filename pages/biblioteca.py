@@ -280,7 +280,7 @@ with st.expander("Libros", expanded=False):
         )
 
 ##---------------- Esta seccion estan los Manuales ----------------------------------------------------------------------------
-with st.expander("Libros", expanded=False):
+with st.expander("Manuales", expanded=False):
     st.markdown(
         """
         <div class="section-card">

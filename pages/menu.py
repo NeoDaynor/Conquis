@@ -409,41 +409,6 @@ with st.expander("Amigo", expanded=False):
         )
         # =====================================
 
-with st.expander("Companero", expanded=False):
-    st.markdown(
-        """
-        <div class="section-card">
-            <span class="mini-label">Tarjeta progresiva</span>
-            <h4>Ruta de trabajo: Companero</h4>
-            <p>Estructura lista para continuar la siguiente etapa del programa.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    c_col1, c_col2 = st.columns(2)
-    with c_col1:
-        if st.button("Registro Unidades", key="companero_registro", use_container_width=True):
-            open_registro_unidades("Companero")
-        if st.button("Cuadernillo", key="companero_cuadernillo", use_container_width=True):
-            open_placeholder(
-                "Tarjetas progresivas / Companero",
-                "Cuadernillo de Companero",
-                "Seccion preparada para el cuadernillo de la clase Companero y su futura navegacion.",
-            )
-    with c_col2:
-        if st.button("Tarjeta", key="companero_tarjeta", use_container_width=True):
-            open_placeholder(
-                "Tarjetas progresivas / Companero",
-                "Tarjeta de Companero",
-                "Vista reservada para la tarjeta progresiva de Companero y su posterior integracion.",
-            )
-        if st.button("Material de Apoyo", key="companero_material", use_container_width=True):
-            open_placeholder(
-                "Tarjetas progresivas / Companero",
-                "Material de Apoyo - Companero",
-                "Area disponible para recursos metodologicos, descargables y apoyo de clase.",
-            )
-
 st.markdown('<p class="section-label">Recursos</p>', unsafe_allow_html=True)
 with st.expander("Biblioteca", expanded=False):
     st.markdown(

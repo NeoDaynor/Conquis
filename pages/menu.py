@@ -317,7 +317,7 @@ with st.expander("Aspirante a Conquistador", expanded=False):
         <div class="section-card">
             <span class="mini-label">Tarjeta Aspirante de Conquistadores</span>
             <h4>Ruta de trabajo: Tarjeta Aspirante</h4>
-            <p>Accesos organizados para gestionar el progreso, la documentacion y el material de apoyo.</p>
+            <p>Esta es una excelente guia para comenzar a ser un buen conquistador.</p>
         </div>
         """,
         unsafe_allow_html=True,

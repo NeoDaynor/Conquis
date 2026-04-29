@@ -34,11 +34,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-user = st.session_state.get("user_info", {"nombre": "Usuario", "rol": "user"})
-bg_pc = get_base64("images/fondopc.jpg")
-bg_mobile = get_base64("images/fondocelu.webp")
-logo = get_base64("images/LogoLakonn.png")
-
 st.markdown(
     f"""
     <style>

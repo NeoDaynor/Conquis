@@ -227,6 +227,7 @@ st.markdown(
 )
 
 st.markdown('<p class="section-label">Biblioteca</p>', unsafe_allow_html=True)
+##---------------- Esta seccion estan libros ----------------------------------------------------------------------------
 with st.expander("Libros", expanded=False):
     st.markdown(
         """
@@ -266,20 +267,58 @@ with st.expander("Libros", expanded=False):
         )
 
     with a_col3:
-        # ===== NUEVO BOTÓN: EL HACHA Y EL CUCHILLO =====
         st.link_button(
             "📖 Libro: Mente, Carácter y Personalidad TOMO 1", 
             "https://drive.google.com/file/d/1GBFIPS8oDQekNVAP4flwwyo_CYD8Kr31/view?usp=drive_link", 
             use_container_width=True
         )
-        # ===============================================
-        # ===== NUEVO BOTÓN: VOTO Y LA LEY =====
+
         st.link_button(
             "📖 Libro: Mente, Carácter y Personalidad TOMO 2", 
             "https://drive.google.com/file/d/1RSjyw1p11riYDlpYdHbp94YLQjmZE-Ml/view?usp=drive_link", 
             use_container_width=True
         )
-        # =====================================
+
+##---------------- Esta seccion estan los Manuales ----------------------------------------------------------------------------
+with st.expander("Libros", expanded=False):
+    st.markdown(
+        """
+        <div class="section-card">
+            <span class="mini-label">Biblioteca Cristiana</span>
+            <h4>Libros</h4>
+            <p>Aca encontrarás libros en pdf, recomendado para Jovenes y Adultos.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    a_col1, a_col2 = st.columns(2)
+    with a_col1:
+        st.link_button(
+        "📖 Manual: Manual de nudos conquistadores", 
+        "https://drive.google.com/file/d/1pGfY42P-pq_lMjp52LflRVvO6hIiyNwt/view?usp=drive_link", 
+        use_container_width=True
+        )        
+        
+        st.link_button(
+        "📖 Libro: El Hogar Cristiano", 
+        "https://drive.google.com/file/d/1qpjPsger0WM4RkOPlWl6m9DWYxg5J2pS/view?usp=drive_link", 
+        use_container_width=True
+        )
+        
+    with a_col2:
+        st.link_button(
+            "📖 Libro: El Ministerio de la Bondad", 
+            "https://drive.google.com/file/d/12C_Ei44YCgx_k2z3MN-KxZaDHzlugEbg/view?usp=drive_link", 
+            use_container_width=True
+        )
+
+        st.link_button(
+            "📖 Libro: Por la gracia de Dios", 
+            "https://drive.google.com/file/d/1rNuZk_dLsz6XMluzcebawFU89hNAc2L2/view?usp=drive_link", 
+            use_container_width=True
+        )
+
+
 
 
 col1, col2 = st.columns(2)

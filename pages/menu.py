@@ -427,17 +427,17 @@ with st.expander("Manuales", expanded=False):
         """
         <div class="section-card">
             <span class="mini-label">Recursos</span>
-            <h4>Biblioteca de manuales</h4>
-            <p>Acceso pensado para concentrar documentos, instructivos y referencia institucional.</p>
+            <h4>Biblioteca General</h4>
+            <p>Acceso pensado para concentrar documentos, instructivos, libros y referencia institucional.</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
-    if st.button("Abrir manuales", key="manuales", use_container_width=True):
+    if st.button("Abrir nuestra Biblioteca", key="biblioteca", use_container_width=True):
         open_placeholder(
             "Recursos",
-            "Manuales",
-            "Seccion lista para centralizar manuales internos, documentos PDF y referencias del club.",
+            "Biblioteca",
+            "En esta sección encontraras manuales internos, documentos PDF, Libros y apoyos para nuestro club.",
         )
 
 st.markdown('<p class="section-label">Especialidades</p>', unsafe_allow_html=True)

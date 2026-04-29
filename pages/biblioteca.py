@@ -294,27 +294,27 @@ with st.expander("Libros", expanded=False):
     a_col1, a_col2 = st.columns(2)
     with a_col1:
         st.link_button(
-        "📖 Manual: Manual de nudos conquistadores", 
+        "📓 Manual: Manual de nudos conquistadores", 
         "https://drive.google.com/file/d/1pGfY42P-pq_lMjp52LflRVvO6hIiyNwt/view?usp=drive_link", 
         use_container_width=True
         )        
         
         st.link_button(
-        "📖 Libro: El Hogar Cristiano", 
-        "https://drive.google.com/file/d/1qpjPsger0WM4RkOPlWl6m9DWYxg5J2pS/view?usp=drive_link", 
+        "📓 Manual: Manual de nudos y mas", 
+        "https://drive.google.com/file/d/1YYmP563-J6IzFg0ULCmr20Qp9vaF1mxe/view?usp=drive_link", 
         use_container_width=True
         )
         
     with a_col2:
         st.link_button(
-            "📖 Libro: El Ministerio de la Bondad", 
-            "https://drive.google.com/file/d/12C_Ei44YCgx_k2z3MN-KxZaDHzlugEbg/view?usp=drive_link", 
+            "📓 Manual: Manual de nudos", 
+            "https://drive.google.com/file/d/1Znb_FyYMnzmYfZxnL71ErHlcaEEXA8Te/view?usp=drive_link", 
             use_container_width=True
         )
 
         st.link_button(
-            "📖 Libro: Por la gracia de Dios", 
-            "https://drive.google.com/file/d/1rNuZk_dLsz6XMluzcebawFU89hNAc2L2/view?usp=drive_link", 
+            "📓 Manual: El hacha y El cuchillo", 
+            "https://drive.google.com/file/d/1wowlzagO0Tfg69dKV7bQY18pP2o9ZV3i/view?usp=drive_link", 
             use_container_width=True
         )
 

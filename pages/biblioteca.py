@@ -34,6 +34,220 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+user = st.session_state.get("user_info", {"nombre": "Usuario", "rol": "user"})
+bg_pc = get_base64("images/fondopc.jpg")
+bg_mobile = get_base64("images/fondocelu.webp")
+logo = get_base64("images/LogoLakonn.png")
+
+st.markdown(
+    f"""
+    <style>
+    #MainMenu, footer, header, .stAppDeployButton {{
+        visibility: hidden;
+    }}
+
+    .stApp {{
+        background:
+            linear-gradient(135deg, rgba(7, 22, 43, 0.88), rgba(7, 61, 120, 0.72)),
+            url("data:image/jpg;base64,{bg_pc}") center/cover fixed;
+        color: #f6f8fb;
+    }}
+
+    @media (max-width: 768px) {{
+        .stApp {{
+            background:
+                linear-gradient(180deg, rgba(7, 22, 43, 0.92), rgba(7, 61, 120, 0.76)),
+                url("data:image/webp;base64,{bg_mobile}") center/cover fixed;
+        }}
+    }}
+
+    .block-container {{
+        max-width: 1100px;
+        padding-top: 2.2rem;
+        padding-bottom: 3rem;
+    }}
+
+    .hero-shell {{
+        background: linear-gradient(145deg, rgba(7, 22, 43, 0.82), rgba(15, 84, 153, 0.68));
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 28px;
+        padding: 28px;
+        box-shadow: 0 24px 60px rgba(5, 10, 20, 0.28);
+        backdrop-filter: blur(10px);
+        margin-bottom: 1rem;
+    }}
+
+    .hero-top {{
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }}
+
+    .hero-logo {{
+        width: 84px;
+        height: 84px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        flex-shrink: 0;
+    }}
+
+    .hero-logo img {{
+        width: 76%;
+        height: 76%;
+        object-fit: contain;
+    }}
+
+    .hero-eyebrow {{
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+        color: #9ed0ff;
+        margin: 0 0 0.45rem 0;
+    }}
+
+    .hero-title {{
+        font-size: clamp(2rem, 5vw, 3.35rem);
+        line-height: 1;
+        font-weight: 700;
+        margin: 0;
+        color: #ffffff;
+    }}
+
+    .hero-subtitle {{
+        margin: 0.7rem 0 0 0;
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.82);
+        max-width: 760px;
+    }}
+
+    .pill-row {{
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }}
+
+    .info-pill {{
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0.6rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        color: #eef6ff;
+        font-size: 0.92rem;
+    }}
+
+    .section-label {{
+        margin-top: 1.6rem;
+        margin-bottom: 0.55rem;
+        font-size: 0.82rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #b8dbff;
+    }}
+
+    .stExpander {{
+        border: 0 !important;
+        background: transparent !important;
+    }}
+
+    .stExpander details {{
+        border-radius: 22px !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        background: rgba(8, 20, 38, 0.62) !important;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 18px 45px rgba(5, 10, 20, 0.2);
+        overflow: hidden;
+    }}
+
+    .stExpander summary {{
+        padding: 1rem 1.15rem !important;
+        font-size: 1.08rem !important;
+        font-weight: 600 !important;
+        color: #ffffff !important;
+    }}
+
+    .stExpander summary:hover {{
+        background: rgba(255, 255, 255, 0.05);
+    }}
+
+    .section-card {{
+        border-radius: 22px;
+        padding: 20px;
+        background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        margin-bottom: 16px;
+    }}
+
+    .section-card h3,
+    .section-card h4 {{
+        margin: 0;
+        color: #ffffff;
+    }}
+
+    .section-card p {{
+        margin: 0.55rem 0 0 0;
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.55;
+    }}
+
+    .mini-label {{
+        display: inline-block;
+        margin-bottom: 0.8rem;
+        font-size: 0.76rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #9ed0ff;
+    }}
+
+/* Estilo unificado para botones normales y botones de enlace */
+    div.stButton > button, div.stLinkButton > a {{
+        width: 100%;
+        min-height: 3rem;
+        border-radius: 14px !important;
+        border: 1px solid rgba(125, 196, 255, 0.45) !important;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(236, 244, 255, 0.96)) !important;
+        color: #0f3660 !important;
+        font-weight: 600 !important;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
+        box-shadow: 0 12px 24px rgba(8, 22, 43, 0.18);
+        
+        /* Ajustes extra para que el enlace se comporte como botón */
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-decoration: none !important;
+    }}
+
+    div.stButton > button:hover, div.stLinkButton > a:hover {{
+        transform: translateY(-2px);
+        box-shadow: 0 16px 26px rgba(8, 22, 43, 0.24);
+        border-color: rgba(15, 84, 153, 0.8) !important;
+        color: #0a2a49 !important;
+        text-decoration: none !important;
+    }}
+
+    .muted-note {{
+        font-size: 0.93rem;
+        color: rgba(255, 255, 255, 0.72);
+        margin-top: 0.7rem;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+
 col1, col2 = st.columns(2)
 with col1:
     if st.button("Volver al menu", use_container_width=True):

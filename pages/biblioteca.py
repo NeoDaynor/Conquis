@@ -285,8 +285,8 @@ with st.expander("Manuales", expanded=False):
         """
         <div class="section-card">
             <span class="mini-label">Biblioteca Cristiana</span>
-            <h4>Libros</h4>
-            <p>Aca encontrarás libros en pdf, recomendado para Jovenes y Adultos.</p>
+            <h4>Manuales</h4>
+            <p>Aca encontrarás Manuales y material para el apoyo de Especialidades.</p>
         </div>
         """,
         unsafe_allow_html=True,

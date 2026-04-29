@@ -280,8 +280,8 @@ st.markdown(
 
 top_left, top_right = st.columns([3, 1])
 
-with top_left:
-    st.markdown('<p class="section-label">Accesos rapidos</p>', unsafe_allow_html=True)
+#with top_left:
+ #   st.markdown('<p class="section-label">Accesos rapidos</p>', unsafe_allow_html=True)
 
 with top_right:
     if st.button("Cerrar sesion", key="logout_top", use_container_width=True):

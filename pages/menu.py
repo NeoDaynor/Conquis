@@ -435,7 +435,7 @@ with st.expander("Catalogo de especialidades", expanded=False):
         <div class="section-card">
             <span class="mini-label">Especialidades</span>
             <h4>Rutas de aprendizaje practico</h4>
-            <p>Menu preparado para abrir contenidos, guias y seguimiento por especialidad.</p>
+            <p>AUN EN CONTRUCCION PRONTO!!! TENDREMOS MAS MATERIAL.</p>
         </div>
         """,
         unsafe_allow_html=True,

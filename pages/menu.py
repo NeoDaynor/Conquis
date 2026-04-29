@@ -306,7 +306,11 @@ if user.get("rol") == "admin":
             if st.button("Abrir administracion de usuarios", key="go_admin", use_container_width=True):
                 st.switch_page("pages/gestion_usuarios.py")
 
+# =========================================================
+# NUEVA SECCIÓN: PRIMEROS PASOS (Aspirante)
+# =========================================================
 st.markdown('<p class="section-label">Primeros Pasos</p>', unsafe_allow_html=True)
+
 with st.expander("Aspirante a Conquistador", expanded=False):
     st.markdown(
         """
@@ -318,11 +322,12 @@ with st.expander("Aspirante a Conquistador", expanded=False):
         """,
         unsafe_allow_html=True,
     )
-        st.link_button(
+    # El botón ahora está correctamente alineado
+    st.link_button(
         "📓 Tarjeta Aspirante de conquistadores", 
         "https://drive.google.com/file/d/1Jx8cSiz3loRxAjrC6cLNDaRt30BcVoQJ/view?usp=drive_link", 
         use_container_width=True
-        )
+    )
 
 st.markdown('<p class="section-label">Tarjetas Progresivas</p>', unsafe_allow_html=True)
 with st.expander("Amigo", expanded=False):

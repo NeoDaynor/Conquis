@@ -24,13 +24,38 @@ apply_app_theme(max_width=1100)
 # ⚠️ IMPORTANTE: Pon aquí los nombres EXACTOS de las columnas de tu Excel 
 # que cuentan como requisitos para la tarjeta.
 COLUMNAS_DE_REQUISITOS = [
-    "Carnet", 
-    "Fotos", 
-    "Voto", 
-    "Ley", 
-    "Libro_Club", 
-    "Camino_Cristo", 
-    "Gema_Biblica"
+    "Voto y Ley",
+    "Libro año en curso",
+    "Libro Por la gracia de Dios",
+    "Clase Biblica",
+    "Explicar la Creacion",
+    "Explicar 10 Plagas",
+    "Nombre 12 Tribus",
+    "39 Libros A.T.",
+    "Explicar Juan 3:16",
+    "Explicar II Timoteo 3:16",
+    "Explicar Efesios 6:1-3",
+    "Explicar Salmo 1",
+    "Lectura Biblica",
+    "Visitar a alguien",
+    "Dar alimento",
+    "Proyecto ecológico/educativo",
+    "Buen Ciudadano",
+    "10 Cualidades / Regla de oro Mateo 7:12",
+    "Himno Nacional",
+    "Nudos y Amarras",
+    "Explicar Daniel 1:8",
+    "Compromiso vida saludable",
+    "Dieta saludable / Preparar cuadro",
+    "Planear y ejecutar caminata 5K",
+    "Especialidad Naturaleza",
+    "Purificar Agua",
+    "Armar Carpa",
+    "Cuidar cuerda / Hacer Nudos",
+    "Campamento I",
+    "10 Reglas caminata",
+    "Señales de Pista",
+    "Especialidad Habilidades Manuales"
 ]
 
 # --- CONEXIÓN A GOOGLE SHEETS ---

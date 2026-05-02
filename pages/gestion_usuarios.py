@@ -175,51 +175,52 @@ with st.expander("Alta de usuarios", expanded=False):
                 st.success("Usuario creado correctamente.")
                 st.rerun()
 
-st.markdown('<p class="section-label">Usuarios existentes</p> </br> <p>Edita los datos del miembro, actualiza su rol o elimina el registro si ya no corresponde.</p>', unsafe_allow_html=True)
-
-if duplicated_ids:
-    duplicated_ids_text = ", ".join(str(user_id) for user_id in duplicated_ids)
-    st.warning(
-        f"Se detectaron IDs duplicados en users.json: {duplicated_ids_text}. "
-        "La vista sigue operativa porque cada fila usa una clave unica, pero conviene normalizarlos despues."
-    )
-
-for idx, row in enumerate(data["users"]):
-    with st.container():
-        st.markdown(
-            f"""
-            <div class="section-card">
-                <!--<span class="mini-label">Usuario #{row.get("id", "sin_id")}</span>-->
-                <h4>{row.get("nombre", "Sin nombre")}</h4>
-                
-            </div>
-            """,
-            unsafe_allow_html=True,
+with st.expander("Usuarios existentes", expanded=True):
+    st.markdown('<p>Edita los datos del miembro, actualiza su rol o elimina el registro si ya no corresponde.</p>', unsafe_allow_html=True)
+    
+    if duplicated_ids:
+        duplicated_ids_text = ", ".join(str(user_id) for user_id in duplicated_ids)
+        st.warning(
+            f"Se detectaron IDs duplicados en users.json: {duplicated_ids_text}. "
+            "La vista sigue operativa porque cada fila usa una clave unica, pero conviene normalizarlos despues."
         )
-        c1, c2, c3, c4, c5 = st.columns([2, 2, 2, 1.5, 0.7])
-        row_key = f"{row.get('id', 'sin_id')}_{idx}"
-
-        updated_nombre = c1.text_input("Nombre", value=row["nombre"], key=f"nom_{row_key}")
-        updated_cargo = c2.text_input("Cargo", value=row["cargo"], key=f"car_{row_key}")
-        updated_user = c3.text_input("Usuario", value=row["usuario"], key=f"usr_{row_key}")
-        roles = ["admin", "lider", "conqui"]
-        default_role_idx = roles.index(row.get("rol", "conqui"))
-        updated_rol = c4.selectbox("Rol", roles, index=default_role_idx, key=f"rol_{row_key}")
-
-        if c5.button("Eliminar", key=f"del_{row_key}", use_container_width=True):
-            data["users"].pop(idx)
-            save_users(data)
-            st.rerun()
-
-        if (
-            updated_nombre != row["nombre"]
-            or updated_cargo != row["cargo"]
-            or updated_user != row["usuario"]
-            or updated_rol != row.get("rol")
-        ):
-            data["users"][idx]["nombre"] = updated_nombre
-            data["users"][idx]["cargo"] = updated_cargo
-            data["users"][idx]["usuario"] = updated_user
-            data["users"][idx]["rol"] = updated_rol
-            save_users(data)
-            st.toast(f"Actualizado: {updated_nombre}")
+    
+    for idx, row in enumerate(data["users"]):
+        with st.container():
+            st.markdown(
+                f"""
+                <div class="section-card">
+                    <!--<span class="mini-label">Usuario #{row.get("id", "sin_id")}</span>-->
+                    <h4>{row.get("nombre", "Sin nombre")}</h4>
+                    
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            c1, c2, c3, c4, c5 = st.columns([2, 2, 2, 1.5, 0.7])
+            row_key = f"{row.get('id', 'sin_id')}_{idx}"
+    
+            updated_nombre = c1.text_input("Nombre", value=row["nombre"], key=f"nom_{row_key}")
+            updated_cargo = c2.text_input("Cargo", value=row["cargo"], key=f"car_{row_key}")
+            updated_user = c3.text_input("Usuario", value=row["usuario"], key=f"usr_{row_key}")
+            roles = ["admin", "lider", "conqui"]
+            default_role_idx = roles.index(row.get("rol", "conqui"))
+            updated_rol = c4.selectbox("Rol", roles, index=default_role_idx, key=f"rol_{row_key}")
+    
+            if c5.button("Eliminar", key=f"del_{row_key}", use_container_width=True):
+                data["users"].pop(idx)
+                save_users(data)
+                st.rerun()
+    
+            if (
+                updated_nombre != row["nombre"]
+                or updated_cargo != row["cargo"]
+                or updated_user != row["usuario"]
+                or updated_rol != row.get("rol")
+            ):
+                data["users"][idx]["nombre"] = updated_nombre
+                data["users"][idx]["cargo"] = updated_cargo
+                data["users"][idx]["usuario"] = updated_user
+                data["users"][idx]["rol"] = updated_rol
+                save_users(data)
+                st.toast(f"Actualizado: {updated_nombre}")

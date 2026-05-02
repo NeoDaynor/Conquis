@@ -210,7 +210,31 @@ st.markdown(
         text-transform: uppercase;
         color: #9ed0ff;
     }}
+/* Estilo para que el enlace parezca un botón dentro de la tarjeta */
+    .card-button-internal {{
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        margin-top: 12px;
+        padding: 10px;
+        background: linear-gradient(180deg, #ffffff, #ecefff);
+        border: 1px solid #7dc4ff;
+        border-radius: 10px;
+        color: #0f3660 !important;
+        font-weight: 600;
+        text-decoration: none !important; /* Quita el subrayado de enlace */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        transition: all 0.2s ease;
+    }}
 
+    .card-button-internal:hover {{
+        background: #ffffff;
+        border-color: #0f5499;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }}
+    
 /* Estilo unificado para botones normales y botones de enlace */
     div.stButton > button, div.stLinkButton > a {{
         width: 100%;

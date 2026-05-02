@@ -338,7 +338,7 @@ st.markdown(
         <h4>Ruta de trabajo: Amigo</h4>
         <p>Accesos organizados para gestionar el progreso, la documentacion y el material de apoyo.</p>
         
-        <a href="/reportes" target="_self" class="card-button">
+        <a href="pages/reportes.py" target="_self" class="card-button">
             📊 Ver Reporte de Cumplimiento
         </a>
     </div>

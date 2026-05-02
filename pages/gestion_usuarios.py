@@ -139,7 +139,6 @@ user_ids = [row.get("id") for row in data["users"] if "id" in row]
 duplicated_ids = sorted([user_id for user_id, count in Counter(user_ids).items() if count > 1])
 
 with st.expander("Alta de usuarios", expanded=False):
-#st.markdown('<p class="section-label">Alta de usuarios</p>', unsafe_allow_html=True)
     with st.container():
         st.markdown(
             """
@@ -175,7 +174,7 @@ with st.expander("Alta de usuarios", expanded=False):
                 st.success("Usuario creado correctamente.")
                 st.rerun()
 
-with st.expander("Usuarios existentes", expanded=True):
+with st.expander("Usuarios existentes", expanded=False):
     st.markdown('<p>Edita los datos del miembro, actualiza su rol o elimina el registro si ya no corresponde.</p>', unsafe_allow_html=True)
     
     if duplicated_ids:

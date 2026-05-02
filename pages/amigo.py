@@ -293,7 +293,7 @@ with st.expander("📊 Avance por Conquistador / Lider", expanded=True):
                 y="Porcentaje", 
                 color="Porcentaje",
                 color_continuous_scale="Blues",
-                range_y=[0, 100],
+                range_y=[0, 50],
                 text=df_para_grafico["Porcentaje"].apply(lambda x: f"{x:.0f}%"),
                 labels={COLUMNA_NOMBRES: f"{unidad_actual}", "Porcentaje": "% Avance"}
             )
@@ -302,7 +302,7 @@ with st.expander("📊 Avance por Conquistador / Lider", expanded=True):
             fig.update_layout(
                 xaxis={'categoryorder':'total descending'},
                 xaxis_tickangle=-45,
-                height=350,
+                height=250,
                 margin=dict(t=10, b=10, l=10, r=10)
             )
             

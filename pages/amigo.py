@@ -240,7 +240,7 @@ else:
     )
 
 # SECCION AVANCE GENERAL
-with st.expander("Avance general", expanded=True):
+with st.expander("Cuadro Resumen de Avance General", expanded=True):
     #st.markdown('<p class="section-label">Avance general</p>', unsafe_allow_html=True)
     with st.container(key="dashboard_wrap"):
         st.markdown(
@@ -265,7 +265,7 @@ with st.expander("Avance general", expanded=True):
         )
 
 # REGISTRO AVANCE
-with st.expander("Registro de avances", expanded=True):
+with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
     if usuario_activo.get("rol") != "conqui":
         #st.markdown('<p class="section-label">Registro de avances</p>', unsafe_allow_html=True)
         with st.container(key="registro_wrap"):

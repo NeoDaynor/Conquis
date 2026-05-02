@@ -254,13 +254,16 @@ st.markdown(
         text-decoration: none !important;
     }}
 
-/* Estilo para que el botón de Streamlit parezca parte de la tarjeta */
+/* Estilo para que el botón de reporte se fusione con la tarjeta azul */
     div.stButton > button[key="btn_reporte_amigo"] {{
         border-top-left-radius: 0 !important;
         border-top-right-radius: 0 !important;
         border-top: none !important;
         background: #ffffff !important;
         margin-top: -5px !important;
+        margin-bottom: 15px !important;
+        height: 45px !important;
+        border-color: rgba(125, 196, 255, 0.45) !important;
     }}
     
     div.stButton > button:hover, div.stLinkButton > a:hover {{
@@ -365,19 +368,19 @@ with st.expander("Aspirante a Conquistador", expanded=False):
 st.markdown('<p class="section-label">Tarjetas Progresivas</p>', unsafe_allow_html=True)
 
 with st.expander("Amigo", expanded=False):
-    # 1. La tarjeta HTML (sin el botón adentro)
+    # --- 1. TARJETA DE REPORTE (PARTE SUPERIOR) ---
     st.markdown(
         """
-        <div class="section-card" style="margin-bottom: -10px; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
-            <span class="mini-label">Tarjeta progresiva</span>
-            <h4>Ruta de trabajo: Amigo</h4>
-            <p>Accesos organizados para gestionar el progreso, la documentacion y el material de apoyo.</p>
+        <div class="section-card" style="margin-bottom: 0px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; padding-bottom: 5px;">
+            <span class="mini-label">Gestión de Progreso</span>
+            <h4>Reporte de Cumplimiento: Amigo</h4>
+            <p style="font-size: 0.9rem;">Consulta el avance detallado de los requisitos de tu unidad.</p>
         </div>
         """,
         unsafe_allow_html=True
     )
     
-    # 2. El botón real de Streamlit (mantiene la sesión activa)
+    # Botón nativo de Streamlit para no perder la sesión
     if st.button("📊 Ver Reporte de Cumplimiento", key="btn_reporte_amigo", use_container_width=True):
         st.switch_page("pages/reportes.py")
         

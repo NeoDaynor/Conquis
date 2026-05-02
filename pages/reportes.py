@@ -145,7 +145,6 @@ except Exception as e:
     st.error(f"Hubo un error crítico: {e}")
 
 # --- BOTÓN DE VOLVER ---
-# --- BOTÓN DE VOLVER ---
 st.markdown("---")
 col_espacio1, col_boton, col_espacio2 = st.columns([1, 2, 1])
 

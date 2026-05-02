@@ -316,9 +316,6 @@ st.markdown(
 
 top_left, top_right = st.columns(2)
 
-#with top_left:
- #   st.markdown('<p class="section-label">Accesos rapidos</p>', unsafe_allow_html=True)
-
 with top_right:
     if st.button("Cerrar sesion", key="logout_top", use_container_width=True):
         st.session_state["authenticated"] = False
@@ -326,21 +323,9 @@ with top_right:
         st.switch_page("app.py")
         
 if user.get("rol") == "admin":
-    st.markdown('<p class="section-label">Administracion de Usuarios</p>', unsafe_allow_html=True)
-    with st.container():
-        st.markdown(
-            """
-            <div class="section-card">
-                <span class="mini-label">Administracion</span>
-                <h3>Gestion de usuarios del sistema</h3>
-                <p>Acceso directo para crear, editar y mantener cuentas internas del club.</p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        with top_left:
-            if st.button("Abrir administracion de usuarios", key="go_admin", use_container_width=True):
-                st.switch_page("pages/gestion_usuarios.py")
+    with top_left:
+        if st.button("Abrir administracion de usuarios", key="go_admin", use_container_width=True):
+            st.switch_page("pages/gestion_usuarios.py")
 
 # =========================================================
 # NUEVA SECCIÓN: PRIMEROS PASOS (Aspirante)

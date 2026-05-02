@@ -295,7 +295,7 @@ with st.expander("📊 Avance por Conquistador / Lider", expanded=True):
                 color_continuous_scale="Blues",
                 range_y=[0, 100],
                 text=df_para_grafico["Porcentaje"].apply(lambda x: f"{x:.0f}%"),
-                labels={COLUMNA_NOMBRES: "Conquistador", "Porcentaje": "% Avance"}
+                labels={COLUMNA_NOMBRES: f"Registro de {unidad_actual}", "Porcentaje": "% Avance"}
             )
             
             fig.update_traces(textposition='outside')

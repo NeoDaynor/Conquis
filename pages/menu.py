@@ -254,6 +254,15 @@ st.markdown(
         text-decoration: none !important;
     }}
 
+/* Estilo para que el botón de Streamlit parezca parte de la tarjeta */
+    div.stButton > button[key="btn_reporte_amigo"] {{
+        border-top-left-radius: 0 !important;
+        border-top-right-radius: 0 !important;
+        border-top: none !important;
+        background: #ffffff !important;
+        margin-top: -5px !important;
+    }}
+    
     div.stButton > button:hover, div.stLinkButton > a:hover {{
         transform: translateY(-2px);
         box-shadow: 0 16px 26px rgba(8, 22, 43, 0.24);
@@ -356,16 +365,22 @@ with st.expander("Aspirante a Conquistador", expanded=False):
 st.markdown('<p class="section-label">Tarjetas Progresivas</p>', unsafe_allow_html=True)
 
 with st.expander("Amigo", expanded=False):
-    # Al escribirlo así (entre paréntesis y con comillas simples por línea), 
-    # destruimos cualquier espacio rebelde que confunda a Streamlit.
-    html_card = (
-        '<div class="section-card">'
-        '<span class="mini-label">Tarjeta progresiva</span>'
-        '<h4>Ruta de trabajo: Amigo</h4>'
-        '<p>Accesos organizados para gestionar el progreso, la documentacion y el material de apoyo.</p>'
-        '<a href="reportes" target="_self" class="card-button-internal">📊 Ver Reporte de Cumplimiento</a>'
-        '</div>'
+    # 1. La tarjeta HTML (sin el botón adentro)
+    st.markdown(
+        """
+        <div class="section-card" style="margin-bottom: -10px; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+            <span class="mini-label">Tarjeta progresiva</span>
+            <h4>Ruta de trabajo: Amigo</h4>
+            <p>Accesos organizados para gestionar el progreso, la documentacion y el material de apoyo.</p>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
+    
+    # 2. El botón real de Streamlit (mantiene la sesión activa)
+    if st.button("📊 Ver Reporte de Cumplimiento", key="btn_reporte_amigo", use_container_width=True):
+        st.switch_page("pages/reportes.py")
+        
     st.markdown(html_card, unsafe_allow_html=True)
     
     a_col1, a_col2, a_col3 = st.columns(3)

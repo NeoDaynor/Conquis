@@ -250,54 +250,68 @@ else:
         unsafe_allow_html=True,
     )
 
-# GRAFICO
+# =========================================================
+# GRÁFICO DE AVANCE (Filtrado por Unidad)
+# =========================================================
 with st.expander("📊 Avance por Conquistador / Lider", expanded=True):
-# =========================================================
-# NUEVA SECCIÓN: GRÁFICO DE AVANCE INDIVIDUAL
-# =========================================================
-#st.markdown("### 📊 Avance por Conquistador")
-    try:
-        df_grafico = obtener_datos_grafico()
+    if not df_unidad.empty:
+        st.markdown("### 📊 Avance de la Unidad")
         
-        if not df_grafico.empty:
-            # Definimos las columnas de requisitos para el cálculo
-            # (Asegúrate de que estos nombres coincidan con tu Fila 2 de Excel)
-            REQUISITOS = ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica"] # Agrega los que necesites
+        # 1. Usamos tu lista COMPLETA de requisitos (igual que en reportes.py)
+        REQUISITOS_A_GRAFICAR = [
+            "Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica",
+            "Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.",
+            "Explicar Juan 3:16", "Explicar II Timoteo 3:16", "Explicar Efesios 6:1-3",
+            "Explicar Salmo 1", "Lectura Biblica", "Visitar a alguien", "Dar alimento",
+            "Proyecto ecológico/educativo", "Buen Ciudadano", "10 Cualidades / Regla de oro Mateo 7:12",
+            "Himno Nacional", "Nudos y Amarras", "Explicar Daniel 1:8", "Compromiso vida saludable",
+            "Dieta saludable / Preparar cuadro", "Planear y ejecutar caminata 5K",
+            "Especialidad Naturaleza", "Purificar Agua", "Armar Carpa", "Cuidar cuerda / Hacer Nudos",
+            "Campamento I", "10 Reglas caminata", "Señales de Pista", "Especialidad Habilidades Manuales"
+        ]
+        
+        # 2. Nombre exacto de la columna de los niños
+        COLUMNA_NOMBRES = "Integrantes"
+        
+        # 3. Filtramos solo las columnas que realmente existen en el DataFrame
+        cols_check = [c for c in REQUISITOS_A_GRAFICAR if c in df_unidad.columns]
+        
+        if cols_check:
+            # Creamos una copia para no afectar la tabla que se muestra abajo
+            df_para_grafico = df_unidad.copy()
             
-            # Filtramos solo los que existen
-            cols_val = [c for c in REQUISITOS if c in df_grafico.columns]
+            # Calculamos el porcentaje
+            df_para_grafico["Porcentaje"] = (
+                df_para_grafico[cols_check].apply(lambda x: (x.astype(str).str.strip() != "").sum(), axis=1) 
+                / len(cols_check)
+            ) * 100
             
-            # Calculamos porcentaje
-            df_grafico["Porcentaje"] = (df_grafico[cols_val].apply(lambda x: (x.astype(str).str.strip() != "").sum(), axis=1) / len(cols_val)) * 100
-            
-            # Creamos el gráfico
+            # Generamos el gráfico de Plotly
             fig = px.bar(
-                df_grafico, 
-                x="Integrantes", # Usamos la columna que confirmamos antes
+                df_para_grafico, 
+                x=COLUMNA_NOMBRES, 
                 y="Porcentaje", 
                 color="Porcentaje",
                 color_continuous_scale="Blues",
                 range_y=[0, 100],
-                text=df_grafico["Porcentaje"].apply(lambda x: f"{x:.0f}%"),
-                labels={"Integrantes": "Conquistador", "Porcentaje": "% Avance"}
+                text=df_para_grafico["Porcentaje"].apply(lambda x: f"{x:.0f}%"),
+                labels={COLUMNA_NOMBRES: "Conquistador", "Porcentaje": "% Avance"}
             )
             
             fig.update_traces(textposition='outside')
             fig.update_layout(
                 xaxis={'categoryorder':'total descending'},
                 xaxis_tickangle=-45,
-                height=400,
+                height=350,
                 margin=dict(t=10, b=10, l=10, r=10)
             )
             
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("No hay datos suficientes para mostrar el gráfico aún.")
+            st.info("No se encontraron las columnas de requisitos para calcular el avance.")
     
-    except Exception as e:
-        st.error(f"Error al cargar gráfico: {e}")
-    
-    st.markdown("---") # Línea divisoria antes del Cuadro Resumen
+    st.markdown("---") # Separador visual
+
 
 # SECCION AVANCE GENERAL
 with st.expander("Cuadro Resumen de Avance General", expanded=False):

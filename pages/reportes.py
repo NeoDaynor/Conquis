@@ -59,19 +59,29 @@ COLUMNAS_DE_REQUISITOS = [
 ]
 
 # --- CONEXIÓN A GOOGLE SHEETS ---
-@st.cache_data(ttl=60) # Guarda los datos en caché por 60 segundos para que sea rapidísimo
+@st.cache_data(ttl=60)
 def descargar_datos():
     scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
     secret_dict = dict(st.secrets["gcp_service_account"])
     creds = ServiceAccountCredentials.from_json_keyfile_dict(secret_dict, scope)
     client = gspread.authorize(creds)
-    
-    # ⚠️ Asegúrate de que el nombre de la hoja sea el correcto (Ej: "Amigo")
+    # Abrimos la hoja
     hoja = client.open("RequisitosConquistadores").worksheet("Amigo")
-    
-    # Obtenemos todos los datos y los convertimos en un DataFrame de Pandas
-    registros = hoja.get_all_records()
-    return pd.DataFrame(registros)
+    # MÉTODO ROBUSTO: Leemos todos los valores como una lista de listas
+    data = hoja.get_all_values()
+    if not data:
+        return pd.DataFrame()
+    # La primera fila son los encabezados (headers)
+    headers = data[0]
+    # El resto son las filas de datos
+    rows = data[1:]
+    # Creamos el DataFrame de Pandas
+    df = pd.DataFrame(rows, columns=headers)
+    # --- LIMPIEZA CRUCIAL ---
+    # Eliminamos cualquier columna que no tenga nombre (las vacías que daban error)
+    df = df.loc[:, df.columns != '']
+    # ------------------------
+    return df
 
 # --- UI PRINCIPAL ---
 render_hero("Reporte de Progreso", "Estadísticas en tiempo real de la clase de Amigo", eyebrow="Panel de Control")

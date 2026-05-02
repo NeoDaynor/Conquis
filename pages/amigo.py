@@ -241,159 +241,160 @@ with st.expander("Avance general", expanded=True):
         )
 
 # REGISTRO AVANCE
-if usuario_activo.get("rol") != "conqui":
-    st.markdown('<p class="section-label">Registro de avances</p>', unsafe_allow_html=True)
-    with st.container(key="registro_wrap"):
+with st.expander("Registro de avances", expanded=True):
+    if usuario_activo.get("rol") != "conqui":
+        #st.markdown('<p class="section-label">Registro de avances</p>', unsafe_allow_html=True)
+        with st.container(key="registro_wrap"):
+            st.markdown(
+                """
+                <div class="section-card">
+                    <span class="mini-label">Edicion</span>
+                    <h3>Actualizacion por integrante</h3>
+                    <p>Marca o desmarca requisitos para sincronizar los avances directamente con Google Sheets.</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+    
+            nombres = df_unidad["Integrantes"].tolist()
+            if nombres:
+                with st.container(key="registro_inner_wrap"):
+                    conquistador = st.selectbox("Seleccione integrante", nombres)
+                    fila_persona = df_unidad[df_unidad["Integrantes"] == conquistador].iloc[0]
+    
+                    categorias = {
+                        0: {"titulo": "Generales", "items": ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica"]},
+                        1: {"titulo": "Descubrimiento espiritual", "items": ["Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16", "Explicar Efesios 6:1-3", "Explicar Salmo 1", "Lectura Biblica"]},
+                        2: {"titulo": "Sirviendo a otros", "items": ["Visitar a alguien", "Dar alimento", "Proyecto ecológico/educativo", "Buen Ciudadano"]},
+                        3: {"titulo": "Desarrollo de la amistad", "items": ["10 Cualidades / Regla de oro Mateo 7:12", "Himno Nacional"]},
+                        4: {"titulo": "Salud y aptitud fisica", "items": ["Nudos y Amarras", "Explicar Daniel 1:8", "Compromiso vida saludable", "Dieta saludable / Preparar cuadro"]},
+                        5: {"titulo": "Liderazgo", "items": ["Planear y ejecutar caminata 5K"]},
+                        6: {"titulo": "Estudio de la naturaleza", "items": ["Especialidad Naturaleza", "Purificar Agua", "Armar Carpa"]},
+                        7: {"titulo": "Arte de acampar", "items": ["Cuidar cuerda / Hacer Nudos", "Campamento I", "10 Reglas caminata", "Señales de Pista"]},
+                        8: {"titulo": "Estilo de vida", "items": ["Especialidad Habilidades Manuales"]},
+                    }
+    
+                    cols = st.columns(len(categorias))
+                    nuevo_estado = {}
+                    confirmaciones = {}
+    
+                    for col_idx, info in categorias.items():
+                        with cols[col_idx]:
+                            st.markdown(
+                                f"<p class='mini-label' style='display:block; margin-bottom:0.55rem;'>{info['titulo']}</p>",
+                                unsafe_allow_html=True,
+                            )
+    
+                            for item in info["items"]:
+                                valor_actual = bool(fila_persona.get(item) and str(fila_persona.get(item)).strip() != "")
+                                key_cb = f"cb_{conquistador}_{item}"
+                                marcado = st.checkbox(item, value=valor_actual, key=key_cb)
+                                key_confirm_state = f"confirm_state_{key_cb}"
+    
+                                if key_confirm_state not in st.session_state:
+                                    st.session_state[key_confirm_state] = False
+    
+                                if valor_actual and not marcado:
+                                    with st.popover("Confirmar cambio"):
+                                        st.warning("Estas quitando una marca ya registrada.")
+                                        if st.button("Si, eliminar", key=f"btn_{key_cb}"):
+                                            st.session_state[key_confirm_state] = True
+    
+                                    if st.session_state[key_confirm_state]:
+                                        st.success("Confirmado para eliminar.")
+    
+                                    confirmaciones[item] = st.session_state[key_confirm_state]
+                                else:
+                                    confirmaciones[item] = True
+                                    st.session_state[key_confirm_state] = False
+    
+                                nuevo_estado[item] = marcado
+    
+                    if st.button("Sincronizar cambios", type="primary", use_container_width=True):
+                        try:
+                            fila_idx_df = df_full[df_full["Integrantes"] == conquistador].index
+                            if len(fila_idx_df) == 0:
+                                st.error("No se encontro el registro en la hoja.")
+                                st.stop()
+    
+                            fila_real = fila_idx_df[0] + 3
+                            hoy = ahora_chile.strftime("%d/%m/%Y")
+                            ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
+                            updates = []
+                            logs = []
+                            hubo_cambios = False
+    
+                            with st.status("Sincronizando...") as status:
+                                for requisito, marcado in nuevo_estado.items():
+                                    estaba_marcado = bool(
+                                        fila_persona.get(requisito) and str(fila_persona.get(requisito)).strip() != ""
+                                    )
+    
+                                    if not marcado and estaba_marcado and not confirmaciones.get(requisito, False):
+                                        continue
+    
+                                    if requisito in headers:
+                                        col_idx = headers.index(requisito) + 1
+                                        if marcado and not estaba_marcado:
+                                            updates.append(
+                                                {"range": gspread.utils.rowcol_to_a1(fila_real, col_idx), "values": [[hoy]]}
+                                            )
+                                            logs.append(
+                                                [
+                                                    ahora_log,
+                                                    usuario_activo["nombre"],
+                                                    usuario_activo["cargo"],
+                                                    conquistador,
+                                                    requisito,
+                                                    "Marcado",
+                                                ]
+                                            )
+                                            hubo_cambios = True
+                                        elif not marcado and estaba_marcado:
+                                            updates.append(
+                                                {"range": gspread.utils.rowcol_to_a1(fila_real, col_idx), "values": [[""]]}
+                                            )
+                                            logs.append(
+                                                [
+                                                    ahora_log,
+                                                    usuario_activo["nombre"],
+                                                    usuario_activo["cargo"],
+                                                    conquistador,
+                                                    requisito,
+                                                    "Desmarcado",
+                                                ]
+                                            )
+                                            hubo_cambios = True
+    
+                                if hubo_cambios:
+                                    if "Ult. Actualizacion" in headers:
+                                        col_upd = headers.index("Ult. Actualizacion") + 1
+                                        updates.append(
+                                            {"range": gspread.utils.rowcol_to_a1(fila_real, col_upd), "values": [[hoy]]}
+                                        )
+    
+                                    sheet.batch_update(updates)
+                                    if logs:
+                                        log_sheet.append_rows(logs)
+    
+                                    status.update(label="Guardado con exito.", state="complete")
+                                else:
+                                    status.update(label="No se detectaron cambios nuevos.", state="complete")
+    
+                            st.cache_resource.clear()
+                            st.session_state.scroll_top = True
+                            st.rerun()
+    
+                        except Exception as error:
+                            st.error(f"Error critico al guardar: {error}")
+    else:
         st.markdown(
             """
             <div class="section-card">
-                <span class="mini-label">Edicion</span>
-                <h3>Actualizacion por integrante</h3>
-                <p>Marca o desmarca requisitos para sincronizar los avances directamente con Google Sheets.</p>
+                <span class="mini-label">Visualizacion</span>
+                <h4>Acceso de solo lectura</h4>
+                <p>Este perfil puede revisar avances, pero no editar registros dentro de la tarjeta progresiva.</p>
             </div>
             """,
             unsafe_allow_html=True,
         )
-
-        nombres = df_unidad["Integrantes"].tolist()
-        if nombres:
-            with st.container(key="registro_inner_wrap"):
-                conquistador = st.selectbox("Seleccione integrante", nombres)
-                fila_persona = df_unidad[df_unidad["Integrantes"] == conquistador].iloc[0]
-
-                categorias = {
-                    0: {"titulo": "Generales", "items": ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica"]},
-                    1: {"titulo": "Descubrimiento espiritual", "items": ["Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.", "Explicar Juan 3:16", "Explicar II Timoteo 3:16", "Explicar Efesios 6:1-3", "Explicar Salmo 1", "Lectura Biblica"]},
-                    2: {"titulo": "Sirviendo a otros", "items": ["Visitar a alguien", "Dar alimento", "Proyecto ecológico/educativo", "Buen Ciudadano"]},
-                    3: {"titulo": "Desarrollo de la amistad", "items": ["10 Cualidades / Regla de oro Mateo 7:12", "Himno Nacional"]},
-                    4: {"titulo": "Salud y aptitud fisica", "items": ["Nudos y Amarras", "Explicar Daniel 1:8", "Compromiso vida saludable", "Dieta saludable / Preparar cuadro"]},
-                    5: {"titulo": "Liderazgo", "items": ["Planear y ejecutar caminata 5K"]},
-                    6: {"titulo": "Estudio de la naturaleza", "items": ["Especialidad Naturaleza", "Purificar Agua", "Armar Carpa"]},
-                    7: {"titulo": "Arte de acampar", "items": ["Cuidar cuerda / Hacer Nudos", "Campamento I", "10 Reglas caminata", "Señales de Pista"]},
-                    8: {"titulo": "Estilo de vida", "items": ["Especialidad Habilidades Manuales"]},
-                }
-
-                cols = st.columns(len(categorias))
-                nuevo_estado = {}
-                confirmaciones = {}
-
-                for col_idx, info in categorias.items():
-                    with cols[col_idx]:
-                        st.markdown(
-                            f"<p class='mini-label' style='display:block; margin-bottom:0.55rem;'>{info['titulo']}</p>",
-                            unsafe_allow_html=True,
-                        )
-
-                        for item in info["items"]:
-                            valor_actual = bool(fila_persona.get(item) and str(fila_persona.get(item)).strip() != "")
-                            key_cb = f"cb_{conquistador}_{item}"
-                            marcado = st.checkbox(item, value=valor_actual, key=key_cb)
-                            key_confirm_state = f"confirm_state_{key_cb}"
-
-                            if key_confirm_state not in st.session_state:
-                                st.session_state[key_confirm_state] = False
-
-                            if valor_actual and not marcado:
-                                with st.popover("Confirmar cambio"):
-                                    st.warning("Estas quitando una marca ya registrada.")
-                                    if st.button("Si, eliminar", key=f"btn_{key_cb}"):
-                                        st.session_state[key_confirm_state] = True
-
-                                if st.session_state[key_confirm_state]:
-                                    st.success("Confirmado para eliminar.")
-
-                                confirmaciones[item] = st.session_state[key_confirm_state]
-                            else:
-                                confirmaciones[item] = True
-                                st.session_state[key_confirm_state] = False
-
-                            nuevo_estado[item] = marcado
-
-                if st.button("Sincronizar cambios", type="primary", use_container_width=True):
-                    try:
-                        fila_idx_df = df_full[df_full["Integrantes"] == conquistador].index
-                        if len(fila_idx_df) == 0:
-                            st.error("No se encontro el registro en la hoja.")
-                            st.stop()
-
-                        fila_real = fila_idx_df[0] + 3
-                        hoy = ahora_chile.strftime("%d/%m/%Y")
-                        ahora_log = ahora_chile.strftime("%d/%m/%Y %H:%M:%S")
-                        updates = []
-                        logs = []
-                        hubo_cambios = False
-
-                        with st.status("Sincronizando...") as status:
-                            for requisito, marcado in nuevo_estado.items():
-                                estaba_marcado = bool(
-                                    fila_persona.get(requisito) and str(fila_persona.get(requisito)).strip() != ""
-                                )
-
-                                if not marcado and estaba_marcado and not confirmaciones.get(requisito, False):
-                                    continue
-
-                                if requisito in headers:
-                                    col_idx = headers.index(requisito) + 1
-                                    if marcado and not estaba_marcado:
-                                        updates.append(
-                                            {"range": gspread.utils.rowcol_to_a1(fila_real, col_idx), "values": [[hoy]]}
-                                        )
-                                        logs.append(
-                                            [
-                                                ahora_log,
-                                                usuario_activo["nombre"],
-                                                usuario_activo["cargo"],
-                                                conquistador,
-                                                requisito,
-                                                "Marcado",
-                                            ]
-                                        )
-                                        hubo_cambios = True
-                                    elif not marcado and estaba_marcado:
-                                        updates.append(
-                                            {"range": gspread.utils.rowcol_to_a1(fila_real, col_idx), "values": [[""]]}
-                                        )
-                                        logs.append(
-                                            [
-                                                ahora_log,
-                                                usuario_activo["nombre"],
-                                                usuario_activo["cargo"],
-                                                conquistador,
-                                                requisito,
-                                                "Desmarcado",
-                                            ]
-                                        )
-                                        hubo_cambios = True
-
-                            if hubo_cambios:
-                                if "Ult. Actualizacion" in headers:
-                                    col_upd = headers.index("Ult. Actualizacion") + 1
-                                    updates.append(
-                                        {"range": gspread.utils.rowcol_to_a1(fila_real, col_upd), "values": [[hoy]]}
-                                    )
-
-                                sheet.batch_update(updates)
-                                if logs:
-                                    log_sheet.append_rows(logs)
-
-                                status.update(label="Guardado con exito.", state="complete")
-                            else:
-                                status.update(label="No se detectaron cambios nuevos.", state="complete")
-
-                        st.cache_resource.clear()
-                        st.session_state.scroll_top = True
-                        st.rerun()
-
-                    except Exception as error:
-                        st.error(f"Error critico al guardar: {error}")
-else:
-    st.markdown(
-        """
-        <div class="section-card">
-            <span class="mini-label">Visualizacion</span>
-            <h4>Acceso de solo lectura</h4>
-            <p>Este perfil puede revisar avances, pero no editar registros dentro de la tarjeta progresiva.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )

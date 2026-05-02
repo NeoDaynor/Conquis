@@ -5,11 +5,12 @@ import gspread
 import pandas as pd
 import pytz
 import streamlit as st
+import plotly.express as px
+
 from oauth2client.service_account import ServiceAccountCredentials
 from streamlit.errors import StreamlitSecretNotFoundError
 
 from ui_theme import apply_app_theme, render_hero
-
 
 st.set_page_config(
     page_title="Gestion Club Lakonn",
@@ -122,6 +123,16 @@ def get_client():
     ]
     return gspread.authorize(ServiceAccountCredentials.from_json_keyfile_dict(creds, scope))
 
+@st.cache_data(ttl=60)
+def obtener_datos_grafico():
+    scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
+    client = gspread.authorize(creds)
+    hoja = client.open("RequisitosConquistadores").worksheet("Amigo")
+    data = hoja.get_all_values()
+    if len(data) < 2: return pd.DataFrame()
+    df = pd.DataFrame(data[2:], columns=data[1])
+    return df.loc[:, df.columns != '']
 
 def render_error_view(message, detail=None):
     render_hero(
@@ -239,8 +250,58 @@ else:
         unsafe_allow_html=True,
     )
 
+# GRAFICO
+with st.expander("### 📊 Avance por Conquistador", expanded=True):
+# =========================================================
+# NUEVA SECCIÓN: GRÁFICO DE AVANCE INDIVIDUAL
+# =========================================================
+#st.markdown("### 📊 Avance por Conquistador")
+
+    try:
+        df_grafico = obtener_datos_grafico()
+        
+        if not df_grafico.empty:
+            # Definimos las columnas de requisitos para el cálculo
+            # (Asegúrate de que estos nombres coincidan con tu Fila 2 de Excel)
+            REQUISITOS = ["Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica"] # Agrega los que necesites
+            
+            # Filtramos solo los que existen
+            cols_val = [c for c in REQUISITOS if c in df_grafico.columns]
+            
+            # Calculamos porcentaje
+            df_grafico["Porcentaje"] = (df_grafico[cols_val].apply(lambda x: (x.astype(str).str.strip() != "").sum(), axis=1) / len(cols_val)) * 100
+            
+            # Creamos el gráfico
+            fig = px.bar(
+                df_grafico, 
+                x="Integrantes", # Usamos la columna que confirmamos antes
+                y="Porcentaje", 
+                color="Porcentaje",
+                color_continuous_scale="Blues",
+                range_y=[0, 100],
+                text=df_grafico["Porcentaje"].apply(lambda x: f"{x:.0f}%"),
+                labels={"Integrantes": "Conquistador", "Porcentaje": "% Avance"}
+            )
+            
+            fig.update_traces(textposition='outside')
+            fig.update_layout(
+                xaxis={'categoryorder':'total descending'},
+                xaxis_tickangle=-45,
+                height=400,
+                margin=dict(t=10, b=10, l=10, r=10)
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("No hay datos suficientes para mostrar el gráfico aún.")
+    
+    except Exception as e:
+        st.error(f"Error al cargar gráfico: {e}")
+    
+    st.markdown("---") # Línea divisoria antes del Cuadro Resumen
+
 # SECCION AVANCE GENERAL
-with st.expander("Cuadro Resumen de Avance General", expanded=True):
+with st.expander("Cuadro Resumen de Avance General", expanded=False):
     #st.markdown('<p class="section-label">Avance general</p>', unsafe_allow_html=True)
     with st.container(key="dashboard_wrap"):
         st.markdown(

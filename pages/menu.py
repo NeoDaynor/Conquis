@@ -366,9 +366,6 @@ with st.expander("Amigo", expanded=False):
         '<a href="reportes" target="_self" class="card-button-internal">📊 Ver Reporte de Cumplimiento</a>'
         '</div>'
     )
-    
-    st.markdown(html_card, unsafe_allow_html=True)
-    
     st.markdown(html_card, unsafe_allow_html=True)
     
     a_col1, a_col2, a_col3 = st.columns(3)

@@ -1,5 +1,5 @@
 import base64
-
+import textwrap
 import streamlit as st
 
 
@@ -354,9 +354,11 @@ with st.expander("Aspirante a Conquistador", expanded=False):
     )
 
 st.markdown('<p class="section-label">Tarjetas Progresivas</p>', unsafe_allow_html=True)
+st.markdown('<p class="section-label">Tarjetas Progresivas</p>', unsafe_allow_html=True)
+
 with st.expander("Amigo", expanded=False):
-    st.markdown(
-        """
+    # Usamos textwrap.dedent para que los espacios no rompan el HTML
+    html_card = textwrap.dedent("""
         <div class="section-card">
             <span class="mini-label">Tarjeta progresiva</span>
             <h4>Ruta de trabajo: Amigo</h4>
@@ -366,9 +368,10 @@ with st.expander("Amigo", expanded=False):
                 📊 Ver Reporte de Cumplimiento
             </a>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    """)
+    
+    st.markdown(html_card, unsafe_allow_html=True)
+    
     a_col1, a_col2, a_col3 = st.columns(3)
     with a_col1:
         if st.button("Registro Unidades", key="amigo_registro", use_container_width=True):

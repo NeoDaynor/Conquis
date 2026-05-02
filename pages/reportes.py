@@ -4,11 +4,10 @@ import plotly.express as px
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-# Importamos tu tema visual (si usas ui_theme)
+# Importamos tu tema visual
 try:
     from ui_theme import apply_app_theme, render_hero
 except ImportError:
-    # Por si no tienes el ui_theme en esta página, definimos un fallback
     def apply_app_theme(max_width): pass
     def render_hero(t, s, eyebrow): st.title(f"{eyebrow}: {t}")
 
@@ -21,182 +20,129 @@ if not st.session_state.get("authenticated", False):
 apply_app_theme(max_width=1100)
 
 # --- CONFIGURACIÓN DE TU EXCEL ---
-# ⚠️ IMPORTANTE: Pon aquí los nombres EXACTOS de las columnas de tu Excel 
-# que cuentan como requisitos para la tarjeta. (Deben estar en la FILA 2 de tu Excel)
+# ⚠️ Nombres de columnas de requisitos (Fila 2 de tu Excel)
 COLUMNAS_DE_REQUISITOS = [
-    "Voto y Ley",
-    "Libro año en curso",
-    "Libro Por la gracia de Dios",
-    "Clase Biblica",
-    "Explicar la Creacion",
-    "Explicar 10 Plagas",
-    "Nombre 12 Tribus",
-    "39 Libros A.T.",
-    "Explicar Juan 3:16",
-    "Explicar II Timoteo 3:16",
-    "Explicar Efesios 6:1-3",
-    "Explicar Salmo 1",
-    "Lectura Biblica",
-    "Visitar a alguien",
-    "Dar alimento",
-    "Proyecto ecológico/educativo",
-    "Buen Ciudadano",
-    "10 Cualidades / Regla de oro Mateo 7:12",
-    "Himno Nacional",
-    "Nudos y Amarras",
-    "Explicar Daniel 1:8",
-    "Compromiso vida saludable",
-    "Dieta saludable / Preparar cuadro",
-    "Planear y ejecutar caminata 5K",
-    "Especialidad Naturaleza",
-    "Purificar Agua",
-    "Armar Carpa",
-    "Cuidar cuerda / Hacer Nudos",
-    "Campamento I",
-    "10 Reglas caminata",
-    "Señales de Pista",
-    "Especialidad Habilidades Manuales"
+    "Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica",
+    "Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.",
+    "Explicar Juan 3:16", "Explicar II Timoteo 3:16", "Explicar Efesios 6:1-3",
+    "Explicar Salmo 1", "Lectura Biblica", "Visitar a alguien", "Dar alimento",
+    "Proyecto ecológico/educativo", "Buen Ciudadano", "10 Cualidades / Regla de oro Mateo 7:12",
+    "Himno Nacional", "Nudos y Amarras", "Explicar Daniel 1:8", "Compromiso vida saludable",
+    "Dieta saludable / Preparar cuadro", "Planear y ejecutar caminata 5K",
+    "Especialidad Naturaleza", "Purificar Agua", "Armar Carpa", "Cuidar cuerda / Hacer Nudos",
+    "Campamento I", "10 Reglas caminata", "Señales de Pista", "Especialidad Habilidades Manuales"
 ]
 
+# ⚠️ NOMBRE DE LA COLUMNA DE LOS NIÑOS
+COLUMNA_NOMBRES = "Integrantes" 
+
 # --- CONEXIÓN A GOOGLE SHEETS ---
-@st.cache_data(ttl=60) # Guarda los datos en caché por 60 segundos
+@st.cache_data(ttl=60)
 def descargar_datos():
     scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
     secret_dict = dict(st.secrets["gcp_service_account"])
     creds = ServiceAccountCredentials.from_json_keyfile_dict(secret_dict, scope)
     client = gspread.authorize(creds)
     
-    # Abrimos la pestaña correcta
     hoja = client.open("RequisitosConquistadores").worksheet("Amigo")
-    
-    # Leemos TODO el contenido de la hoja
     data = hoja.get_all_values()
     
     if len(data) < 2:
-        return pd.DataFrame() # Retorna tabla vacía si no hay suficientes datos
+        return pd.DataFrame()
     
-    # --- AJUSTE PARA LEER LOS TÍTULOS DESDE LA FILA 2 ---
-    # data[0] es la Fila 1 de Excel (la ignoramos)
-    # data[1] es la Fila 2 de Excel (aquí están tus nombres de columnas)
+    # Headers en Fila 2, Datos desde Fila 3
     headers = data[1] 
-    
-    # data[2:] son los datos de los niños que empiezan en la Fila 3
     rows = data[2:]
-    # ----------------------------------------------------
     
-    # Creamos el DataFrame de Pandas
     df = pd.DataFrame(rows, columns=headers)
-    
-    # Limpiamos columnas vacías que confunden al sistema
-    df = df.loc[:, df.columns != '']
-    
+    df = df.loc[:, df.columns != ''] # Eliminar columnas sin título
     return df
 
 # --- UI PRINCIPAL ---
 render_hero("Reporte de Progreso", "Estadísticas en tiempo real de la clase de Amigo", eyebrow="Panel de Control")
 
 try:
-    with st.spinner("Conectando con la base de datos del Club..."):
+    with st.spinner("Descargando datos del Club Lakonn..."):
         df = descargar_datos()
 
     if df.empty:
         st.warning("Aún no hay datos registrados en la hoja de Excel.")
     else:
         # --- PROCESAMIENTO DE DATOS ---
-        # 1. Filtramos solo las columnas de requisitos que sí existen en tu Excel
         columnas_validas = [col for col in COLUMNAS_DE_REQUISITOS if col in df.columns]
         
-        # Modo Diagnóstico: Si no encuentra las columnas, te avisa por qué
         if not columnas_validas:
-            st.error("No se encontraron las columnas de requisitos en tu Excel.")
-            st.write("🕵️ **Python detectó estas columnas en la Fila 2 de tu Excel:**")
-            st.write(list(df.columns))
-            st.write("📝 **Pero tú le pediste buscar estas en el código:**")
-            st.write(COLUMNAS_DE_REQUISITOS)
-            st.info("💡 Revisa la lista de arriba y asegúrate de que los nombres coincidan exactamente (cuidado con los espacios invisibles al final de las palabras).")
+            st.error("No se encontraron las columnas de requisitos.")
+            st.write("Columnas detectadas:", list(df.columns))
             st.stop()
 
-        # 2. Contamos cuántos requisitos llenó cada niño (contamos celdas que NO estén vacías)
+        # Cálculo de progreso (quitamos espacios y contamos celdas no vacías)
         df["Req_Completados"] = df[columnas_validas].apply(lambda fila: (fila.astype(str).str.strip() != "").sum(), axis=1)
-        
-        # 3. Calculamos el porcentaje
         total_requisitos = len(columnas_validas)
         df["Porcentaje"] = (df["Req_Completados"] / total_requisitos) * 100
 
         # --- FILTROS ---
         st.markdown("### Filtros de Búsqueda")
         if "Unidad" in df.columns:
-            # Obtenemos unidades únicas, ignorando celdas vacías
             unidades = ["Todas las Unidades"] + [u for u in df["Unidad"].unique() if str(u).strip() != ""]
             unidad_seleccionada = st.selectbox("Filtrar por Unidad:", unidades)
-            
             if unidad_seleccionada != "Todas las Unidades":
                 df = df[df["Unidad"] == unidad_seleccionada]
-        else:
-            st.info("💡 Tip: Si agregas una columna llamada 'Unidad' en tu Excel, podrás filtrar los gráficos por unidad.")
 
         # --- MÉTRICAS GLOBALES ---
         st.markdown("---")
         promedio_general = df["Porcentaje"].mean() if not df.empty else 0
-        
         c1, c2, c3 = st.columns(3)
         c1.metric("Conquistadores Activos", len(df))
         c2.metric("Promedio de Cumplimiento", f"{promedio_general:.1f}%")
         c3.metric("Requisitos Evaluados", total_requisitos)
-
         st.progress(int(promedio_general) / 100)
 
         # --- GRÁFICOS ---
         st.markdown("---")
         st.subheader("Progreso Individual por Conquistador")
         
-        if not df.empty:
-            # Buscar la columna Nombre, o usar la primera que encuentre
-            columna_nombre = "Nombre" if "Nombre" in df.columns else df.columns[0] 
-            
-            fig = px.bar(
-                df, 
-                x=columna_nombre, 
-                y="Porcentaje", 
-                color="Porcentaje",
-                color_continuous_scale="Blues", # Colores institucionales
-                range_y=[0, 100], 
-                text=df["Porcentaje"].apply(lambda x: f"{x:.0f}%"), 
-                labels={columna_nombre: "Conquistador", "Porcentaje": "% Completado"}
-            )
-            
-            fig.update_traces(textposition='outside')
-            fig.update_layout(margin=dict(t=20, b=20, l=20, r=20))
-            
-            st.plotly_chart(fig, use_container_width=True)
+        # Usamos "Integrantes" para el eje X
+        col_x = COLUMNA_NOMBRES if COLUMNA_NOMBRES in df.columns else df.columns[0]
+
+        fig = px.bar(
+            df, 
+            x=col_x, 
+            y="Porcentaje", 
+            color="Porcentaje",
+            color_continuous_scale="Blues",
+            range_y=[0, 100], 
+            text=df["Porcentaje"].apply(lambda x: f"{x:.0f}%"),
+            labels={col_x: "Nombre del Niño", "Porcentaje": "% de Avance"}
+        )
+        
+        fig.update_traces(textposition='outside')
+        fig.update_layout(
+            xaxis={'categoryorder':'total descending'},
+            xaxis_tickangle=-45,
+            margin=dict(t=20, b=20, l=20, r=20)
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
         # --- TABLA DE DETALLES ---
-# --- TABLA DE DETALLES ---
         st.markdown("### Detalle Exacto de Requisitos")
         with st.expander("Ver tabla completa de progreso"):
-            if not df.empty:
-                # 1. Definimos la columna del nombre
-                columna_nombre = "Nombre" if "Nombre" in df.columns else df.columns[0]
-                
-                # 2. Armamos la lista base
-                columnas_a_mostrar = [columna_nombre, "Req_Completados", "Porcentaje"]
-                
-                # 3. Agregamos "Unidad" SOLO si existe y no está ya en la lista
-                if "Unidad" in df.columns and "Unidad" not in columnas_a_mostrar:
-                    columnas_a_mostrar.insert(1, "Unidad")
-                
-                # 4. Agregamos los requisitos asegurando que no haya duplicados
-                for col in columnas_validas:
-                    if col not in columnas_a_mostrar:
-                        columnas_a_mostrar.append(col)
-                
-                # 5. Creamos y mostramos la vista final
-                df_vista = df[columnas_a_mostrar].copy()
-                df_vista["Porcentaje"] = df_vista["Porcentaje"].apply(lambda x: f"{x:.1f}%")
-                st.dataframe(df_vista, use_container_width=True)
+            # Evitamos duplicados en la tabla
+            columnas_tabla = [col_x, "Req_Completados", "Porcentaje"]
+            
+            if "Unidad" in df.columns and "Unidad" not in columnas_tabla:
+                columnas_tabla.insert(1, "Unidad")
+            
+            for req in columnas_validas:
+                if req not in columnas_tabla:
+                    columnas_tabla.append(req)
+            
+            df_vista = df[columnas_tabla].copy()
+            df_vista["Porcentaje"] = df_vista["Porcentaje"].apply(lambda x: f"{x:.1f}%")
+            st.dataframe(df_vista, use_container_width=True)
 
 except Exception as e:
-    st.error(f"Hubo un error crítico al procesar el reporte: {e}")
+    st.error(f"Hubo un error crítico: {e}")
 
 # --- BOTÓN DE VOLVER ---
 st.sidebar.markdown("---")

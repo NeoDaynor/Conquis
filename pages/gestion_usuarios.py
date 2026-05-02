@@ -42,17 +42,15 @@ render_hero(
     ],
 )
 
-top_left, top_right = st.columns([3, 1])
+top_left, top_right = st.columns(2)
 with top_left:
-    st.markdown('<p class="section-label">Navegacion</p>', unsafe_allow_html=True)
+    if st.button("Volver al menu", key="back_menu", use_container_width=True):
+        st.switch_page("pages/menu.py")
 with top_right:
     if st.button("Cerrar sesion", use_container_width=True):
         st.session_state["authenticated"] = False
         st.session_state.pop("user_info", None)
         st.switch_page("app.py")
-
-if st.button("Volver al menu", key="back_menu", use_container_width=True):
-    st.switch_page("pages/menu.py")
 
 data = load_users()
 user_ids = [row.get("id") for row in data["users"] if "id" in row]

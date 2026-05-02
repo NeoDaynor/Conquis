@@ -145,6 +145,10 @@ except Exception as e:
     st.error(f"Hubo un error crítico: {e}")
 
 # --- BOTÓN DE VOLVER ---
-st.sidebar.markdown("---")
-if st.sidebar.button("🏠 Volver al Menú Principal"):
-    st.switch_page("pages/menu.py")
+# --- BOTÓN DE VOLVER ---
+st.markdown("---")
+col_espacio1, col_boton, col_espacio2 = st.columns([1, 2, 1])
+
+with col_boton:
+    if st.button("🏠 Volver al Menú Principal", use_container_width=True):
+        st.switch_page("pages/menu.py")

@@ -81,6 +81,32 @@ st.markdown(
         position: relative;
         z-index: 1;
     }
+
+        .stExpander {
+        border: 0 !important;
+        background: transparent !important;
+    }
+
+    .stExpander details {
+        border-radius: 22px !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        background: rgba(8, 20, 38, 0.62) !important;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 18px 45px rgba(5, 10, 20, 0.2);
+        overflow: hidden;
+    }
+
+    .stExpander summary {
+        padding: 1rem 1.15rem !important;
+        font-size: 1.08rem !important;
+        font-weight: 600 !important;
+        color: #ffffff !important;
+    }
+
+    .stExpander summary:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
     </style>
     """,
     unsafe_allow_html=True,

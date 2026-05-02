@@ -93,7 +93,7 @@ try:
         st.markdown("---")
         promedio_general = df["Porcentaje"].mean() if not df.empty else 0
         c1, c2, c3 = st.columns(3)
-        c1.metric("Conquistadores Activos", len(df))
+        c1.metric("Conquistadores / Lideres Activos", len(df))
         c2.metric("Promedio de Cumplimiento", f"{promedio_general:.1f}%")
         c3.metric("Requisitos Evaluados", total_requisitos)
         st.progress(int(promedio_general) / 100)
@@ -113,7 +113,7 @@ try:
             color_continuous_scale="Blues",
             range_y=[0, 100], 
             text=df["Porcentaje"].apply(lambda x: f"{x:.0f}%"),
-            labels={col_x: "Nombre del Niño", "Porcentaje": "% de Avance"}
+            labels={col_x: "Conquistador / Lider", "Porcentaje": "% de Avance"}
         )
         
         fig.update_traces(textposition='outside')

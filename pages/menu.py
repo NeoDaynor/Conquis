@@ -338,7 +338,7 @@ with st.expander("Amigo", expanded=False):
             <h4>Ruta de trabajo: Amigo</h4>
             <p>Accesos organizados para gestionar el progreso, la documentacion y el material de apoyo.</p>
             
-            <a href="pages/reportes.py" target="_self" class="card-button">
+            <a href="pages/reportes.py" target="_self" class="card-button-internal">
                 📊 Ver Reporte de Cumplimiento
             </a>
         </div>

@@ -367,6 +367,9 @@ with st.expander("Aspirante a Conquistador", expanded=False):
 
 st.markdown('<p class="section-label">Tarjetas Progresivas</p>', unsafe_allow_html=True)
 
+# =========================================================
+# SECCIÓN: AMIGO
+# =========================================================
 with st.expander("Amigo", expanded=False):
     # --- 1. TARJETA DE REPORTE (PARTE SUPERIOR) ---
     st.markdown(
@@ -383,9 +386,7 @@ with st.expander("Amigo", expanded=False):
     # Botón nativo de Streamlit para no perder la sesión
     if st.button("📊 Ver Reporte de Cumplimiento", key="btn_reporte_amigo", use_container_width=True):
         st.switch_page("pages/reportes.py")
-        
-    st.markdown(html_card, unsafe_allow_html=True)
-    
+           
     a_col1, a_col2, a_col3 = st.columns(3)
     with a_col1:
         if st.button("Registro Unidades", key="amigo_registro", use_container_width=True):

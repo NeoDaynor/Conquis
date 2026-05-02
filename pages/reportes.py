@@ -171,15 +171,26 @@ try:
             st.plotly_chart(fig, use_container_width=True)
 
         # --- TABLA DE DETALLES ---
+# --- TABLA DE DETALLES ---
         st.markdown("### Detalle Exacto de Requisitos")
         with st.expander("Ver tabla completa de progreso"):
             if not df.empty:
+                # 1. Definimos la columna del nombre
                 columna_nombre = "Nombre" if "Nombre" in df.columns else df.columns[0]
-                columnas_a_mostrar = [columna_nombre, "Req_Completados", "Porcentaje"] + columnas_validas
                 
-                if "Unidad" in df.columns:
+                # 2. Armamos la lista base
+                columnas_a_mostrar = [columna_nombre, "Req_Completados", "Porcentaje"]
+                
+                # 3. Agregamos "Unidad" SOLO si existe y no está ya en la lista
+                if "Unidad" in df.columns and "Unidad" not in columnas_a_mostrar:
                     columnas_a_mostrar.insert(1, "Unidad")
                 
+                # 4. Agregamos los requisitos asegurando que no haya duplicados
+                for col in columnas_validas:
+                    if col not in columnas_a_mostrar:
+                        columnas_a_mostrar.append(col)
+                
+                # 5. Creamos y mostramos la vista final
                 df_vista = df[columnas_a_mostrar].copy()
                 df_vista["Porcentaje"] = df_vista["Porcentaje"].apply(lambda x: f"{x:.1f}%")
                 st.dataframe(df_vista, use_container_width=True)

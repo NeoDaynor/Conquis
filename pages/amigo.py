@@ -231,8 +231,8 @@ top_left, top_right = st.columns([3, 1])
 with top_left:
     if st.button("Volver al menu", key="back_menu", use_container_width=True):
         st.switch_page("pages/menu.py")
-    if st.button("Volver al menu", key="back_menu", use_container_width=True):
-        st.switch_page("pages/menu.py")
+    if st.button("Seleccionar Unidad", key="back_unidades", use_container_width=True):
+        st.switch_page("pages/registro_unidades.py")
 with top_right:
     if st.button("Cerrar sesion", key="logout_top", use_container_width=True):
         st.session_state["authenticated"] = False

@@ -251,12 +251,11 @@ else:
     )
 
 # GRAFICO
-with st.expander("### 📊 Avance por Conquistador", expanded=True):
+with st.expander("📊 Avance por Conquistador / Lider", expanded=True):
 # =========================================================
 # NUEVA SECCIÓN: GRÁFICO DE AVANCE INDIVIDUAL
 # =========================================================
 #st.markdown("### 📊 Avance por Conquistador")
-
     try:
         df_grafico = obtener_datos_grafico()
         

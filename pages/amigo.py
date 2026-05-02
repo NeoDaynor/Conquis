@@ -215,29 +215,32 @@ else:
         unsafe_allow_html=True,
     )
 
-st.markdown('<p class="section-label">Avance general</p>', unsafe_allow_html=True)
-with st.container(key="dashboard_wrap"):
-    st.markdown(
-        """
-        <div class="section-card">
-            <span class="mini-label">Resumen</span>
-            <h3>Vista consolidada por unidad</h3>
-            <p>Tabla general del progreso actual filtrada segun la unidad seleccionada.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.dataframe(
-        df_unidad.style.map(
-            lambda value: "background-color: rgba(159, 211, 255, 0.28); font-weight: bold;"
-            if value and str(value).strip() != ""
-            else "",
-            subset=df_unidad.columns[3:],
-        ),
-        use_container_width=True,
-        hide_index=True,
-    )
+# SECCION AVANCE GENERAL
+with st.expander("Avance general", expanded=True):
+    #st.markdown('<p class="section-label">Avance general</p>', unsafe_allow_html=True)
+    with st.container(key="dashboard_wrap"):
+        st.markdown(
+            """
+            <div class="section-card">
+                <span class="mini-label">Resumen</span>
+                <h3>Vista consolidada por unidad</h3>
+                <p>Tabla general del progreso actual filtrada segun la unidad seleccionada.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.dataframe(
+            df_unidad.style.map(
+                lambda value: "background-color: rgba(159, 211, 255, 0.28); font-weight: bold;"
+                if value and str(value).strip() != ""
+                else "",
+                subset=df_unidad.columns[3:],
+            ),
+            use_container_width=True,
+            hide_index=True,
+        )
 
+# REGISTRO AVANCE
 if usuario_activo.get("rol") != "conqui":
     st.markdown('<p class="section-label">Registro de avances</p>', unsafe_allow_html=True)
     with st.container(key="registro_wrap"):

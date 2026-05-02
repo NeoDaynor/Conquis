@@ -231,6 +231,7 @@ top_left, top_right = st.columns([3, 1])
 with top_left:
     if st.button("Volver al menu", key="back_menu", use_container_width=True):
         st.switch_page("pages/menu.py")
+with top_center:
     if st.button("Seleccionar Unidad", key="back_unidades", use_container_width=True):
         st.switch_page("pages/registro_unidades.py")
 with top_right:

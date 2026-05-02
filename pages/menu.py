@@ -354,21 +354,20 @@ with st.expander("Aspirante a Conquistador", expanded=False):
     )
 
 st.markdown('<p class="section-label">Tarjetas Progresivas</p>', unsafe_allow_html=True)
-st.markdown('<p class="section-label">Tarjetas Progresivas</p>', unsafe_allow_html=True)
 
 with st.expander("Amigo", expanded=False):
-    # Usamos textwrap.dedent para que los espacios no rompan el HTML
-    html_card = textwrap.dedent("""
-        <div class="section-card">
-            <span class="mini-label">Tarjeta progresiva</span>
-            <h4>Ruta de trabajo: Amigo</h4>
-            <p>Accesos organizados para gestionar el progreso, la documentacion y el material de apoyo.</p>
-            
-            <a href="pages/reportes" target="_self" class="card-button-internal">
-                📊 Ver Reporte de Cumplimiento
-            </a>
-        </div>
-    """)
+    # Al escribirlo así (entre paréntesis y con comillas simples por línea), 
+    # destruimos cualquier espacio rebelde que confunda a Streamlit.
+    html_card = (
+        '<div class="section-card">'
+        '<span class="mini-label">Tarjeta progresiva</span>'
+        '<h4>Ruta de trabajo: Amigo</h4>'
+        '<p>Accesos organizados para gestionar el progreso, la documentacion y el material de apoyo.</p>'
+        '<a href="reportes" target="_self" class="card-button-internal">📊 Ver Reporte de Cumplimiento</a>'
+        '</div>'
+    )
+    
+    st.markdown(html_card, unsafe_allow_html=True)
     
     st.markdown(html_card, unsafe_allow_html=True)
     

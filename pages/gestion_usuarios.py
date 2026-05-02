@@ -42,6 +42,88 @@ render_hero(
     ],
 )
 
+st.markdown(
+    """
+    <style>
+    .st-key-dashboard_wrap,
+    .st-key-registro_wrap {
+        border-radius: 22px;
+        padding: 20px;
+        background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 18px 45px rgba(5, 10, 20, 0.16);
+        backdrop-filter: blur(8px);
+        margin-bottom: 16px;
+    }
+
+    .st-key-dashboard_wrap .section-card,
+    .st-key-registro_wrap .section-card {
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        padding: 14px 18px 18px 18px;
+        margin-bottom: 0;
+    }
+
+    .st-key-dashboard_wrap .section-card h3,
+    .st-key-registro_wrap .section-card h3 {
+        margin-top: 0.35rem;
+        margin-bottom: 1rem;
+    }
+
+    .st-key-dashboard_wrap .section-card p,
+    .st-key-registro_wrap .section-card p {
+        margin-top: 0;
+        margin-bottom: 0.4rem;
+    }
+
+    .st-key-registro_inner_wrap {
+        border-radius: 18px;
+        padding: 18px 18px 8px 18px;
+        background: rgba(9, 20, 37, 0.52);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        margin-top: 6px;
+    }
+
+    .st-key-registro_inner_wrap .stSelectbox,
+    .st-key-registro_inner_wrap .stCheckbox,
+    .st-key-registro_inner_wrap .stButton {
+        position: relative;
+        z-index: 1;
+    }
+
+        .stExpander {
+        border: 0 !important;
+        background: transparent !important;
+    }
+
+    .stExpander details {
+        border-radius: 22px !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        background: rgba(8, 20, 38, 0.62) !important;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 18px 45px rgba(5, 10, 20, 0.2);
+        overflow: hidden;
+    }
+
+    .stExpander summary {
+        padding: 1rem 1.15rem !important;
+        font-size: 1.08rem !important;
+        font-weight: 600 !important;
+        color: #ffffff !important;
+    }
+
+    .stExpander summary:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
 top_left, top_right = st.columns(2)
 with top_left:
     if st.button("Volver al menu", key="back_menu", use_container_width=True):
@@ -56,41 +138,42 @@ data = load_users()
 user_ids = [row.get("id") for row in data["users"] if "id" in row]
 duplicated_ids = sorted([user_id for user_id, count in Counter(user_ids).items() if count > 1])
 
-st.markdown('<p class="section-label">Alta de usuarios</p>', unsafe_allow_html=True)
-with st.container():
-    st.markdown(
-        """
-        <div class="section-card">
-            <span class="mini-label">Registro</span>
-            <h3>Nuevo miembro del sistema</h3>
-            <p>Crea una cuenta nueva y asígnale el rol correcto para el flujo administrativo o de seguimiento.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    with st.form("new_user_form"):
-        c1, c2 = st.columns(2)
-        new_nombre = c1.text_input("Nombre completo")
-        new_cargo = c2.text_input("Cargo")
-        new_user = c1.text_input("Usuario (login)")
-        new_pass = c2.text_input("Contrasena", type="password")
-        new_rol = st.selectbox("Rol de sistema", ["admin", "lider", "conqui"])
-
-        if st.form_submit_button("Guardar usuario", use_container_width=True):
-            new_id = max([row["id"] for row in data["users"]], default=0) + 1
-            data["users"].append(
-                {
-                    "id": new_id,
-                    "nombre": new_nombre,
-                    "cargo": new_cargo,
-                    "rol": new_rol,
-                    "usuario": new_user,
-                    "password": new_pass,
-                }
-            )
-            save_users(data)
-            st.success("Usuario creado correctamente.")
-            st.rerun()
+with st.expander("Alta de usuarios", expanded=False):
+#st.markdown('<p class="section-label">Alta de usuarios</p>', unsafe_allow_html=True)
+    with st.container():
+        st.markdown(
+            """
+            <div class="section-card">
+                <span class="mini-label">Registro</span>
+                <h3>Nuevo miembro del sistema</h3>
+                <p>Crea una cuenta nueva y asígnale el rol correcto para el flujo administrativo o de seguimiento.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        with st.form("new_user_form"):
+            c1, c2 = st.columns(2)
+            new_nombre = c1.text_input("Nombre completo")
+            new_cargo = c2.text_input("Cargo")
+            new_user = c1.text_input("Usuario (login)")
+            new_pass = c2.text_input("Contrasena", type="password")
+            new_rol = st.selectbox("Rol de sistema", ["admin", "lider", "conqui"])
+    
+            if st.form_submit_button("Guardar usuario", use_container_width=True):
+                new_id = max([row["id"] for row in data["users"]], default=0) + 1
+                data["users"].append(
+                    {
+                        "id": new_id,
+                        "nombre": new_nombre,
+                        "cargo": new_cargo,
+                        "rol": new_rol,
+                        "usuario": new_user,
+                        "password": new_pass,
+                    }
+                )
+                save_users(data)
+                st.success("Usuario creado correctamente.")
+                st.rerun()
 
 st.markdown('<p class="section-label">Usuarios existentes</p> </br> <p>Edita los datos del miembro, actualiza su rol o elimina el registro si ya no corresponde.</p>', unsafe_allow_html=True)
 

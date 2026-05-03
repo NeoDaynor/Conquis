@@ -25,10 +25,14 @@ def open_placeholder(section, title, description):
 nivel = st.session_state.get("nivel_tarjeta", "Amigo")
 apply_app_theme(max_width=980)
 
+# 1. Extraemos toda la información clave del usuario
 user = st.session_state.get("user_info", {"nombre": "Usuario", "rol": "admin"})
+es_conqui = user.get("rol") == "conqui"
+unidad_del_conqui = user.get("unidad", "") # Extraemos el nuevo campo "unidad" del JSON
+
 render_hero(
     f"Registro de Unidades - {nivel}",
-    "Selecciona la unidad que deseas gestionar.",
+    "Selecciona la unidad que deseas gestionar." if not es_conqui else "Accede a tu unidad para ver tu progreso.",
     eyebrow="Tarjetas progresivas",
     pills=[f"Hola de nuevo {user.get('nombre', '')}"
     ,f"Tu correo es {user.get('correo', '')}"
@@ -36,11 +40,22 @@ render_hero(
     ],
 )
 
+# 2. Lista maestra de unidades
 units = ["Orion", "Ester-ellas", "Rayen", "Ultrasolis", "Lideres"]
+
+# 3. FILTRO INTELIGENTE: Si es conquistador, reducimos la lista solo a su unidad
+if es_conqui:
+    units = [u for u in units if u == unidad_del_conqui]
+    
+    # Prevención de errores por si la unidad en el JSON está mal escrita
+    if not units:
+        st.warning(f"⚠️ Hola {user.get('nombre')}, tu unidad asignada ('{unidad_del_conqui}') no coincide con los registros del sistema. Consulta con tu consejero.")
 
 st.markdown('<p class="section-label">Unidades disponibles</p>', unsafe_allow_html=True)
 
 left_col, right_col = st.columns(2)
+
+# 4. Dibujamos las tarjetas (se adapta automáticamente si es 1 o si son 5)
 for index, unit in enumerate(units):
     target_col = left_col if index % 2 == 0 else right_col
     with target_col:

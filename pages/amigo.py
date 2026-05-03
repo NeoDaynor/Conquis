@@ -25,7 +25,7 @@ if "authenticated" not in st.session_state or not st.session_state["authenticate
     st.switch_page("app.py")
 
 unidad_actual = st.session_state.get("unidad_seleccionada", "Sin unidad")
-usuario_activo = st.session_state.get("usuario", {})
+usuario_activo = st.session_state.get("user_info", {})
 
 if "scroll_top" not in st.session_state:
     st.session_state.scroll_top = False
@@ -83,7 +83,7 @@ st.markdown(
         z-index: 1;
     }
 
-        .stExpander {
+    .stExpander {
         border: 0 !important;
         background: transparent !important;
     }
@@ -210,7 +210,9 @@ except Exception as error:
             f"Detalle tecnico: {error}",
         )
 
-# --- CORRECCIÓN CLAVE: Usamos 'nombre' en lugar de 'usuario' para el filtro ---
+# =========================================================
+# ESTA ES TU LÓGICA ORIGINAL INTACTA (Cruce: Integrantes == usuario)
+# =========================================================
 es_conqui = usuario_activo.get("rol") == "conqui"
 
 if es_conqui:
@@ -218,7 +220,7 @@ if es_conqui:
         df_unidad["Integrantes"].str.strip().str.lower()
         == usuario_activo.get("usuario", "").strip().lower()
     ]
-# ------------------------------------------------------------------------------
+# =========================================================
 
 render_hero(
     f"Registro de {unidad_actual}",
@@ -294,7 +296,7 @@ with st.expander(titulo_expander_grafico, expanded=True):
                 y="Porcentaje", 
                 color="Porcentaje",
                 color_continuous_scale="Blues",
-                range_y=[0, 100], # Lo ajusté a 100 para que se vea el progreso real
+                range_y=[0, 100], 
                 text=df_para_grafico["Porcentaje"].apply(lambda x: f"{x:.0f}%"),
                 labels={COLUMNA_NOMBRES: f"{unidad_actual}", "Porcentaje": "% Avance"}
             )
@@ -303,7 +305,7 @@ with st.expander(titulo_expander_grafico, expanded=True):
             fig.update_layout(
                 xaxis={'categoryorder':'total descending'},
                 xaxis_tickangle=-45,
-                height=300 if not es_conqui else 250, # Un poco más compacto si es solo una barra
+                height=300 if not es_conqui else 250, 
                 margin=dict(t=10, b=10, l=10, r=10)
             )
             
@@ -311,9 +313,9 @@ with st.expander(titulo_expander_grafico, expanded=True):
         else:
             st.info("No se encontraron las columnas de requisitos para calcular el avance.")
     else:
-        # Si el DataFrame sigue vacío, le avisamos al Conqui por qué
+        # Modo diagnóstico inteligente por si el usuario en el JSON no concuerda
         if es_conqui:
-            st.warning(f"⚠️ Hola {usuario_activo.get('nombre')}, no encontramos tus datos. Pídele a tu Consejero que verifique que tu nombre esté escrito exactamente igual en el Excel.")
+            st.warning(f"⚠️ Hola {usuario_activo.get('nombre')}, no encontramos tus datos. Verificamos la columna 'Integrantes' usando tu usuario '{usuario_activo.get('usuario')}'.")
         else:
             st.info("No hay datos en esta unidad.")
     

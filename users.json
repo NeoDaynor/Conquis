@@ -8,6 +8,7 @@
             "rol": "admin",
             "usuario": "neo",
             "password": "Danny7826"
+            "unidad": "Admin"
         },
         {
             "id":2,
@@ -17,6 +18,7 @@
             "rol": "lider",
             "usuario": "Joel",
             "password": "Pepe123"
+            "unidad": "Lideres"
         },
         {
             "id":3,
@@ -26,6 +28,7 @@
             "rol": "conqui",
             "usuario": "Emma",
             "password": "123"
+            "unidad": "Rayen"
         },
         {
             "id":4,
@@ -34,7 +37,8 @@
             "correo": "mvarklzevxdf@gmail.com",
             "rol": "lider",
             "usuario": "Constanza",
-            "password": "123"
+            "password": "Lakonn2026"
+            "unidad": "Lideres"
         },
         {
             "id":5,
@@ -44,6 +48,7 @@
             "rol": "lider",
             "usuario": "Susana",
             "password": "Lakonn2026"
+            "unidad": "Lideres"
         },
         {
             "id":6,
@@ -53,6 +58,7 @@
             "rol": "lider",
             "usuario": "Fernanda",
             "password": "Lakonn2026"
+            "unidad": "Lideres"
         },
         {
             "id":7,
@@ -62,6 +68,7 @@
             "rol": "lider",
             "usuario": "Helena",
             "password": "Lakonn2026"
+            "unidad": "Lideres"
         },
         {
             "id":8,
@@ -71,6 +78,7 @@
             "rol": "lider",
             "usuario": "Loreto",
             "password": "Lakonn2026"
+            "unidad": "Lideres"
         },
         {
             "id":10,
@@ -80,6 +88,7 @@
             "rol": "lider",
             "usuario": "Norman",
             "password": "Lakonn2026"
+            "unidad": "Lideres"
         },
         {
             "id":11,
@@ -89,6 +98,7 @@
             "rol": "lider",
             "usuario": "Ivan",
             "password": "Lakonn2026"
+            "unidad": "Lideres"
         },
         {
             "id":12,
@@ -98,6 +108,7 @@
             "rol": "lider",
             "usuario": "Arelis",
             "password": "Lakonn2026"
+            "unidad": "Lideres"
         },
         {
             "id":13,
@@ -107,6 +118,7 @@
             "rol": "lider",
             "usuario": "Agustin",
             "password": "Lakonn2026"
+            "unidad": "Lideres"
         },
         {
             "id":14,
@@ -116,6 +128,7 @@
             "rol": "lider",
             "usuario": "Patricio",
             "password": "Lakonn2026"
+            "unidad": "Lideres"
         }
     ]
 }

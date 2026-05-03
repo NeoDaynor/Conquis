@@ -368,9 +368,9 @@ with st.expander("Amigo", expanded=False):
         unsafe_allow_html=True
     )
     
-    # Botón nativo de Streamlit para no perder la sesión
-    if st.button("📊 Ver Reporte de Cumplimiento", key="btn_reporte_amigo", use_container_width=True):
-        st.switch_page("pages/reportes.py")
+    if user.get("rol") != "conqui":
+        if st.button("📊 Ver Reporte de Cumplimiento", key="btn_reporte_amigo", use_container_width=True):
+            st.switch_page("pages/reportes.py")
            
     a_col1, a_col2, a_col3 = st.columns(3)
     with a_col1:

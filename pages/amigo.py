@@ -25,7 +25,7 @@ if "authenticated" not in st.session_state or not st.session_state["authenticate
     st.switch_page("app.py")
 
 unidad_actual = st.session_state.get("unidad_seleccionada", "Sin unidad")
-usuario_activo = st.session_state.get("user_info", {})
+usuario_activo = st.session_state.get("usuario", {})
 
 if "scroll_top" not in st.session_state:
     st.session_state.scroll_top = False

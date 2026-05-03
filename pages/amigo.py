@@ -216,7 +216,7 @@ es_conqui = usuario_activo.get("rol") == "conqui"
 if es_conqui:
     df_unidad = df_unidad[
         df_unidad["Integrantes"].str.strip().str.lower()
-        == usuario_activo.get("nombre", "").strip().lower()
+        == usuario_activo.get("usuario", "").strip().lower()
     ]
 # ------------------------------------------------------------------------------
 

@@ -210,11 +210,15 @@ except Exception as error:
             f"Detalle tecnico: {error}",
         )
 
-if usuario_activo.get("rol") == "conqui":
+# --- CORRECCIÓN CLAVE: Usamos 'nombre' en lugar de 'usuario' para el filtro ---
+es_conqui = usuario_activo.get("rol") == "conqui"
+
+if es_conqui:
     df_unidad = df_unidad[
         df_unidad["Integrantes"].str.strip().str.lower()
-        == usuario_activo.get("usuario", "").strip().lower()
+        == usuario_activo.get("nombre", "").strip().lower()
     ]
+# ------------------------------------------------------------------------------
 
 render_hero(
     f"Registro de {unidad_actual}",
@@ -245,7 +249,7 @@ if st.session_state.scroll_top:
     st.toast("Cambios guardados", icon="✅")
     st.session_state.scroll_top = False
 
-if usuario_activo.get("rol") == "conqui":
+if es_conqui:
     st.info(f"Viendo tu progreso: {usuario_activo.get('nombre')}")
 else:
     st.markdown(
@@ -254,13 +258,14 @@ else:
     )
 
 # =========================================================
-# GRÁFICO DE AVANCE (Filtrado por Unidad)
+# GRÁFICO DE AVANCE (Títulos dinámicos según Rol)
 # =========================================================
-with st.expander("📊 Avance por Conquistador / Lider", expanded=True):
+titulo_expander_grafico = "📊 Mi Avance Personal" if es_conqui else "📊 Avance por Conquistador / Lider"
+
+with st.expander(titulo_expander_grafico, expanded=True):
     if not df_unidad.empty:
-        st.markdown("### 📊 Avance de la Unidad")
+        st.markdown("### 📊 Mi Avance" if es_conqui else "### 📊 Avance de la Unidad")
         
-        # 1. Usamos tu lista COMPLETA de requisitos (igual que en reportes.py)
         REQUISITOS_A_GRAFICAR = [
             "Voto y Ley", "Libro año en curso", "Libro Por la gracia de Dios", "Clase Biblica",
             "Explicar la Creacion", "Explicar 10 Plagas", "Nombre 12 Tribus", "39 Libros A.T.",
@@ -273,30 +278,23 @@ with st.expander("📊 Avance por Conquistador / Lider", expanded=True):
             "Campamento I", "10 Reglas caminata", "Señales de Pista", "Especialidad Habilidades Manuales"
         ]
         
-        # 2. Nombre exacto de la columna de los niños
         COLUMNA_NOMBRES = "Integrantes"
-        
-        # 3. Filtramos solo las columnas que realmente existen en el DataFrame
         cols_check = [c for c in REQUISITOS_A_GRAFICAR if c in df_unidad.columns]
         
         if cols_check:
-            # Creamos una copia para no afectar la tabla que se muestra abajo
             df_para_grafico = df_unidad.copy()
-            
-            # Calculamos el porcentaje
             df_para_grafico["Porcentaje"] = (
                 df_para_grafico[cols_check].apply(lambda x: (x.astype(str).str.strip() != "").sum(), axis=1) 
                 / len(cols_check)
             ) * 100
             
-            # Generamos el gráfico de Plotly
             fig = px.bar(
                 df_para_grafico, 
                 x=COLUMNA_NOMBRES, 
                 y="Porcentaje", 
                 color="Porcentaje",
                 color_continuous_scale="Blues",
-                range_y=[0, 50],
+                range_y=[0, 100], # Lo ajusté a 100 para que se vea el progreso real
                 text=df_para_grafico["Porcentaje"].apply(lambda x: f"{x:.0f}%"),
                 labels={COLUMNA_NOMBRES: f"{unidad_actual}", "Porcentaje": "% Avance"}
             )
@@ -305,27 +303,38 @@ with st.expander("📊 Avance por Conquistador / Lider", expanded=True):
             fig.update_layout(
                 xaxis={'categoryorder':'total descending'},
                 xaxis_tickangle=-45,
-                height=250,
+                height=300 if not es_conqui else 250, # Un poco más compacto si es solo una barra
                 margin=dict(t=10, b=10, l=10, r=10)
             )
             
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("No se encontraron las columnas de requisitos para calcular el avance.")
+    else:
+        # Si el DataFrame sigue vacío, le avisamos al Conqui por qué
+        if es_conqui:
+            st.warning(f"⚠️ Hola {usuario_activo.get('nombre')}, no encontramos tus datos. Pídele a tu Consejero que verifique que tu nombre esté escrito exactamente igual en el Excel.")
+        else:
+            st.info("No hay datos en esta unidad.")
     
-    st.markdown("---") # Separador visual
+st.markdown("---") 
 
 
-# SECCION AVANCE GENERAL
-with st.expander("Cuadro Resumen de Avance General", expanded=False):
-    #st.markdown('<p class="section-label">Avance general</p>', unsafe_allow_html=True)
+# =========================================================
+# SECCION AVANCE GENERAL (Títulos dinámicos según Rol)
+# =========================================================
+titulo_expander_tabla = "Mi Cuadro de Avance" if es_conqui else "Cuadro Resumen de Avance General"
+titulo_interno_tabla = "Mi vista personal" if es_conqui else "Vista consolidada por unidad"
+descripcion_tabla = "Tabla de progreso actual de tu tarjeta." if es_conqui else "Tabla general del progreso actual filtrada segun la unidad seleccionada."
+
+with st.expander(titulo_expander_tabla, expanded=False):
     with st.container(key="dashboard_wrap"):
         st.markdown(
-            """
+            f"""
             <div class="section-card">
                 <span class="mini-label">Resumen</span>
-                <h3>Vista consolidada por unidad</h3>
-                <p>Tabla general del progreso actual filtrada segun la unidad seleccionada.</p>
+                <h3>{titulo_interno_tabla}</h3>
+                <p>{descripcion_tabla}</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -343,8 +352,7 @@ with st.expander("Cuadro Resumen de Avance General", expanded=False):
 
 # REGISTRO AVANCE
 with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
-    if usuario_activo.get("rol") != "conqui":
-        #st.markdown('<p class="section-label">Registro de avances</p>', unsafe_allow_html=True)
+    if not es_conqui:
         with st.container(key="registro_wrap"):
             st.markdown(
                 """
@@ -404,12 +412,12 @@ with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
                                     if st.session_state[key_confirm_state]:
                                         st.success("Confirmado para eliminar.")
     
-                                    confirmaciones[item] = st.session_state[key_confirm_state]
-                                else:
-                                    confirmaciones[item] = True
-                                    st.session_state[key_confirm_state] = False
+                                confirmaciones[item] = st.session_state[key_confirm_state]
+                            else:
+                                confirmaciones[item] = True
+                                st.session_state[key_confirm_state] = False
     
-                                nuevo_estado[item] = marcado
+                            nuevo_estado[item] = marcado
     
                     if st.button("Sincronizar cambios", type="primary", use_container_width=True):
                         try:
@@ -494,7 +502,7 @@ with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
             <div class="section-card">
                 <span class="mini-label">Visualizacion</span>
                 <h4>Acceso de solo lectura</h4>
-                <p>Este perfil puede revisar avances, pero no editar registros dentro de la tarjeta progresiva.</p>
+                <p>Tu perfil de Conquistador puede revisar avances en los cuadros de arriba, pero la edición de registros es exclusiva para líderes.</p>
             </div>
             """,
             unsafe_allow_html=True,

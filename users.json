@@ -7,7 +7,7 @@
             "correo": "daynor@gmail.com",
             "rol": "admin",
             "usuario": "neo",
-            "password": "Danny7826"
+            "password": "Danny7826",
             "unidad": "Admin"
         },
         {
@@ -17,7 +17,7 @@
             "correo": "sin@correo.com",
             "rol": "lider",
             "usuario": "Joel",
-            "password": "Pepe123"
+            "password": "Pepe123",
             "unidad": "Lideres"
         },
         {
@@ -27,7 +27,7 @@
             "correo": "emma.inostroza.rivas@gmail.com",
             "rol": "conqui",
             "usuario": "Emma",
-            "password": "123"
+            "password": "123",
             "unidad": "Rayen"
         },
         {
@@ -37,7 +37,7 @@
             "correo": "mvarklzevxdf@gmail.com",
             "rol": "lider",
             "usuario": "Constanza",
-            "password": "Lakonn2026"
+            "password": "Lakonn2026",
             "unidad": "Lideres"
         },
         {
@@ -47,7 +47,7 @@
             "correo": "susitamuji1903@gmail.com",
             "rol": "lider",
             "usuario": "Susana",
-            "password": "Lakonn2026"
+            "password": "Lakonn2026",
             "unidad": "Lideres"
         },
         {
@@ -57,7 +57,7 @@
             "correo": "sin@correo.com",
             "rol": "lider",
             "usuario": "Fernanda",
-            "password": "Lakonn2026"
+            "password": "Lakonn2026",
             "unidad": "Lideres"
         },
         {
@@ -67,7 +67,7 @@
             "correo": "sin@correo.com",
             "rol": "lider",
             "usuario": "Helena",
-            "password": "Lakonn2026"
+            "password": "Lakonn2026",
             "unidad": "Lideres"
         },
         {
@@ -77,7 +77,7 @@
             "correo": "sin@correo.com",
             "rol": "lider",
             "usuario": "Loreto",
-            "password": "Lakonn2026"
+            "password": "Lakonn2026",
             "unidad": "Lideres"
         },
         {
@@ -87,7 +87,7 @@
             "correo": "sin@correo.com",
             "rol": "lider",
             "usuario": "Norman",
-            "password": "Lakonn2026"
+            "password": "Lakonn2026",
             "unidad": "Lideres"
         },
         {
@@ -97,7 +97,7 @@
             "correo": "ivandieznava@gmail.com",
             "rol": "lider",
             "usuario": "Ivan",
-            "password": "Lakonn2026"
+            "password": "Lakonn2026",
             "unidad": "Lideres"
         },
         {
@@ -107,7 +107,7 @@
             "correo": "sin@correo.com",
             "rol": "lider",
             "usuario": "Arelis",
-            "password": "Lakonn2026"
+            "password": "Lakonn2026",
             "unidad": "Lideres"
         },
         {
@@ -117,7 +117,7 @@
             "correo": "agusvalmat@gmail.com",
             "rol": "lider",
             "usuario": "Agustin",
-            "password": "Lakonn2026"
+            "password": "Lakonn2026",
             "unidad": "Lideres"
         },
         {
@@ -127,7 +127,7 @@
             "correo": "sin@correo.com",
             "rol": "lider",
             "usuario": "Patricio",
-            "password": "Lakonn2026"
+            "password": "Lakonn2026",
             "unidad": "Lideres"
         }
     ]

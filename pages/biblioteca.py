@@ -239,13 +239,25 @@ with st.expander("Libros", expanded=False):
         """,
         unsafe_allow_html=True,
     )
-    col1 = st.columns(1,3)
+    
+    col1 = st.columns(1)
     with col1:
         st.link_button(
         "📖 Libro del año 2026: Estafado Por El Estofado", 
         "https://drive.google.com/file/d/1mySwxzYzR_jfUjv9NP__v00yqNQVyUem/view?usp=drive_link", 
         use_container_width=True
         )   
+        
+    st.markdown(
+        """
+        <div class="section-card">
+            <span class="mini-label">Biblioteca Cristiana</span>
+            <h4>Libros</h4>
+            <p>Aca encontrarás libros en pdf, recomendado para Jovenes y Adultos.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
         
     a_col1, a_col2, a_col3 = st.columns(3)
     with a_col1:

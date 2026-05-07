@@ -252,7 +252,8 @@ with st.expander("Libros", expanded=False):
     with a_col1:
         st.link_button(
         "📖 Libro: El Camino a Cristo", 
-        "https://drive.google.com/file/d/1vtzee5IZWp0GYVMGifhj914obBzus6hE/view?usp=drive_link", 
+        #"https://drive.google.com/file/d/1vtzee5IZWp0GYVMGifhj914obBzus6hE/view?usp=drive_link",
+        "https://drive.google.com/file/d/1vtzee5IZWp0GYVMGifhj914obBzus6hE/view?pli=1",
         use_container_width=True
         )        
         

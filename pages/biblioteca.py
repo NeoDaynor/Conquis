@@ -239,7 +239,7 @@ with st.expander("Libros", expanded=False):
         """,
         unsafe_allow_html=True,
     )
-    col1 = st.columns(1)
+    col1 = st.columns(1,3)
     with col1:
         st.link_button(
         "📖 Libro del año 2026: Estafado Por El Estofado", 

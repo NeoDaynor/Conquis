@@ -243,7 +243,8 @@ with st.expander("Libros", expanded=False):
 
     st.link_button(
     "📖 Libro del año 2026: Estafado Por El Estofado", 
-    "https://drive.google.com/file/d/1mySwxzYzR_jfUjv9NP__v00yqNQVyUem/view?usp=drive_link", 
+    #"https://drive.google.com/file/d/1mySwxzYzR_jfUjv9NP__v00yqNQVyUem/view?usp=drive_link", 
+    "https://drive.google.com/file/d/1mySwxzYzR_jfUjv9NP__v00yqNQVyUem/view?pli=1",
     use_container_width=True
     )   
     

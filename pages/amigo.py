@@ -9,7 +9,7 @@ import plotly.express as px
 
 from oauth2client.service_account import ServiceAccountCredentials
 from streamlit.errors import StreamlitSecretNotFoundError
-
+from utils import registrar_actividad
 from ui_theme import apply_app_theme, render_hero
 
 st.set_page_config(
@@ -26,6 +26,7 @@ if "authenticated" not in st.session_state or not st.session_state["authenticate
 
 unidad_actual = st.session_state.get("unidad_seleccionada", "Sin unidad")
 usuario_activo = st.session_state.get("user_info", {})
+registrar_actividad("Navegando", "Amigo")
 
 if "scroll_top" not in st.session_state:
     st.session_state.scroll_top = False

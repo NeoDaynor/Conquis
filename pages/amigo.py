@@ -9,7 +9,7 @@ import plotly.express as px
 
 from oauth2client.service_account import ServiceAccountCredentials
 from streamlit.errors import StreamlitSecretNotFoundError
-from utils import registrar_actividad
+#from utils import registrar_actividad
 from ui_theme import apply_app_theme, render_hero
 
 st.set_page_config(
@@ -26,7 +26,7 @@ if "authenticated" not in st.session_state or not st.session_state["authenticate
 
 unidad_actual = st.session_state.get("unidad_seleccionada", "Sin unidad")
 usuario_activo = st.session_state.get("user_info", {})
-registrar_actividad("Navegando", "Amigo")
+#registrar_actividad("Navegando", "Amigo")
 
 if "scroll_top" not in st.session_state:
     st.session_state.scroll_top = False
@@ -237,17 +237,17 @@ render_hero(
 top_left, top_center, top_right = st.columns(3)
 with top_left:
     if st.button("Volver al menu", key="back_menu", use_container_width=True):
-        registrar_actividad("Usuario vuelve al menu", "amigo")
+        #registrar_actividad("Usuario vuelve al menu", "amigo")
         st.switch_page("pages/menu.py")
 with top_center:   
     if st.button("Seleccionar Unidad", key="back_unidades", use_container_width=True):
-        registrar_actividad("Usuario vuelve a seleccionar unidad", "amigo")
+        #registrar_actividad("Usuario vuelve a seleccionar unidad", "amigo")
         st.switch_page("pages/registro_unidades.py")   
 with top_right:
     if st.button("Cerrar sesion", key="logout_top", use_container_width=True):
         st.session_state["authenticated"] = False
         st.session_state.pop("user_info", None)
-        registrar_actividad("Usuario cerro sesion", "amigo")
+        #registrar_actividad("Usuario cerro sesion", "amigo")
         st.switch_page("app.py")
 
 if st.session_state.scroll_top:

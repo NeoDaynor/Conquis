@@ -3,7 +3,7 @@ import os
 from collections import Counter
 
 import streamlit as st
-
+from utils import registrar_actividad
 from ui_theme import apply_app_theme, render_hero
 
 
@@ -16,7 +16,7 @@ st.set_page_config(
 if not st.session_state.get("authenticated", False) or st.session_state.get("user_info", {}).get("rol") != "admin":
     st.switch_page("app.py")
 
-
+registrar_actividad("Navegando", "gestion_usuarios")
 def load_users():
     if os.path.exists("users.json"):
         with open("users.json", "r", encoding="utf-8") as file:

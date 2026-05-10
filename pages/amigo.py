@@ -26,7 +26,7 @@ if "authenticated" not in st.session_state or not st.session_state["authenticate
 
 unidad_actual = st.session_state.get("unidad_seleccionada", "Sin unidad")
 usuario_activo = st.session_state.get("user_info", {})
-registrar_actividad("Navegando", "Amigo")
+registrar_actividad("Navegando", "amigo")
 
 if "scroll_top" not in st.session_state:
     st.session_state.scroll_top = False

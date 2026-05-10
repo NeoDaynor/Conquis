@@ -320,6 +320,7 @@ with top_right:
     if st.button("Cerrar sesion", key="logout_top", use_container_width=True):
         st.session_state["authenticated"] = False
         st.session_state.pop("user_info", None)
+        registrar_actividad("Usuario cerro sesion", "menu")
         st.switch_page("app.py")
         
 if user.get("rol") == "admin":

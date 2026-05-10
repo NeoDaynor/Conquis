@@ -29,4 +29,5 @@ def registrar_actividad(accion, pagina_actual):
         fila = [fecha_hora, usuario, pagina_actual, accion]
         hoja_log.append_row(fila)
     except Exception as e:
-        st.error(f"Error al registrar log: {e}")
+        st.error(f"Tipo de error: {type(e).__name__}")
+        st.error(f"Detalle exacto: {str(e)}")

@@ -1,5 +1,5 @@
 import streamlit as st
-
+from utils import registrar_actividad
 from ui_theme import apply_app_theme, render_hero
 
 
@@ -12,6 +12,7 @@ st.set_page_config(
 if not st.session_state.get("authenticated", False):
     st.switch_page("pages/login_page.py")
 
+registrar_actividad("Navegando", "registro_unidades")
 
 def open_placeholder(section, title, description):
     st.session_state["menu_placeholder"] = {

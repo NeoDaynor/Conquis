@@ -440,7 +440,6 @@ with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
                             hubo_cambios = False
     
                             with st.status("Sincronizando...") as status:
-                                registrar_actividad("Sincronizando...", "amigo")
                                 for requisito, marcado in nuevo_estado.items():
                                     estaba_marcado = bool(
                                         fila_persona.get(requisito) and str(fila_persona.get(requisito)).strip() != ""

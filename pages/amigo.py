@@ -9,7 +9,7 @@ import plotly.express as px
 
 from oauth2client.service_account import ServiceAccountCredentials
 from streamlit.errors import StreamlitSecretNotFoundError
-#from utils import registrar_actividad
+from utils import registrar_actividad
 from ui_theme import apply_app_theme, render_hero
 
 st.set_page_config(
@@ -26,7 +26,7 @@ if "authenticated" not in st.session_state or not st.session_state["authenticate
 
 unidad_actual = st.session_state.get("unidad_seleccionada", "Sin unidad")
 usuario_activo = st.session_state.get("user_info", {})
-#registrar_actividad("Navegando", "Amigo")
+registrar_actividad("Navegando", "Amigo")
 
 if "scroll_top" not in st.session_state:
     st.session_state.scroll_top = False
@@ -237,14 +237,17 @@ render_hero(
 top_left, top_center, top_right = st.columns(3)
 with top_left:
     if st.button("Volver al menu", key="back_menu", use_container_width=True):
+        registrar_actividad("Usuario vuelve al menu", "amigo")
         st.switch_page("pages/menu.py")
 with top_center:   
     if st.button("Seleccionar Unidad", key="back_unidades", use_container_width=True):
+        registrar_actividad("Usuario vuelve a seleccionar unidad", "amigo")
         st.switch_page("pages/registro_unidades.py")   
 with top_right:
     if st.button("Cerrar sesion", key="logout_top", use_container_width=True):
         st.session_state["authenticated"] = False
         st.session_state.pop("user_info", None)
+        registrar_actividad("Usuario cerro sesion", "amigo")
         st.switch_page("app.py")
 
 if st.session_state.scroll_top:
@@ -430,6 +433,7 @@ with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
                             fila_idx_df = df_full[(df_full["Integrantes"] == conquistador) & (df_full["Unidad"] == unidad_actual)].index
                             if len(fila_idx_df) == 0:
                                 st.error("No se encontro el registro exacto en la hoja.")
+                                registrar_actividad("No se encontro el registro", "amigo")
                                 st.stop()
     
                             fila_real = fila_idx_df[0] + 3
@@ -441,7 +445,7 @@ with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
     
                             with st.status("Analizando y guardando base de datos...") as status:
                                 headers_limpios = [str(h).strip() for h in headers]
-                                
+                                registrar_actividad("Sincronizando....", "amigo")
                                 for requisito, marcado in nuevo_estado.items():
                                     requisito_limpio = requisito.strip()
                                     
@@ -497,7 +501,7 @@ with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
                                         log_sheet.append_rows(logs)
                                     
                                     status.update(label="Sincronización a Google Sheets exitosa.", state="complete")
-                                    
+                                    registrar_actividad("Sincronización exitosa", "amigo")
                                     # Limpiamos variables de sesión para que reflejen los datos frescos de la BD en la recarga
                                     for col_idx_cat, info_cat in categorias.items():
                                         for req in info_cat["items"]:

@@ -23,7 +23,8 @@ def registrar_actividad(accion, pagina_actual):
         fecha_hora = datetime.now(tz).strftime("%d/%m/%Y %H:%M:%S")
 
         # Obtiene el usuario si existe en la sesión
-        usuario = st.session_state.get("usuario", "No identificado")
+        #usuario = st.session_state.get("usuario", "No identificado")
+        usuario = st.session_state.get("user_info", {"nombre": "Usuario"})
 
         # Prepara y envía la fila
         fila = [fecha_hora, usuario, pagina_actual, accion]

@@ -115,11 +115,27 @@ st.markdown(
 )
 
 
+# ==========================================
+# CODIGO ANTERIOR
+# ==========================================
+# @st.cache_resource
+# def get_client():
+#     creds = st.secrets["gcp_service_account"]
+#     scope = [
+#         "https://spreadsheets.google.com/feeds",
+#         "https://www.googleapis.com/auth/drive",
+#     ]
+#     return gspread.authorize(ServiceAccountCredentials.from_json_keyfile_dict(creds, scope))
+
+# ==========================================
+# CODIGO NUEVO
+# ==========================================
 @st.cache_resource
 def get_client():
     creds = st.secrets["gcp_service_account"]
     scope = [
         "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/spreadsheets", # Permiso crítico para batch_update
         "https://www.googleapis.com/auth/drive",
     ]
     return gspread.authorize(ServiceAccountCredentials.from_json_keyfile_dict(creds, scope))
@@ -440,17 +456,41 @@ with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
                             hubo_cambios = False
     
                             with st.status("Sincronizando...") as status:
+with st.status("Sincronizando...") as status:
+                                # ==========================================
+                                # CODIGO ANTERIOR
+                                # ==========================================
+                                # for requisito, marcado in nuevo_estado.items():
+                                #     estaba_marcado = bool(
+                                #         fila_persona.get(requisito) and str(fila_persona.get(requisito)).strip() != ""
+                                #     )
+                                #
+                                #     if not marcado and estaba_marcado and not confirmaciones.get(requisito, False):
+                                #         continue
+                                #
+                                #     if requisito in headers:
+                                #         col_idx = headers.index(requisito) + 1
+                                #         if marcado and not estaba_marcado:
+                                
+                                # ==========================================
+                                # CODIGO NUEVO
+                                # ==========================================
+                                headers_limpios = [str(h).strip() for h in headers]
+                                
                                 for requisito, marcado in nuevo_estado.items():
-                                    estaba_marcado = bool(
-                                        fila_persona.get(requisito) and str(fila_persona.get(requisito)).strip() != ""
-                                    )
-    
+                                    requisito_limpio = requisito.strip()
+                                    
+                                    # Extracción segura y prevención del error "None"
+                                    valor_raw = fila_persona.get(requisito, fila_persona.get(requisito_limpio))
+                                    estaba_marcado = bool(pd.notna(valor_raw) and str(valor_raw).strip() != "" and str(valor_raw).strip() != "None")
+
                                     if not marcado and estaba_marcado and not confirmaciones.get(requisito, False):
                                         continue
-    
-                                    if requisito in headers:
-                                        col_idx = headers.index(requisito) + 1
+
+                                    if requisito_limpio in headers_limpios:
+                                        col_idx = headers_limpios.index(requisito_limpio) + 1
                                         if marcado and not estaba_marcado:
+                                            # (El resto de tu código de updates.append y logs.append sigue exactamente igual desde aquí)
                                             updates.append(
                                                 {"range": gspread.utils.rowcol_to_a1(fila_real, col_idx), "values": [[hoy]]}
                                             )

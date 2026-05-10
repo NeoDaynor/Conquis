@@ -326,6 +326,7 @@ with top_right:
 if user.get("rol") == "admin":
     with top_left:
         if st.button("Abrir administracion de usuarios", key="go_admin", use_container_width=True):
+            registrar_actividad("Ingreso a administracion de usuarios", "menu")
             st.switch_page("pages/gestion_usuarios.py")
 
 # =========================================================
@@ -347,6 +348,7 @@ with st.expander("Aspirante a Conquistador", expanded=False):
     # El botón ahora está correctamente alineado
     st.link_button(
         "📓 Tarjeta Aspirante de conquistadores", 
+        registrar_actividad("Viendo PDF Aspirante de conquistadores", "menu")
         "https://drive.google.com/file/d/1Jx8cSiz3loRxAjrC6cLNDaRt30BcVoQJ/view?usp=drive_link", 
         use_container_width=True
     )

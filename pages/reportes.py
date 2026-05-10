@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from utils import registrar_actividad
 
 # Importamos tu tema visual
 try:
@@ -18,7 +19,7 @@ if not st.session_state.get("authenticated", False):
     st.switch_page("pages/login_page.py")
 
 apply_app_theme(max_width=1100)
-
+registrar_actividad("Navegando", "reportes")
 # --- CONFIGURACIÓN DE TU EXCEL ---
 # ⚠️ Nombres de columnas de requisitos (Fila 2 de tu Excel)
 COLUMNAS_DE_REQUISITOS = [

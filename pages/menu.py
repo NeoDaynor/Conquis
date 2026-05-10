@@ -348,7 +348,6 @@ with st.expander("Aspirante a Conquistador", expanded=False):
     # El botón ahora está correctamente alineado
     st.link_button(
         "📓 Tarjeta Aspirante de conquistadores", 
-        registrar_actividad("Viendo PDF Aspirante de conquistadores", "menu"),
         "https://drive.google.com/file/d/1Jx8cSiz3loRxAjrC6cLNDaRt30BcVoQJ/view?usp=drive_link", 
         use_container_width=True
     )

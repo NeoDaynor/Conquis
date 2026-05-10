@@ -63,8 +63,13 @@ def mostrar_login():
                 st.session_state["authenticated"] = True
                 st.session_state["user_info"] = user_data
                 st.success(f"Bienvenido {user_data['nombre']} ({user_data['rol']})")
-                st.rerun()
-                registrar_actividad("Presionó botón Entrar", "Login")
+                # PRIMERO registras la actividad
+                registrar_actividad("Ingreso exitoso", "Login")
+                
+                # DESPUÉS recargas la página
+                st.rerun() 
+                
             else:
+                # Opcional: También puedes registrar los intentos fallidos
+                registrar_actividad(f"Intento fallido: {user_input}", "Login")
                 st.error("Credenciales no validas. Reintente.")
-    st.markdown("</div>", unsafe_allow_html=True)

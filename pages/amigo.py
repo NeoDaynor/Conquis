@@ -114,7 +114,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
 # ==========================================
 # CODIGO ANTERIOR
 # ==========================================
@@ -135,7 +134,7 @@ def get_client():
     creds = st.secrets["gcp_service_account"]
     scope = [
         "https://spreadsheets.google.com/feeds",
-        "https://www.googleapis.com/auth/spreadsheets", # Permiso crítico para batch_update
+        "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive",
     ]
     return gspread.authorize(ServiceAccountCredentials.from_json_keyfile_dict(creds, scope))
@@ -456,7 +455,6 @@ with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
                             hubo_cambios = False
     
                             with st.status("Sincronizando...") as status:
-with st.status("Sincronizando...") as status:
                                 # ==========================================
                                 # CODIGO ANTERIOR
                                 # ==========================================
@@ -471,6 +469,35 @@ with st.status("Sincronizando...") as status:
                                 #     if requisito in headers:
                                 #         col_idx = headers.index(requisito) + 1
                                 #         if marcado and not estaba_marcado:
+                                #             updates.append(
+                                #                 {"range": gspread.utils.rowcol_to_a1(fila_real, col_idx), "values": [[hoy]]}
+                                #             )
+                                #             logs.append(
+                                #                 [
+                                #                     ahora_log,
+                                #                     usuario_activo["nombre"],
+                                #                     usuario_activo["cargo"],
+                                #                     conquistador,
+                                #                     requisito,
+                                #                     "Marcado",
+                                #                 ]
+                                #             )
+                                #             hubo_cambios = True
+                                #         elif not marcado and estaba_marcado:
+                                #             updates.append(
+                                #                 {"range": gspread.utils.rowcol_to_a1(fila_real, col_idx), "values": [[""]]}
+                                #             )
+                                #             logs.append(
+                                #                 [
+                                #                     ahora_log,
+                                #                     usuario_activo["nombre"],
+                                #                     usuario_activo["cargo"],
+                                #                     conquistador,
+                                #                     requisito,
+                                #                     "Desmarcado",
+                                #                 ]
+                                #             )
+                                #             hubo_cambios = True
                                 
                                 # ==========================================
                                 # CODIGO NUEVO
@@ -480,7 +507,6 @@ with st.status("Sincronizando...") as status:
                                 for requisito, marcado in nuevo_estado.items():
                                     requisito_limpio = requisito.strip()
                                     
-                                    # Extracción segura y prevención del error "None"
                                     valor_raw = fila_persona.get(requisito, fila_persona.get(requisito_limpio))
                                     estaba_marcado = bool(pd.notna(valor_raw) and str(valor_raw).strip() != "" and str(valor_raw).strip() != "None")
 
@@ -490,15 +516,14 @@ with st.status("Sincronizando...") as status:
                                     if requisito_limpio in headers_limpios:
                                         col_idx = headers_limpios.index(requisito_limpio) + 1
                                         if marcado and not estaba_marcado:
-                                            # (El resto de tu código de updates.append y logs.append sigue exactamente igual desde aquí)
                                             updates.append(
                                                 {"range": gspread.utils.rowcol_to_a1(fila_real, col_idx), "values": [[hoy]]}
                                             )
                                             logs.append(
                                                 [
                                                     ahora_log,
-                                                    usuario_activo["nombre"],
-                                                    usuario_activo["cargo"],
+                                                    usuario_activo.get("nombre", "Usuario"),
+                                                    usuario_activo.get("cargo", "Sin cargo"),
                                                     conquistador,
                                                     requisito,
                                                     "Marcado",
@@ -512,8 +537,8 @@ with st.status("Sincronizando...") as status:
                                             logs.append(
                                                 [
                                                     ahora_log,
-                                                    usuario_activo["nombre"],
-                                                    usuario_activo["cargo"],
+                                                    usuario_activo.get("nombre", "Usuario"),
+                                                    usuario_activo.get("cargo", "Sin cargo"),
                                                     conquistador,
                                                     requisito,
                                                     "Desmarcado",

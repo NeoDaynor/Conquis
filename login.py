@@ -1,9 +1,8 @@
 import base64
 import json
 import os
-
 import streamlit as st
-
+from utils import registrar_actividad
 
 def get_base64_of_bin_file(bin_file):
     try:
@@ -65,6 +64,7 @@ def mostrar_login():
                 st.session_state["user_info"] = user_data
                 st.success(f"Bienvenido {user_data['nombre']} ({user_data['rol']})")
                 st.rerun()
+                registrar_actividad("Presionó botón Entrar", "Login")
             else:
                 st.error("Credenciales no validas. Reintente.")
     st.markdown("</div>", unsafe_allow_html=True)

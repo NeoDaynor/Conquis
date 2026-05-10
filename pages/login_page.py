@@ -1,5 +1,4 @@
 import streamlit as st
-from utils import registrar_actividad
 from login import mostrar_login
 from ui_theme import apply_app_theme, render_hero
 
@@ -11,7 +10,7 @@ st.set_page_config(
 )
 
 apply_app_theme(max_width=800)
-registrar_actividad("Navegando", "Login_Page")
+
 if st.session_state.get("authenticated", False):
     st.switch_page("pages/menu.py")
 

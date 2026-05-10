@@ -144,7 +144,7 @@ def render_error_view(message, detail=None):
     )
     left, right = st.columns(2)
     with left:
-        if st.button("Volver al menu", use_container_width=True):
+        if st.button("Volver al menuuuuu", use_container_width=True):
             st.switch_page("pages/menu.py")
     with right:
         if st.button("Cerrar sesion", key="logout_error", use_container_width=True):
@@ -237,14 +237,17 @@ render_hero(
 top_left, top_center, top_right = st.columns(3)
 with top_left:
     if st.button("Volver al menu", key="back_menu", use_container_width=True):
+        registrar_actividad("Usuario vuelve al menu", "amigo")
         st.switch_page("pages/menu.py")
 with top_center:   
     if st.button("Seleccionar Unidad", key="back_unidades", use_container_width=True):
+        registrar_actividad("Usuario vuelve a seleccionar unidad", "amigo")
         st.switch_page("pages/registro_unidades.py")   
 with top_right:
     if st.button("Cerrar sesion", key="logout_top", use_container_width=True):
         st.session_state["authenticated"] = False
         st.session_state.pop("user_info", None)
+        registrar_actividad("Usuario cerro sesion", "amigo")
         st.switch_page("app.py")
 
 if st.session_state.scroll_top:
@@ -437,6 +440,7 @@ with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
                             hubo_cambios = False
     
                             with st.status("Sincronizando...") as status:
+                                registrar_actividad("Sincronizando...", "amigo")
                                 for requisito, marcado in nuevo_estado.items():
                                     estaba_marcado = bool(
                                         fila_persona.get(requisito) and str(fila_persona.get(requisito)).strip() != ""

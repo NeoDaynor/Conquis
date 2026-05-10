@@ -1,7 +1,7 @@
 import base64
 import textwrap
 import streamlit as st
-
+from utils import registrar_actividad
 
 st.set_page_config(
     page_title="Club Lakonn - Menu",
@@ -13,7 +13,7 @@ st.set_page_config(
 if not st.session_state.get("authenticated", False):
     st.switch_page("pages/login_page.py")
 
-
+registrar_actividad("Navegando", "Menu")
 def get_base64(path):
     try:
         with open(path, "rb") as file:

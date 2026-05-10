@@ -114,21 +114,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ==========================================
-# CODIGO ANTERIOR
-# ==========================================
-# @st.cache_resource
-# def get_client():
-#     creds = st.secrets["gcp_service_account"]
-#     scope = [
-#         "https://spreadsheets.google.com/feeds",
-#         "https://www.googleapis.com/auth/drive",
-#     ]
-#     return gspread.authorize(ServiceAccountCredentials.from_json_keyfile_dict(creds, scope))
-
-# ==========================================
-# CODIGO NUEVO
-# ==========================================
 @st.cache_resource
 def get_client():
     creds = st.secrets["gcp_service_account"]
@@ -159,7 +144,7 @@ def render_error_view(message, detail=None):
     )
     left, right = st.columns(2)
     with left:
-        if st.button("Volver al menuuuuu", use_container_width=True):
+        if st.button("Volver al menu", use_container_width=True):
             st.switch_page("pages/menu.py")
     with right:
         if st.button("Cerrar sesion", key="logout_error", use_container_width=True):
@@ -227,7 +212,7 @@ except Exception as error:
         )
 
 # =========================================================
-# ESTA ES TU LÓGICA ORIGINAL INTACTA (Cruce: Integrantes == usuario)
+# LÓGICA DE CRUCE: Integrantes == usuario
 # =========================================================
 es_conqui = usuario_activo.get("rol") == "conqui"
 
@@ -252,21 +237,18 @@ render_hero(
 top_left, top_center, top_right = st.columns(3)
 with top_left:
     if st.button("Volver al menu", key="back_menu", use_container_width=True):
-        #registrar_actividad("Usuario vuelve al menu", "amigo")
         st.switch_page("pages/menu.py")
 with top_center:   
     if st.button("Seleccionar Unidad", key="back_unidades", use_container_width=True):
-        #registrar_actividad("Usuario vuelve a seleccionar unidad", "amigo")
         st.switch_page("pages/registro_unidades.py")   
 with top_right:
     if st.button("Cerrar sesion", key="logout_top", use_container_width=True):
         st.session_state["authenticated"] = False
         st.session_state.pop("user_info", None)
-        #registrar_actividad("Usuario cerro sesion", "amigo")
         st.switch_page("app.py")
 
 if st.session_state.scroll_top:
-    st.success("Cambios guardados correctamente.")
+    st.success("Cambios guardados y base de datos actualizada.")
     st.toast("Cambios guardados", icon="✅")
     st.session_state.scroll_top = False
 
@@ -279,7 +261,7 @@ else:
     )
 
 # =========================================================
-# GRÁFICO DE AVANCE (Títulos dinámicos según Rol)
+# GRÁFICO DE AVANCE
 # =========================================================
 titulo_expander_grafico = "📊 Mi Avance Personal" if es_conqui else "📊 Avance por Conquistador / Lider"
 
@@ -332,7 +314,6 @@ with st.expander(titulo_expander_grafico, expanded=True):
         else:
             st.info("No se encontraron las columnas de requisitos para calcular el avance.")
     else:
-        # Modo diagnóstico inteligente por si el usuario en el JSON no concuerda
         if es_conqui:
             st.warning(f"⚠️ Hola {usuario_activo.get('nombre')}, no encontramos tus datos. Verificamos la columna 'Integrantes' usando tu usuario '{usuario_activo.get('usuario')}'.")
         else:
@@ -340,9 +321,8 @@ with st.expander(titulo_expander_grafico, expanded=True):
     
 st.markdown("---") 
 
-
 # =========================================================
-# SECCION AVANCE GENERAL (Títulos dinámicos según Rol)
+# SECCION AVANCE GENERAL
 # =========================================================
 titulo_expander_tabla = "Mi Cuadro de Avance" if es_conqui else "Cuadro Resumen de Avance General"
 titulo_interno_tabla = "Mi vista personal" if es_conqui else "Vista consolidada por unidad"
@@ -371,7 +351,9 @@ with st.expander(titulo_expander_tabla, expanded=False):
             hide_index=True,
         )
 
-# REGISTRO AVANCE
+# =========================================================
+# REGISTRO AVANCE (Edición Liderazgo)
+# =========================================================
 with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
     if not es_conqui:
         with st.container(key="registro_wrap"):
@@ -408,6 +390,7 @@ with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
                     nuevo_estado = {}
                     confirmaciones = {}
     
+                    # RENDERIZADO AISLADO PARA EVITAR EL RESET DE STREAMLIT
                     for col_idx, info in categorias.items():
                         with cols[col_idx]:
                             st.markdown(
@@ -416,9 +399,14 @@ with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
                             )
     
                             for item in info["items"]:
-                                valor_actual = bool(fila_persona.get(item) and str(fila_persona.get(item)).strip() != "")
+                                valor_actual = bool(fila_persona.get(item) and str(fila_persona.get(item)).strip() not in ["", "None", "False", "false"])
                                 key_cb = f"cb_{conquistador}_{item}"
-                                marcado = st.checkbox(item, value=valor_actual, key=key_cb)
+    
+                                # Inicializar solo la primera vez para no sobreescribir el clic visual del usuario
+                                if key_cb not in st.session_state:
+                                    st.session_state[key_cb] = valor_actual
+    
+                                marcado = st.checkbox(item, key=key_cb)
                                 key_confirm_state = f"confirm_state_{key_cb}"
     
                                 if key_confirm_state not in st.session_state:
@@ -434,17 +422,14 @@ with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
                                         st.success("Confirmado para eliminar.")
     
                                 confirmaciones[item] = st.session_state[key_confirm_state]
-                            else:
-                                confirmaciones[item] = True
-                                st.session_state[key_confirm_state] = False
-    
-                            nuevo_estado[item] = marcado
+                                nuevo_estado[item] = marcado
     
                     if st.button("Sincronizar cambios", type="primary", use_container_width=True):
                         try:
-                            fila_idx_df = df_full[df_full["Integrantes"] == conquistador].index
+                            # CRUCE DOBLE (Nombre + Unidad) por seguridad
+                            fila_idx_df = df_full[(df_full["Integrantes"] == conquistador) & (df_full["Unidad"] == unidad_actual)].index
                             if len(fila_idx_df) == 0:
-                                st.error("No se encontro el registro en la hoja.")
+                                st.error("No se encontro el registro exacto en la hoja.")
                                 st.stop()
     
                             fila_real = fila_idx_df[0] + 3
@@ -454,61 +439,14 @@ with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
                             logs = []
                             hubo_cambios = False
     
-                            with st.status("Sincronizando...") as status:
-                                # ==========================================
-                                # CODIGO ANTERIOR
-                                # ==========================================
-                                # for requisito, marcado in nuevo_estado.items():
-                                #     estaba_marcado = bool(
-                                #         fila_persona.get(requisito) and str(fila_persona.get(requisito)).strip() != ""
-                                #     )
-                                #
-                                #     if not marcado and estaba_marcado and not confirmaciones.get(requisito, False):
-                                #         continue
-                                #
-                                #     if requisito in headers:
-                                #         col_idx = headers.index(requisito) + 1
-                                #         if marcado and not estaba_marcado:
-                                #             updates.append(
-                                #                 {"range": gspread.utils.rowcol_to_a1(fila_real, col_idx), "values": [[hoy]]}
-                                #             )
-                                #             logs.append(
-                                #                 [
-                                #                     ahora_log,
-                                #                     usuario_activo["nombre"],
-                                #                     usuario_activo["cargo"],
-                                #                     conquistador,
-                                #                     requisito,
-                                #                     "Marcado",
-                                #                 ]
-                                #             )
-                                #             hubo_cambios = True
-                                #         elif not marcado and estaba_marcado:
-                                #             updates.append(
-                                #                 {"range": gspread.utils.rowcol_to_a1(fila_real, col_idx), "values": [[""]]}
-                                #             )
-                                #             logs.append(
-                                #                 [
-                                #                     ahora_log,
-                                #                     usuario_activo["nombre"],
-                                #                     usuario_activo["cargo"],
-                                #                     conquistador,
-                                #                     requisito,
-                                #                     "Desmarcado",
-                                #                 ]
-                                #             )
-                                #             hubo_cambios = True
-                                
-                                # ==========================================
-                                # CODIGO NUEVO
-                                # ==========================================
+                            with st.status("Analizando y guardando base de datos...") as status:
                                 headers_limpios = [str(h).strip() for h in headers]
                                 
                                 for requisito, marcado in nuevo_estado.items():
                                     requisito_limpio = requisito.strip()
                                     
                                     valor_raw = fila_persona.get(requisito, fila_persona.get(requisito_limpio))
-                                    estaba_marcado = bool(pd.notna(valor_raw) and str(valor_raw).strip() != "" and str(valor_raw).strip() != "None")
+                                    estaba_marcado = bool(pd.notna(valor_raw) and str(valor_raw).strip() not in ["", "None", "False", "false"])
 
                                     if not marcado and estaba_marcado and not confirmaciones.get(requisito, False):
                                         continue
@@ -552,14 +490,25 @@ with st.expander("Marcar Registro de Avances de Requisitos", expanded=True):
                                         updates.append(
                                             {"range": gspread.utils.rowcol_to_a1(fila_real, col_upd), "values": [[hoy]]}
                                         )
-    
-                                    sheet.batch_update(updates)
+                                    
+                                    # GUARDA DEFINITIVO FORZANDO ENTRADA DE USUARIO
+                                    sheet.batch_update(updates, value_input_option="USER_ENTERED")
                                     if logs:
                                         log_sheet.append_rows(logs)
-    
-                                    status.update(label="Guardado con exito.", state="complete")
+                                    
+                                    status.update(label="Sincronización a Google Sheets exitosa.", state="complete")
+                                    
+                                    # Limpiamos variables de sesión para que reflejen los datos frescos de la BD en la recarga
+                                    for col_idx_cat, info_cat in categorias.items():
+                                        for req in info_cat["items"]:
+                                            k = f"cb_{conquistador}_{req}"
+                                            if k in st.session_state:
+                                                del st.session_state[k]
+                                            k_conf = f"confirm_state_{k}"
+                                            if k_conf in st.session_state:
+                                                del st.session_state[k_conf]
                                 else:
-                                    status.update(label="No se detectaron cambios nuevos.", state="complete")
+                                    status.update(label="No se detectaron datos nuevos para enviar.", state="complete")
     
                             st.cache_resource.clear()
                             st.session_state.scroll_top = True
